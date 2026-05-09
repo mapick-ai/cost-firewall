@@ -48,6 +48,11 @@ export function createModelCallEndedHandler(state, store) {
         }
         state.updateRunCost(event.runId, estimatedTokens);
         state.updateSourceStats(source, estimatedTokens);
+        // Token 速率检测 + 调用频率检测
+        if (event.outcome === "completed") {
+            state.breaker.recordTokens(source, estimatedTokens);
+        }
+        state.breaker.recordCall(source);
         store.append({
             type: "model_call_ended",
             runId: event.runId,

@@ -5,6 +5,10 @@ export const DEFAULT_CONFIG = {
     breaker: {
         consecutiveFailures: 3,
         cooldownSec: 30,
+        tokenVelocityWindowSec: 60,
+        tokenVelocityThreshold: 100000,
+        callFrequencyWindowSec: 60,
+        callFrequencyThreshold: 30,
     },
     dailyTokenLimit: null,
     privacy: {

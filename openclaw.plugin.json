@@ -27,7 +27,11 @@
         "additionalProperties": false,
         "properties": {
           "consecutiveFailures": { "type": "number", "default": 3 },
-          "cooldownSec": { "type": "number", "default": 30 }
+          "cooldownSec": { "type": "number", "default": 30 },
+          "tokenVelocityWindowSec": { "type": "number", "default": 60 },
+          "tokenVelocityThreshold": { "type": "number", "default": 100000 },
+          "callFrequencyWindowSec": { "type": "number", "default": 60 },
+          "callFrequencyThreshold": { "type": "number", "default": 30 }
         }
       },
       "dailyTokenLimit": { "type": ["number", "null"], "default": null },

@@ -44,6 +44,29 @@ export interface BreakerState {
   consecutiveFailures: number;
   brokenUntil?: number;
   reason?: string;
+  // 滑动窗口追踪
+  tokenHistory: { ts: number; tokens: number }[];
+  callTimestamps: number[];
+  // 上次调用信息
+  lastCallTs?: number;
+  lastCallTokens?: number;
+}
+
+// 插件配置
+export interface FirewallConfig {
+  breaker?: {
+    consecutiveFailures?: number;
+    cooldownSec?: number;
+    tokenVelocityWindowSec?: number;
+    tokenVelocityThreshold?: number;
+    callFrequencyWindowSec?: number;
+    callFrequencyThreshold?: number;
+  };
+  dailyTokenLimit?: number | null;
+  privacy?: {
+    storePromptText?: boolean;
+    enableRawConversationHooks?: boolean;
+  };
 }
 
 // 全局统计
@@ -54,20 +77,6 @@ export interface GlobalStats {
   todayBlocked: number;
   todaySavedEstimate: number;
 }
-
-// 插件配置
-export interface FirewallConfig {
-  breaker?: {
-    consecutiveFailures?: number;
-    cooldownSec?: number;
-  };
-  dailyTokenLimit?: number | null;
-  privacy?: {
-    storePromptText?: boolean;
-    enableRawConversationHooks?: boolean;
-  };
-}
-
 // Block 决策
 export interface BlockDecision {
   allow: boolean;

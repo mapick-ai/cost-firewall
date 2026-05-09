@@ -36,6 +36,28 @@ export interface BreakerState {
     consecutiveFailures: number;
     brokenUntil?: number;
     reason?: string;
+    tokenHistory: {
+        ts: number;
+        tokens: number;
+    }[];
+    callTimestamps: number[];
+    lastCallTs?: number;
+    lastCallTokens?: number;
+}
+export interface FirewallConfig {
+    breaker?: {
+        consecutiveFailures?: number;
+        cooldownSec?: number;
+        tokenVelocityWindowSec?: number;
+        tokenVelocityThreshold?: number;
+        callFrequencyWindowSec?: number;
+        callFrequencyThreshold?: number;
+    };
+    dailyTokenLimit?: number | null;
+    privacy?: {
+        storePromptText?: boolean;
+        enableRawConversationHooks?: boolean;
+    };
 }
 export interface GlobalStats {
     emergencyStop: boolean;
@@ -43,17 +65,6 @@ export interface GlobalStats {
     todayTokens: number;
     todayBlocked: number;
     todaySavedEstimate: number;
-}
-export interface FirewallConfig {
-    breaker?: {
-        consecutiveFailures?: number;
-        cooldownSec?: number;
-    };
-    dailyTokenLimit?: number | null;
-    privacy?: {
-        storePromptText?: boolean;
-        enableRawConversationHooks?: boolean;
-    };
 }
 export interface BlockDecision {
     allow: boolean;

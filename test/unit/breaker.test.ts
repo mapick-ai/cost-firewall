@@ -7,7 +7,7 @@ const defaultConfig: FirewallConfig = {
     consecutiveFailures: 3,
     cooldownSec: 5,
     tokenVelocityWindowSec: 60,
-    tokenVelocityThreshold: 1.0,
+    tokenVelocityThreshold: 1000,
     callFrequencyWindowSec: 60,
     callFrequencyThreshold: 10,
   },
@@ -75,5 +75,49 @@ describe("Breaker", () => {
     breaker.recordFailure("source-1");
     breaker.reset("source-1");
     expect(breaker.isCoolingDown("source-1")).toBe(false);
+  });
+});
+
+describe("Token Velocity", () => {
+  let breaker: Breaker;
+
+  beforeEach(() => {
+    breaker = new Breaker(defaultConfig);
+  });
+
+  it("窗口内 token 超阈值触发熔断", () => {
+    const reason = breaker.recordTokens("src", 600);
+    expect(reason).toBeUndefined();
+    const reason2 = breaker.recordTokens("src", 500);
+    expect(reason2).toBe("token_velocity");
+    expect(breaker.isCoolingDown("src")).toBe(true);
+    expect(breaker.getBlockedReason("src")).toBe("token_velocity");
+  });
+
+  it("低于阈值不触发", () => {
+    const reason = breaker.recordTokens("src", 400);
+    expect(reason).toBeUndefined();
+    expect(breaker.isCoolingDown("src")).toBe(false);
+  });
+});
+
+describe("Call Frequency", () => {
+  let breaker: Breaker;
+
+  beforeEach(() => {
+    breaker = new Breaker(defaultConfig);
+  });
+
+  it("窗口内调用次数超阈值触发熔断", () => {
+    for (let i = 0; i < 9; i++) breaker.recordCall("src");
+    expect(breaker.isCoolingDown("src")).toBe(false);
+    breaker.recordCall("src");
+    expect(breaker.isCoolingDown("src")).toBe(true);
+    expect(breaker.getBlockedReason("src")).toBe("call_frequency");
+  });
+
+  it("低于阈值不触发", () => {
+    for (let i = 0; i < 5; i++) breaker.recordCall("src");
+    expect(breaker.isCoolingDown("src")).toBe(false);
   });
 });
