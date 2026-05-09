@@ -1,16 +1,16 @@
 # @mapick/cost-firewall
 
-Mapick Cost Firewall — OpenClaw 原生插件版
+Mapick Cost Firewall — Native OpenClaw Plugin
 
-## 功能
+## Features
 
-- **零配置观测**：安装后自动统计每次 LLM 调用的费用、延迟、成功率
-- **跨次拦截**：Emergency Stop、Daily Budget、自动熔断
-- **请求级硬拦截**：通过 `mapick/*` 前缀实现 request-level precheck
-- **Dashboard**：实时查看调用统计和拦截事件
-- **隐私优先**：默认不读取 prompt/response 明文
+- **Zero-config observability**: Automatically track cost, latency, and success rate for every LLM call after installation
+- **Cross-request blocking**: Emergency Stop, Daily Budget, automatic circuit breaker
+- **Request-level hard blocking**: Pre-check before each LLM request via `mapick/*` prefix
+- **Dashboard**: Real-time view of call statistics and blocked events
+- **Privacy-first**: No prompt/response plaintext read by default
 
-## 安装
+## Installation
 
 ```bash
 openclaw plugins install @mapick/cost-firewall
@@ -18,29 +18,29 @@ openclaw plugins enable mapick-firewall
 openclaw gateway restart
 ```
 
-## 使用
+## Usage
 
 ```bash
-# 查看状态
+# View status
 openclaw mapick status
 
-# 切换模式
-openclaw mapick mode observe   # 观测模式（默认）
-openclaw mapick mode protect   # 保护模式
+# Switch mode
+openclaw mapick mode observe   # Observe mode (default)
+openclaw mapick mode protect   # Protect mode
 
 # Emergency Stop
 openclaw mapick stop
 openclaw mapick resume
 
-# 预算
-openclaw mapick budget set 20  # 每日 $20
+# Budget
+openclaw mapick budget set 20  # $20 per day
 openclaw mapick budget reset
 
 # Dashboard
 open http://localhost:18789/mapick/dashboard
 ```
 
-## 配置
+## Configuration
 
 ```json
 {
@@ -58,26 +58,26 @@ open http://localhost:18789/mapick/dashboard
 }
 ```
 
-## 架构
+## Architecture
 
-双层防御：
+Dual-layer defense:
 
-1. **Hook Layer**：零配置观测 + 跨次拦截（`before_agent_reply`、`model_call_*`、`agent_end`）
-2. **Provider Layer**：请求级硬拦截（`mapick/* + createStreamFn`）
+1. **Hook Layer**: Zero-config observability + cross-request blocking (`before_agent_reply`, `model_call_*`, `agent_end`)
+2. **Provider Layer**: Request-level hard blocking (`mapick/* + createStreamFn`)
 
-## 开发
+## Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 构建
+# Build
 pnpm build
 
-# 测试
+# Test
 pnpm test
 
-# 开发模式
+# Dev mode
 pnpm dev
 ```
 
