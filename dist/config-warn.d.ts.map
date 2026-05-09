@@ -1,0 +1,1 @@
+{"version":3,"file":"config-warn.d.ts","sourceRoot":"","sources":["../src/config-warn.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAEH,MAAM,WAAW,aAAa;IAC5B,KAAK,EAAE,MAAM,GAAG,OAAO,CAAC;IACxB,OAAO,EAAE,MAAM,CAAC;CACjB;AAED,wBAAgB,iBAAiB,CAAC,MAAM,EAAE,GAAG,GAAG,aAAa,EAAE,CAuB9D"}

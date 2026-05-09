@@ -17,11 +17,14 @@ import { streamAnthropic } from "./upstream/anthropic.js";
 import { estimateCost } from "../pricing.js";
 
 function categorizeError(err: Error): string {
-  const m = err.message;
-  if (m.includes("timeout")) return "timeout";
-  if (m.includes("401")) return "auth_error";
-  if (m.includes("429")) return "rate_limit";
-  if (m.includes("5")) return "server_error";
+  const m = err?.message ?? String(err);
+  if (m.includes("timeout") || m.includes("ETIMEDOUT")) return "timeout";
+  if (m.includes("401") || m.includes("Unauthorized")) return "auth_error";
+  if (m.includes("429") || m.includes("rate")) return "rate_limit";
+  if (m.includes("403") || m.includes("Forbidden")) return "access_denied";
+  if (/^5\d\d/.test(m) || m.includes("server")) return "server_error";
+  if (m.includes("ECONNREFUSED") || m.includes("ECONNRESET")) return "connection_closed";
+  if (m.includes("fetch")) return "network_error";
   return "unknown";
 }
 
@@ -73,10 +76,13 @@ export function registerProvider(
       };
     },
 
-    createStreamFn(_ctx: any) {
-      return async function* (model: string, context: any, options: any) {
-        const route = parseMapickModelRef(model);
-        if (!route) throw new Error(`Invalid Mapick model reference: ${model}`);
+    createStreamFn() {
+      const self = this;
+      return async function* stream(model: any, context: any, options: any) {
+        // model 可能来自 ctx，直接使用 catalog + resolveDynamicModel 提供的 model
+        const modelId = typeof model === "string" ? model : model?.id ?? "";
+        const route = parseMapickModelRef(modelId);
+        if (!route) throw new Error(`Invalid Mapick model reference: ${modelId}`);
 
         // Precheck — Emergency Stop
         if (state.globalStats.emergencyStop) {
@@ -119,8 +125,8 @@ export function registerProvider(
         let inputTokens = 0; let outputTokens = 0; let responseStreamBytes = 0;
         try {
           const s = route.upstream === "anthropic"
-            ? streamAnthropic({ apiKey: auth.apiKey, model: route.model, messages: context.messages ?? [], ...options })
-            : streamOpenAi({ baseUrl: getOpenAiBaseUrl(route.upstream), apiKey: auth.apiKey, model: route.model, messages: context.messages ?? [], ...options });
+            ? streamAnthropic({ apiKey: auth.apiKey, model: route.model, messages: context?.messages ?? [], ...options })
+            : streamOpenAi({ baseUrl: getOpenAiBaseUrl(route.upstream), apiKey: auth.apiKey, model: route.model, messages: context?.messages ?? [], ...options });
 
           for await (const chunk of s) {
             responseStreamBytes += JSON.stringify(chunk).length;
@@ -133,7 +139,8 @@ export function registerProvider(
           state.updateSourceStats(src, cost);
           state.breaker.recordSuccess(src);
         } catch (err: any) {
-          store.append({ type: "model_call_ended", provider: route.upstream, model: route.model, outcome: "error", failureKind: categorizeError(err) });
+          const msg = err?.message ?? String(err);
+          store.append({ type: "model_call_ended", provider: route.upstream, model: route.model, outcome: "error", failureKind: categorizeError(err), reason: msg.slice(0, 200) });
           state.breaker.recordFailure(src);
           throw err;
         }
