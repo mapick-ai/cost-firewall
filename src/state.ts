@@ -17,7 +17,7 @@ export class FirewallState {
   readonly breaker: Breaker;
   readonly globalStats: GlobalStats;
   private runs = new Map<string, RunState>();
-  private sourceStats = new Map<SourceKey, { todaySpent: number }>();
+  private sourceStats = new Map<SourceKey, { todayTokens: number }>();
 
   constructor(config: Partial<FirewallConfig> = {}) {
     this.config = resolveConfig(config);
@@ -25,7 +25,7 @@ export class FirewallState {
     this.globalStats = {
       emergencyStop: false,
       mode: "observe",
-      todaySpent: 0,
+      todayTokens: 0,
       todayBlocked: 0,
       todaySavedEstimate: 0,
     };
@@ -72,12 +72,12 @@ export class FirewallState {
     }
   }
 
-  updateSourceStats(source: SourceKey, cost: number): void {
+  updateSourceStats(source: SourceKey, tokens: number): void {
     if (!this.sourceStats.has(source)) {
-      this.sourceStats.set(source, { todaySpent: 0 });
+      this.sourceStats.set(source, { todayTokens: 0 });
     }
-    this.sourceStats.get(source)!.todaySpent += cost;
-    this.globalStats.todaySpent += cost;
+    this.sourceStats.get(source)!.todayTokens += tokens;
+    this.globalStats.todayTokens += tokens;
   }
 
   cleanupRun(runId: string): void {
@@ -94,12 +94,12 @@ export class FirewallState {
     this.globalStats.mode = mode;
   }
 
-  isBudgetExceeded(): boolean {
-    if (this.config.dailyBudgetUsd == null) return false;
-    return this.globalStats.todaySpent >= this.config.dailyBudgetUsd;
+  isLimitExceeded(): boolean {
+    if (this.config.dailyTokenLimit == null) return false;
+    return this.globalStats.todayTokens >= this.config.dailyTokenLimit;
   }
 
-  getTodaySpent(): number {
-    return this.globalStats.todaySpent;
+  getTodayTokens(): number {
+    return this.globalStats.todayTokens;
   }
 }

@@ -14,11 +14,11 @@ export declare class FirewallState {
     getOrCreateRun(runId: string, source: SourceKey, sessionId?: string, sessionKey?: string): RunState;
     addCallToRun(runId: string, callId: string, call: CallState): void;
     updateRunCost(runId: string, cost: number): void;
-    updateSourceStats(source: SourceKey, cost: number): void;
+    updateSourceStats(source: SourceKey, tokens: number): void;
     cleanupRun(runId: string): void;
     setEmergencyStop(enabled: boolean): void;
     setMode(mode: "observe" | "protect"): void;
-    isBudgetExceeded(): boolean;
-    getTodaySpent(): number;
+    isLimitExceeded(): boolean;
+    getTodayTokens(): number;
 }
 //# sourceMappingURL=state.d.ts.map

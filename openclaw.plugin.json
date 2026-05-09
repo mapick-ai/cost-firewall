@@ -26,9 +26,9 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "costVelocityWindowSec": { "type": "number", "default": 60 },
-          "costVelocityThresholdUsd": { "type": "number", "default": 0.5 },
-          "cumulativeCostThresholdUsd": { "type": "number", "default": 1.0 },
+          "tokenVelocityWindowSec": { "type": "number", "default": 60 },
+          "tokenVelocityThreshold": { "type": "number", "default": 50000 },
+          "cumulativeTokenThreshold": { "type": "number", "default": 100000 },
           "callFrequencyWindowSec": { "type": "number", "default": 60 },
           "callFrequencyThreshold": { "type": "number", "default": 20 },
           "promptRepeatThreshold": { "type": "number", "default": 3 },
@@ -36,7 +36,7 @@
           "cooldownSec": { "type": "number", "default": 30 }
         }
       },
-      "dailyBudgetUsd": { "type": ["number", "null"], "default": null },
+      "dailyTokenLimit": { "type": ["number", "null"], "default": null },
       "privacy": {
         "type": "object",
         "additionalProperties": false,

@@ -40,22 +40,22 @@ export interface BreakerState {
 export interface GlobalStats {
     emergencyStop: boolean;
     mode: "observe" | "protect";
-    todaySpent: number;
+    todayTokens: number;
     todayBlocked: number;
     todaySavedEstimate: number;
 }
 export interface FirewallConfig {
     breaker?: {
-        costVelocityWindowSec?: number;
-        costVelocityThresholdUsd?: number;
-        cumulativeCostThresholdUsd?: number;
+        tokenVelocityWindowSec?: number;
+        tokenVelocityThreshold?: number;
+        cumulativeTokenThreshold?: number;
         callFrequencyWindowSec?: number;
         callFrequencyThreshold?: number;
         promptRepeatThreshold?: number;
         consecutiveFailures?: number;
         cooldownSec?: number;
     };
-    dailyBudgetUsd?: number | null;
+    dailyTokenLimit?: number | null;
     privacy?: {
         storePromptText?: boolean;
         enableRawConversationHooks?: boolean;

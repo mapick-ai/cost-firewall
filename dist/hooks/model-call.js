@@ -7,7 +7,6 @@
  * - 更新 breaker 状态
  * - 写入事件日志
  */
-import { estimateCost } from "../pricing.js";
 import { sourceFromModelCall } from "../source.js";
 export function createModelCallStartedHandler(state, store) {
     return function handleModelCallStarted(event, ctx) {
@@ -28,7 +27,9 @@ export function createModelCallEndedHandler(state, store) {
     return function handleModelCallEnded(event, ctx) {
         const source = sourceFromModelCall(event, ctx);
         const run = state.getOrCreateRun(event.runId, source, event.sessionId, event.sessionKey);
-        const estimatedCost = estimateCost(null, event.provider, event.model, event.responseStreamBytes);
+        // 估算 token 数：1 token ≈ 4 bytes
+        const totalBytes = (event.requestPayloadBytes ?? 0) + (event.responseStreamBytes ?? 0);
+        const estimatedTokens = Math.round(totalBytes / 4);
         const call = run.calls.get(event.callId);
         if (call) {
             call.durationMs = event.durationMs;
@@ -37,7 +38,7 @@ export function createModelCallEndedHandler(state, store) {
             call.failureKind = event.failureKind;
             call.requestPayloadBytes = event.requestPayloadBytes;
             call.responseStreamBytes = event.responseStreamBytes;
-            call.estimatedCost = estimatedCost;
+            call.estimatedCost = estimatedTokens;
         }
         if (event.outcome === "error") {
             state.breaker.recordFailure(source);
@@ -45,8 +46,8 @@ export function createModelCallEndedHandler(state, store) {
         else {
             state.breaker.recordSuccess(source);
         }
-        state.updateRunCost(event.runId, estimatedCost);
-        state.updateSourceStats(source, estimatedCost);
+        state.updateRunCost(event.runId, estimatedTokens);
+        state.updateSourceStats(source, estimatedTokens);
         store.append({
             type: "model_call_ended",
             runId: event.runId,
@@ -56,7 +57,7 @@ export function createModelCallEndedHandler(state, store) {
             model: event.model,
             outcome: event.outcome,
             failureKind: event.failureKind,
-            estimatedCost,
+            estimatedCost: estimatedTokens,
         });
     };
 }

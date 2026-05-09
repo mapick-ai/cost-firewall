@@ -15,7 +15,7 @@ export class FirewallState {
         this.globalStats = {
             emergencyStop: false,
             mode: "observe",
-            todaySpent: 0,
+            todayTokens: 0,
             todayBlocked: 0,
             todaySavedEstimate: 0,
         };
@@ -52,12 +52,12 @@ export class FirewallState {
             run.cumulativeCost += cost;
         }
     }
-    updateSourceStats(source, cost) {
+    updateSourceStats(source, tokens) {
         if (!this.sourceStats.has(source)) {
-            this.sourceStats.set(source, { todaySpent: 0 });
+            this.sourceStats.set(source, { todayTokens: 0 });
         }
-        this.sourceStats.get(source).todaySpent += cost;
-        this.globalStats.todaySpent += cost;
+        this.sourceStats.get(source).todayTokens += tokens;
+        this.globalStats.todayTokens += tokens;
     }
     cleanupRun(runId) {
         setTimeout(() => {
@@ -70,13 +70,13 @@ export class FirewallState {
     setMode(mode) {
         this.globalStats.mode = mode;
     }
-    isBudgetExceeded() {
-        if (this.config.dailyBudgetUsd == null)
+    isLimitExceeded() {
+        if (this.config.dailyTokenLimit == null)
             return false;
-        return this.globalStats.todaySpent >= this.config.dailyBudgetUsd;
+        return this.globalStats.todayTokens >= this.config.dailyTokenLimit;
     }
-    getTodaySpent() {
-        return this.globalStats.todaySpent;
+    getTodayTokens() {
+        return this.globalStats.todayTokens;
     }
 }
 //# sourceMappingURL=state.js.map

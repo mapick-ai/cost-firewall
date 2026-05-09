@@ -32,7 +32,7 @@ describe("E2E 完整流程", () => {
       outcome: "completed",
       responseStreamBytes: 1024,
     }, {});
-    expect(state.getTodaySpent()).toBeGreaterThan(0);
+    expect(state.getTodayTokens()).toBeGreaterThan(0);
 
     // 3. 切换到 protect 模式
     state.setMode("protect");

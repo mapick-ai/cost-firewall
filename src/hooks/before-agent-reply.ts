@@ -57,22 +57,22 @@ export function createBeforeAgentReplyHandler(
       };
     }
 
-    if (state.isBudgetExceeded()) {
+    if (state.isLimitExceeded()) {
       const source = event.agentId ?? "unknown";
       store.append({
         type: "blocked",
         source,
-        reason: "daily_budget_exceeded",
+        reason: "daily_token_limit",
         layer: "hook",
       });
       state.globalStats.todayBlocked++;
       return {
         handled: true,
         reply: {
-          text: "Mapick Cost Firewall: today's AI budget has been reached.",
+          text: "Mapick Cost Firewall: today's token limit has been reached.",
           isError: true,
         },
-        reason: "daily_budget_exceeded",
+        reason: "daily_token_limit",
       };
     }
 

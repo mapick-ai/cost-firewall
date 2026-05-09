@@ -7,8 +7,8 @@ import type { FirewallState } from "../state.js";
 import { EventStore } from "../store.js";
 import type { FirewallEvent } from "../types.js";
 /** 从 JSONL 聚合今日统计数据 */
-export declare function aggregateFromJsonl(store: EventStore, memSpent: number, memBlocked: number): Promise<{
-    today_spent: number;
+export declare function aggregateFromJsonl(store: EventStore, memTokens: number, memBlocked: number): Promise<{
+    today_tokens: number;
     today_blocked: number;
     events: FirewallEvent[];
 }>;

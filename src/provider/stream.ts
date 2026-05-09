@@ -139,8 +139,8 @@ function precheckRequest(
     return { allow: false, reason: "emergency_stop" };
   }
 
-  if (state.isBudgetExceeded()) {
-    return { allow: false, reason: "daily_budget_exceeded" };
+  if (state.isLimitExceeded()) {
+    return { allow: false, reason: "daily_token_limit" };
   }
 
   if (state.breaker.isCoolingDown(source)) {

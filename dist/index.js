@@ -33,7 +33,7 @@ export default {
             originalUpdate(source, cost);
             sse.broadcast({
                 type: "stats_update",
-                today_spent: state.globalStats.todaySpent,
+                today_tokens: state.globalStats.todayTokens,
                 today_blocked: state.globalStats.todayBlocked,
             });
         };

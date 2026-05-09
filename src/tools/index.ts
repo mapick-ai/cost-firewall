@@ -39,7 +39,7 @@ export function registerTools(api: any, state: FirewallState, store: EventStore)
           case "stop": state.setEmergencyStop(true); return { content: [{ type: "text", text: "Emergency stop activated." }] };
           case "resume": state.setEmergencyStop(false); return { content: [{ type: "text", text: "Resumed." }] };
           case "log": return { content: [{ type: "text", text: JSON.stringify(await getLog(store, 10), null, 2) }] };
-          case "budget": return { content: [{ type: "text", text: `Daily budget: $${(state.config as any).dailyBudgetUsd ?? "unlimited"}` }] };
+          case "budget": return { content: [{ type: "text", text: `Daily token limit: ${(state.config as any).dailyTokenLimit?.toLocaleString() ?? "unlimited"} tokens` }] };
           case "mode": return { content: [{ type: "text", text: `Mode: ${state.globalStats.mode}` }] };
           default: return { content: [{ type: "text", text: `Unknown action: ${params.action}` }] };
         }
@@ -50,7 +50,7 @@ export function registerTools(api: any, state: FirewallState, store: EventStore)
     api.logger?.warn(`[mapick-firewall] registerCommand NOT available, trying registerTool...`);
     api.registerTool({
       name: "mapick_status",
-      description: "View Mapick Cost Firewall status: mode, today spent, blocked count, budget.",
+      description: "View Mapick Cost Firewall status: mode, tokens used, blocked count, token limit.",
       parameters: { type: "object", properties: {}, required: [] },
       async execute() {
         const s = await getStatus(state, store);

@@ -10,9 +10,9 @@ export class Breaker {
 
   constructor(config: FirewallConfig) {
     this.config = {
-      costVelocityWindowSec: config.breaker?.costVelocityWindowSec ?? 60,
-      costVelocityThresholdUsd: config.breaker?.costVelocityThresholdUsd ?? 0.5,
-      cumulativeCostThresholdUsd: config.breaker?.cumulativeCostThresholdUsd ?? 1.0,
+      tokenVelocityWindowSec: config.breaker?.tokenVelocityWindowSec ?? 60,
+      tokenVelocityThreshold: config.breaker?.tokenVelocityThreshold ?? 0.5,
+      cumulativeTokenThreshold: config.breaker?.cumulativeTokenThreshold ?? 1.0,
       callFrequencyWindowSec: config.breaker?.callFrequencyWindowSec ?? 60,
       callFrequencyThreshold: config.breaker?.callFrequencyThreshold ?? 20,
       promptRepeatThreshold: config.breaker?.promptRepeatThreshold ?? 3,

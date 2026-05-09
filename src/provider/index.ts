@@ -96,11 +96,11 @@ export function registerProvider(
         }
 
         // Precheck — Budget
-        if (state.isBudgetExceeded()) {
+        if (state.isLimitExceeded()) {
           state.globalStats.todayBlocked++;
-          store.append({ type: "blocked", provider: route.upstream, model: route.model, reason: "daily_budget_exceeded", layer: "provider" });
+          store.append({ type: "blocked", provider: route.upstream, model: route.model, reason: "daily_token_limit", layer: "provider" });
           yield* createBlockedStream({
-            provider: route.upstream, model: route.model, reason: "daily_budget_exceeded",
+            provider: route.upstream, model: route.model, reason: "daily_token_limit",
             format: route.upstream === "anthropic" ? "anthropic" : "openai",
           });
           return;

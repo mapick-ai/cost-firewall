@@ -70,12 +70,9 @@ export function createModelCallEndedHandler(
     const source = sourceFromModelCall(event, ctx);
     const run = state.getOrCreateRun(event.runId, source, event.sessionId, event.sessionKey);
 
-    const estimatedCost = estimateCost(
-      null,
-      event.provider,
-      event.model,
-      event.responseStreamBytes
-    );
+    // 估算 token 数：1 token ≈ 4 bytes
+    const totalBytes = (event.requestPayloadBytes ?? 0) + (event.responseStreamBytes ?? 0);
+    const estimatedTokens = Math.round(totalBytes / 4);
 
     const call = run.calls.get(event.callId);
     if (call) {
@@ -85,7 +82,7 @@ export function createModelCallEndedHandler(
       call.failureKind = event.failureKind;
       call.requestPayloadBytes = event.requestPayloadBytes;
       call.responseStreamBytes = event.responseStreamBytes;
-      call.estimatedCost = estimatedCost;
+      call.estimatedCost = estimatedTokens;
     }
 
     if (event.outcome === "error") {
@@ -94,8 +91,8 @@ export function createModelCallEndedHandler(
       state.breaker.recordSuccess(source);
     }
 
-    state.updateRunCost(event.runId, estimatedCost);
-    state.updateSourceStats(source, estimatedCost);
+    state.updateRunCost(event.runId, estimatedTokens);
+    state.updateSourceStats(source, estimatedTokens);
 
     store.append({
       type: "model_call_ended",
@@ -106,7 +103,7 @@ export function createModelCallEndedHandler(
       model: event.model,
       outcome: event.outcome,
       failureKind: event.failureKind,
-      estimatedCost,
+      estimatedCost: estimatedTokens,
     });
   };
 }

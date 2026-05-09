@@ -6,8 +6,8 @@ const defaultConfig: FirewallConfig = {
   breaker: {
     consecutiveFailures: 3,
     cooldownSec: 5,
-    costVelocityWindowSec: 60,
-    costVelocityThresholdUsd: 1.0,
+    tokenVelocityWindowSec: 60,
+    tokenVelocityThreshold: 1.0,
     callFrequencyWindowSec: 60,
     callFrequencyThreshold: 10,
   },

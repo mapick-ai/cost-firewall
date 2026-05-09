@@ -39,16 +39,12 @@ export function estimateCost(
   model: string,
   responseStreamBytes?: number
 ): number {
-  const pricing = PRICING[provider]?.[model];
-
   if (usage?.prompt_tokens || usage?.completion_tokens) {
-    const inputCost = ((usage.prompt_tokens ?? 0) / 1_000_000) * (pricing?.input ?? 3);
-    const outputCost = ((usage.completion_tokens ?? 0) / 1_000_000) * (pricing?.output ?? 15);
-    return inputCost + outputCost;
+    return (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0);
   }
 
   if (responseStreamBytes) {
-    return responseStreamBytes * FALLBACK_COST_PER_BYTE;
+    return responseStreamBytes;
   }
 
   return 0;

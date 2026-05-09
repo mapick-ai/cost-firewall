@@ -31,7 +31,7 @@ describe("Hook Layer 集成", () => {
         outcome: "completed",
         responseStreamBytes: 1024,
       }, {});
-      expect(state.getTodaySpent()).toBeGreaterThan(0);
+      expect(state.getTodayTokens()).toBeGreaterThan(0);
     });
   });
 
@@ -47,13 +47,13 @@ describe("Hook Layer 集成", () => {
 
     it("超预算阻断请求", async () => {
       state.setMode("protect");
-      (state.config as any).dailyBudgetUsd = 0.001;
+      (state.config as any).dailyTokenLimit = 0.001;
       state.updateSourceStats("test", 0.01);
 
       const handler = createBeforeAgentReplyHandler(state, store);
       const result = await handler({ agentId: "test" }, {});
       expect(result).toBeDefined();
-      expect(result?.reason).toBe("daily_budget_exceeded");
+      expect(result?.reason).toBe("daily_token_limit");
     });
 
     it("熔断阻断请求", async () => {

@@ -5,7 +5,7 @@
  */
 import { readFile } from "node:fs/promises";
 /** 从 JSONL 聚合今日统计数据 */
-export async function aggregateFromJsonl(store, memSpent, memBlocked) {
+export async function aggregateFromJsonl(store, memTokens, memBlocked) {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayTs = todayStart.getTime();
@@ -22,9 +22,9 @@ export async function aggregateFromJsonl(store, memSpent, memBlocked) {
         }
     }
     catch { /* file not found */ }
-    const jsonlSpent = events.filter((e) => e.type === "model_call_ended").reduce((sum, e) => sum + (e.estimatedCost ?? 0), 0);
+    const jsonlTokens = events.filter((e) => e.type === "model_call_ended").reduce((sum, e) => sum + (e.estimatedCost ?? 0), 0);
     const jsonlBlocked = events.filter((e) => e.type === "blocked").length;
-    return { today_spent: Math.max(memSpent, jsonlSpent), today_blocked: Math.max(memBlocked, jsonlBlocked), events };
+    return { today_tokens: Math.max(memTokens, jsonlTokens), today_blocked: Math.max(memBlocked, jsonlBlocked), events };
 }
 export function registerCli(api, state, store) {
     api.registerCli(({ program }) => {
@@ -32,13 +32,13 @@ export function registerCli(api, state, store) {
         mapick.command("status")
             .description("Show firewall status")
             .action(async () => {
-            const agg = await aggregateFromJsonl(store, state.globalStats.todaySpent, state.globalStats.todayBlocked);
+            const agg = await aggregateFromJsonl(store, state.globalStats.todayTokens, state.globalStats.todayBlocked);
             console.log(JSON.stringify({
                 mode: state.globalStats.mode,
                 emergency_stop: state.globalStats.emergencyStop,
-                today_spent: agg.today_spent,
+                today_tokens: agg.today_tokens,
                 today_blocked: agg.today_blocked,
-                daily_budget: state.config.dailyBudgetUsd,
+                daily_token_limit: state.config.dailyTokenLimit,
                 cooldown: state.config.breaker?.cooldownSec,
             }, null, 2));
         });
@@ -71,11 +71,11 @@ export function registerCli(api, state, store) {
             .argument("[amount]", "Budget in USD")
             .action((action, amount) => {
             if (action === "set" && amount) {
-                state.config.dailyBudgetUsd = parseFloat(amount);
+                state.config.dailyTokenLimit = parseFloat(amount);
                 console.log(`Daily budget set to $${amount}`);
             }
             else if (action === "reset") {
-                state.config.dailyBudgetUsd = null;
+                state.config.dailyTokenLimit = null;
                 console.log("Daily budget reset.");
             }
             else {
@@ -115,20 +115,20 @@ export function registerCli(api, state, store) {
     });
 }
 export async function getStatus(state, store) {
-    let spent = state.globalStats.todaySpent;
+    let spent = state.globalStats.todayTokens;
     let blocked = state.globalStats.todayBlocked;
     if (store) {
         const agg = await aggregateFromJsonl(store, spent, blocked);
-        spent = agg.today_spent;
+        spent = agg.today_tokens;
         blocked = agg.today_blocked;
     }
     return {
         mode: state.globalStats.mode,
         emergency_stop: state.globalStats.emergencyStop,
-        today_spent: spent,
+        today_tokens: spent,
         today_blocked: blocked,
         today_saved_estimate: state.globalStats.todaySavedEstimate,
-        daily_budget: state.config.dailyBudgetUsd,
+        daily_token_limit: state.config.dailyTokenLimit,
         breaker: { consecutive_failures_threshold: state.config.breaker?.consecutiveFailures, cooldown_sec: state.config.breaker?.cooldownSec },
     };
 }

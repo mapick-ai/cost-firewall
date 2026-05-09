@@ -28,8 +28,8 @@ export function renderDashboardHtml(stats) {
         <div class="stat-label">Mode</div>
       </div>
       <div class="stat">
-        <div class="stat-value">$\${stats.today_spent.toFixed(4)}</div>
-        <div class="stat-label">Today Spent</div>
+        <div class="stat-value">$\${stats.today_tokens.toFixed(4)}</div>
+        <div class="stat-label">Today Tokens</div>
       </div>
       <div class="stat">
         <div class="stat-value">\${stats.today_blocked}</div>

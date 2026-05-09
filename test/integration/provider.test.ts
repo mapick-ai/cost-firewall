@@ -38,7 +38,7 @@ describe("Provider Layer 集成", () => {
       const stream = createBlockedStream({
         provider: "anthropic",
         model: "claude-sonnet-4-6",
-        reason: "daily_budget_exceeded",
+        reason: "daily_token_limit",
         format: "anthropic",
       });
 
@@ -60,9 +60,9 @@ describe("Provider Layer 集成", () => {
     });
 
     it("Budget 阻断 provider 层请求", () => {
-      const state = new FirewallState({ dailyBudgetUsd: 0.01 });
+      const state = new FirewallState({ dailyTokenLimit: 0.01 });
       state.updateSourceStats("test", 0.1);
-      expect(state.isBudgetExceeded()).toBe(true);
+      expect(state.isLimitExceeded()).toBe(true);
     });
   });
 });

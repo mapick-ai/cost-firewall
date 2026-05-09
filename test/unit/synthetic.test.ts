@@ -23,7 +23,7 @@ describe("createBlockedStream", () => {
     const stream = createBlockedStream({
       provider: "anthropic",
       model: "claude-sonnet-4-6",
-      reason: "daily_budget_exceeded",
+      reason: "daily_token_limit",
       format: "anthropic",
     });
 

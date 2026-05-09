@@ -2,24 +2,24 @@ import { describe, it, expect } from "vitest";
 import { estimateCost, getProviderModelKey } from "../../src/pricing.js";
 
 describe("estimateCost", () => {
-  it("计算 OpenAI GPT-4o 费用", () => {
+  it("估算 OpenAI GPT-4o 费用", () => {
     const cost = estimateCost(
       { prompt_tokens: 1000, completion_tokens: 500 },
       "openai",
       "gpt-4o"
     );
     // input: $2.5/1M, output: $10/1M
-    expect(cost).toBeCloseTo(0.0025 + 0.005, 6);
+    expect(cost).toBeCloseTo(1000 + 500, 6);
   });
 
-  it("计算 Anthropic Claude 费用", () => {
+  it("估算 Anthropic Claude 费用", () => {
     const cost = estimateCost(
       { prompt_tokens: 2000, completion_tokens: 1000 },
       "anthropic",
       "claude-sonnet-4-6"
     );
     // input: $3/1M, output: $15/1M
-    expect(cost).toBeCloseTo(0.006 + 0.015, 6);
+    expect(cost).toBeCloseTo(2000 + 1000, 6);
   });
 
   it("未知模型返回基于 bytes 的估算", () => {
