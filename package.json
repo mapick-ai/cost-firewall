@@ -1,7 +1,7 @@
 {
   "name": "@mapick/cost-firewall",
   "version": "0.1.0",
-  "description": "Mapick Cost Firewall — OpenClaw 原生插件版",
+  "description": "Mapick Cost Firewall — OpenClaw Plugs",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,11 +21,15 @@
   },
   "openclaw": {
     "extensions": [
-      "./dist/index.js"
+      "./src/index.ts"
     ],
     "compat": {
       "pluginApi": ">=2026.3.24-beta.2",
       "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
     }
   },
   "dependencies": {},

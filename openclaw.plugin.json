@@ -2,5 +2,40 @@
   "id": "mapick-firewall",
   "name": "Mapick Cost Firewall",
   "description": "AI call circuit breaker — block runaway requests, see who's burning money, one-click emergency stop.",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "contracts": {
+    "providers": ["mapick"]
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "breaker": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "costVelocityWindowSec": { "type": "number", "default": 60 },
+          "costVelocityThresholdUsd": { "type": "number", "default": 0.5 },
+          "cumulativeCostThresholdUsd": { "type": "number", "default": 1.0 },
+          "callFrequencyWindowSec": { "type": "number", "default": 60 },
+          "callFrequencyThreshold": { "type": "number", "default": 20 },
+          "promptRepeatThreshold": { "type": "number", "default": 3 },
+          "consecutiveFailures": { "type": "number", "default": 5 },
+          "cooldownSec": { "type": "number", "default": 30 }
+        }
+      },
+      "dailyBudgetUsd": { "type": ["number", "null"], "default": null },
+      "privacy": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "storePromptText": { "type": "boolean", "default": false },
+          "enableRawConversationHooks": { "type": "boolean", "default": false }
+        }
+      }
+    }
+  }
 }
