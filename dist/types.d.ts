@@ -85,6 +85,8 @@ export interface FirewallEvent {
     cumulativeTokens?: number;
     reason?: string;
     layer?: "hook" | "provider";
+    runCalls?: number;
+    status?: string;
 }
 export declare const PLUGIN_ID = "mapick-firewall";
 export declare const PLUGIN_NAME = "Mapick Cost Firewall";

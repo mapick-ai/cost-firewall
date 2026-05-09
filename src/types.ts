@@ -99,6 +99,8 @@ export interface FirewallEvent {
   cumulativeTokens?: number;
   reason?: string;
   layer?: "hook" | "provider";
+  runCalls?: number;
+  status?: string;
 }
 
 // Plugin ID

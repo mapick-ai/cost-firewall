@@ -110,6 +110,31 @@ export function createModelCallEndedHandler(
     }
     state.breaker.recordCall(source);
 
+    // RunState 状态检测：累计 token / 调用次数 / 重复 prompt
+    const runTokens = run.cumulativeCost + estimatedTokens;
+    const runCalls = run.llmCallTimestamps.length;
+    const prevStatus = run.status;
+
+    if (runTokens > 500000) {
+      run.status = "danger";
+      run.reason = "run_tokens_exceeded";
+    } else if (runCalls > 50) {
+      run.status = "warning";
+      run.reason = "run_calls_high";
+    }
+
+    if (run.status !== prevStatus) {
+      store.append({
+        type: "run_status_change",
+        runId: event.runId,
+        source,
+        cumulativeTokens: runTokens,
+        runCalls,
+        status: run.status,
+        reason: run.reason,
+      });
+    }
+
     // 单 run 累计 token 告警
     const runCumulative = run.cumulativeCost + estimatedTokens;
     if (runCumulative > 200000) {
