@@ -10,19 +10,14 @@ import { registerCli } from "./cli/index.js";
 import { registerDashboard } from "./dashboard/index.js";
 import { registerProvider } from "./provider/index.js";
 
-// 全局状态实例
-let state: FirewallState;
-let store: EventStore;
-
 export default {
   id: PLUGIN_ID,
   name: PLUGIN_NAME,
   version: "0.1.0",
 
   register(api: any) {
-    // 初始化状态
-    state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]);
-    store = new EventStore();
+    const state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]);
+    const store = new EventStore();
 
     // 注册 Hook Layer
     registerHooks(api, state, store);
@@ -37,9 +32,9 @@ export default {
     const sse = registerDashboard(api, state, store);
 
     // 广播统计更新
-    const originalUpdateStats = state.updateSourceStats.bind(state);
+    const originalUpdate = state.updateSourceStats.bind(state);
     state.updateSourceStats = (source, cost) => {
-      originalUpdateStats(source, cost);
+      originalUpdate(source, cost);
       sse.broadcast({
         type: "stats_update",
         today_spent: state.globalStats.todaySpent,

@@ -2,6 +2,7 @@
  * createStreamFn 实现
  *
  * 核心：在真实 upstream request 发出前做 precheck
+ * SDK 约定：createStreamFn(ctx) => async function*(model, context, options)
  */
 
 import type { FirewallState } from "../state.js";
@@ -19,14 +20,16 @@ export function createStreamFn(
   store: EventStore,
   api: any
 ) {
-  return function mapickStream(model: string, context: any, options: any) {
-    return async function* () {
+  // 返回符合 SDK 签名的 createStreamFn
+  // OpenClaw 调用 createStreamFn(ctx)，返回 async generator function
+  return function (ctx: any) {
+    return async function* stream(model: string, context: any, options: any) {
       const route = parseMapickModelRef(model);
       if (!route) {
         throw new Error(`Invalid Mapick model reference: ${model}`);
       }
 
-      const source = sourceFromProviderContext(context, route);
+      const source = sourceFromProviderContext({ ...context, ...ctx }, route);
 
       // Precheck
       const decision = precheckRequest(state, source, route.upstream, route.model);
@@ -61,17 +64,17 @@ export function createStreamFn(
       let responseStreamBytes = 0;
 
       try {
-        let stream: AsyncGenerator<any>;
+        let upstreamStream: AsyncGenerator<any>;
 
         if (route.upstream === "anthropic") {
-          stream = streamAnthropic({
+          upstreamStream = streamAnthropic({
             apiKey: auth.apiKey,
             model: route.model,
             messages: context.messages ?? [],
             ...options,
           });
         } else {
-          stream = streamOpenAi({
+          upstreamStream = streamOpenAi({
             baseUrl: getOpenAiBaseUrl(route.upstream),
             apiKey: auth.apiKey,
             model: route.model,
@@ -80,7 +83,7 @@ export function createStreamFn(
           });
         }
 
-        for await (const chunk of stream) {
+        for await (const chunk of upstreamStream) {
           responseStreamBytes += JSON.stringify(chunk).length;
 
           if (chunk.usage) {
@@ -91,7 +94,6 @@ export function createStreamFn(
           yield chunk;
         }
 
-        // 记录成功
         const cost = estimateCost(
           { prompt_tokens: inputTokens, completion_tokens: outputTokens },
           route.upstream,
