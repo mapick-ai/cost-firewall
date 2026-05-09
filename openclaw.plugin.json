@@ -4,6 +4,14 @@
   "description": "AI call circuit breaker — block runaway requests, see who's burning money, one-click emergency stop.",
   "version": "0.1.0",
   "providers": ["mapick"],
+  "contracts": {
+    "tools": ["mapick"]
+  },
+  "toolMetadata": {
+    "mapick_stop": { "optional": false },
+    "mapick_resume": { "optional": false },
+    "mapick_budget": { "optional": false }
+  },
   "modelSupport": {
     "modelPrefixes": ["mapick/"]
   },

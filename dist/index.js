@@ -8,12 +8,14 @@ import { registerHooks } from "./hooks/index.js";
 import { registerCli } from "./cli/index.js";
 import { registerDashboard } from "./dashboard/index.js";
 import { registerProvider } from "./provider/index.js";
+import { registerTools } from "./tools/index.js";
 export default {
     id: PLUGIN_ID,
     name: PLUGIN_NAME,
     version: "0.1.0",
     register(api) {
-        const state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]?.config ?? {});
+        const config = api.config?.plugins?.entries?.[PLUGIN_ID]?.config ?? {};
+        const state = new FirewallState(config);
         const store = new EventStore();
         // 注册 Hook Layer
         registerHooks(api, state, store);
@@ -21,6 +23,8 @@ export default {
         registerProvider(api, state, store);
         // 注册 CLI
         registerCli(api, state, store);
+        // 注册 Agent Tools（/mapick status/stop/resume 等对话命令）
+        registerTools(api, state, store);
         // 注册 Dashboard
         const sse = registerDashboard(api, state, store);
         // 广播统计更新

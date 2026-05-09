@@ -9,6 +9,7 @@ import { registerHooks } from "./hooks/index.js";
 import { registerCli } from "./cli/index.js";
 import { registerDashboard } from "./dashboard/index.js";
 import { registerProvider } from "./provider/index.js";
+import { registerTools } from "./tools/index.js";
 
 export default {
   id: PLUGIN_ID,
@@ -16,7 +17,8 @@ export default {
   version: "0.1.0",
 
   register(api: any) {
-    const state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]?.config ?? {});
+    const config = api.config?.plugins?.entries?.[PLUGIN_ID]?.config ?? {};
+    const state = new FirewallState(config);
     const store = new EventStore();
 
     // 注册 Hook Layer
@@ -27,6 +29,9 @@ export default {
 
     // 注册 CLI
     registerCli(api, state, store);
+
+    // 注册 Agent Tools（/mapick status/stop/resume 等对话命令）
+    registerTools(api, state, store);
 
     // 注册 Dashboard
     const sse = registerDashboard(api, state, store);
