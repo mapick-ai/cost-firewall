@@ -164,7 +164,14 @@ export async function getStatus(state: FirewallState, store?: EventStore): Promi
     today_blocked: blocked,
     today_saved_estimate: state.globalStats.todaySavedEstimate,
     daily_token_limit: state.config.dailyTokenLimit,
-    breaker: { consecutive_failures_threshold: state.config.breaker?.consecutiveFailures, cooldown_sec: state.config.breaker?.cooldownSec },
+    breaker: {
+      consecutive_failures: state.config.breaker?.consecutiveFailures,
+      cooldown_sec: state.config.breaker?.cooldownSec,
+      token_velocity_threshold: state.config.breaker?.tokenVelocityThreshold,
+      token_velocity_window_sec: state.config.breaker?.tokenVelocityWindowSec,
+      call_frequency_threshold: state.config.breaker?.callFrequencyThreshold,
+      call_frequency_window_sec: state.config.breaker?.callFrequencyWindowSec,
+    },
     cooling_sources: state.breaker.getCoolingSources(),
     active_runs: state.getActiveRuns(),
   };
