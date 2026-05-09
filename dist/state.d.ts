@@ -22,5 +22,13 @@ export declare class FirewallState {
     setMode(mode: "observe" | "protect"): void;
     isLimitExceeded(): boolean;
     getTodayTokens(): number;
+    /** 活跃 run 概要 */
+    getActiveRuns(): {
+        runId: string;
+        source: string;
+        calls: number;
+        tokens: number;
+        status: string;
+    }[];
 }
 //# sourceMappingURL=state.d.ts.map

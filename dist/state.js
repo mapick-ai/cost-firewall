@@ -89,5 +89,20 @@ export class FirewallState {
     getTodayTokens() {
         return this.globalStats.todayTokens;
     }
+    /** 活跃 run 概要 */
+    getActiveRuns() {
+        const result = [];
+        for (const [id, run] of this.runs) {
+            result.push({
+                runId: id,
+                source: run.source,
+                calls: run.calls.size,
+                tokens: run.cumulativeCost,
+                status: run.status,
+                reason: run.reason,
+            });
+        }
+        return result;
+    }
 }
 //# sourceMappingURL=state.js.map

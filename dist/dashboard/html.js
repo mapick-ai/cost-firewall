@@ -48,6 +48,11 @@ export function renderDashboardHtml(stats) {
   </div>
 
   <div class="section">
+    <h2>📊 Active Runs</h2>
+    <div class="cooldown" id="runs"><div style="color:#999">No active runs</div></div>
+  </div>
+
+  <div class="section">
     <h2>🔥 Cooldown Sources</h2>
     <div class="cooldown" id="cooldown">${coolingHtml}</div>
   </div>
@@ -71,6 +76,9 @@ export function renderDashboardHtml(stats) {
         if(d.cooling_sources?.length){
           document.getElementById('cooldown').innerHTML=d.cooling_sources.map(s=>'<div style="background:#fff3e0;padding:8px;margin:4px 0;border-radius:4px"><b>'+s.source+'</b> — '+s.reason+' — '+s.remainingSec+'s left</div>').join('');
         }else{document.getElementById('cooldown').innerHTML='<div style="color:#999">No sources in cooldown</div>'}
+        if(d.active_runs?.length){
+          document.getElementById('runs').innerHTML=d.active_runs.map(r=>'<div style="background:#e8f5e9;padding:8px;margin:4px 0;border-radius:4px"><b>'+r.runId.slice(0,8)+'</b> | '+r.source+' | '+r.calls+' calls | '+r.tokens.toLocaleString()+' tokens | <span style="color:'+(r.status==='danger'?'red':r.status==='warning'?'orange':'green')+'">'+r.status+'</span>'+(r.reason?' ('+r.reason+')':'')+'</div>').join('');
+        }else{document.getElementById('runs').innerHTML='<div style="color:#999">No active runs</div>'} 
       }catch(e){}
     }
     refresh();setInterval(refresh,3000);
