@@ -10,38 +10,43 @@ import { registerCli } from "./cli/index.js";
 import { registerDashboard } from "./dashboard/index.js";
 import { registerProvider } from "./provider/index.js";
 
-export default function definePluginEntry(api: any) {
-  const state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]);
-  const store = new EventStore();
+// 全局状态实例
+let state: FirewallState;
+let store: EventStore;
 
-  // 注册 Hook Layer
-  registerHooks(api, state, store);
+export default {
+  id: PLUGIN_ID,
+  name: PLUGIN_NAME,
+  version: "0.1.0",
 
-  // 注册 Provider Layer
-  registerProvider(api, state, store);
+  register(api: any) {
+    // 初始化状态
+    state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]);
+    store = new EventStore();
 
-  // 注册 CLI
-  registerCli(api, state, store);
+    // 注册 Hook Layer
+    registerHooks(api, state, store);
 
-  // 注册 Dashboard
-  const sse = registerDashboard(api, state);
+    // 注册 Provider Layer
+    registerProvider(api, state, store);
 
-  // 广播统计更新
-  const originalUpdateStats = state.updateSourceStats.bind(state);
-  state.updateSourceStats = (source, cost) => {
-    originalUpdateStats(source, cost);
-    sse.broadcast({
-      type: "stats_update",
-      today_spent: state.globalStats.todaySpent,
-      today_blocked: state.globalStats.todayBlocked,
-    });
-  };
+    // 注册 CLI
+    registerCli(api, state, store);
 
-  return {
-    id: PLUGIN_ID,
-    name: PLUGIN_NAME,
-    version: "0.1.0",
-  };
-}
+    // 注册 Dashboard
+    const sse = registerDashboard(api, state, store);
+
+    // 广播统计更新
+    const originalUpdateStats = state.updateSourceStats.bind(state);
+    state.updateSourceStats = (source, cost) => {
+      originalUpdateStats(source, cost);
+      sse.broadcast({
+        type: "stats_update",
+        today_spent: state.globalStats.todaySpent,
+        today_blocked: state.globalStats.todayBlocked,
+      });
+    };
+  },
+};
 
 export { PLUGIN_ID, PLUGIN_NAME };

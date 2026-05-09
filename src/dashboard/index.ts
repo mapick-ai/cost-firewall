@@ -3,30 +3,35 @@
  */
 
 import type { FirewallState } from "../state.js";
+import type { EventStore } from "../store.js";
 import { getStatus } from "../cli/index.js";
 import { renderDashboardHtml } from "./html.js";
 import { SseManager } from "./sse.js";
 
 export function registerDashboard(
   api: any,
-  state: FirewallState
+  state: FirewallState,
+  store: EventStore
 ): SseManager {
   const sse = new SseManager();
 
   api.registerHttpRoute({
     path: "/mapick/dashboard",
     auth: "gateway",
-    handler: (_req: any, res: any) => {
-      const stats = getStatus(state);
-      res.send(renderDashboardHtml(stats));
+    handler: async (_req: any, res: any) => {
+      const stats = await getStatus(state, store);
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(renderDashboardHtml(stats));
     },
   });
 
   api.registerHttpRoute({
     path: "/mapick/api/stats",
     auth: "gateway",
-    handler: (_req: any, res: any) => {
-      res.json(getStatus(state));
+    handler: async (_req: any, res: any) => {
+      const stats = await getStatus(state, store);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(stats));
     },
   });
 
@@ -53,7 +58,8 @@ export function registerDashboard(
     auth: "gateway",
     handler: (_req: any, res: any) => {
       state.setEmergencyStop(true);
-      res.json({ ok: true, emergency_stop: true });
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, emergency_stop: true }));
     },
   });
 
@@ -62,7 +68,8 @@ export function registerDashboard(
     auth: "gateway",
     handler: (_req: any, res: any) => {
       state.setEmergencyStop(false);
-      res.json({ ok: true, emergency_stop: false });
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, emergency_stop: false }));
     },
   });
 

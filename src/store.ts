@@ -7,6 +7,8 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import type { FirewallEvent } from "./types.js";
 
+export type { FirewallEvent };
+
 const FLUSH_INTERVAL_MS = 1000;
 const STATE_DIR = join(homedir(), ".openclaw", "plugins", "mapick-firewall");
 const EVENTS_FILE = join(STATE_DIR, "events.jsonl");
