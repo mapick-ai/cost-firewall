@@ -18,6 +18,17 @@ export class FirewallState {
   readonly globalStats: GlobalStats;
   private runs = new Map<string, RunState>();
   private sourceStats = new Map<SourceKey, { todayTokens: number }>();
+  private today = new Date().toDateString();
+
+  private checkDayReset(): void {
+    const now = new Date().toDateString();
+    if (now !== this.today) {
+      this.today = now;
+      this.globalStats.todayTokens = 0;
+      this.globalStats.todayBlocked = 0;
+      this.sourceStats.clear();
+    }
+  }
 
   constructor(config: Partial<FirewallConfig> = {}) {
     this.config = resolveConfig(config);
@@ -73,6 +84,7 @@ export class FirewallState {
   }
 
   updateSourceStats(source: SourceKey, tokens: number): void {
+    this.checkDayReset();
     if (!this.sourceStats.has(source)) {
       this.sourceStats.set(source, { todayTokens: 0 });
     }

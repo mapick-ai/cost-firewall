@@ -9,6 +9,8 @@ export declare class FirewallState {
     readonly globalStats: GlobalStats;
     private runs;
     private sourceStats;
+    private today;
+    private checkDayReset;
     constructor(config?: Partial<FirewallConfig>);
     getRun(runId: string): RunState | undefined;
     getOrCreateRun(runId: string, source: SourceKey, sessionId?: string, sessionKey?: string): RunState;

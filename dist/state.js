@@ -9,6 +9,16 @@ export class FirewallState {
     globalStats;
     runs = new Map();
     sourceStats = new Map();
+    today = new Date().toDateString();
+    checkDayReset() {
+        const now = new Date().toDateString();
+        if (now !== this.today) {
+            this.today = now;
+            this.globalStats.todayTokens = 0;
+            this.globalStats.todayBlocked = 0;
+            this.sourceStats.clear();
+        }
+    }
     constructor(config = {}) {
         this.config = resolveConfig(config);
         this.breaker = new Breaker(this.config);
@@ -53,6 +63,7 @@ export class FirewallState {
         }
     }
     updateSourceStats(source, tokens) {
+        this.checkDayReset();
         if (!this.sourceStats.has(source)) {
             this.sourceStats.set(source, { todayTokens: 0 });
         }

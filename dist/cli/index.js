@@ -154,6 +154,7 @@ export async function getStatus(state, store) {
         today_saved_estimate: state.globalStats.todaySavedEstimate,
         daily_token_limit: state.config.dailyTokenLimit,
         breaker: { consecutive_failures_threshold: state.config.breaker?.consecutiveFailures, cooldown_sec: state.config.breaker?.cooldownSec },
+        cooling_sources: state.breaker.getCoolingSources(),
     };
 }
 export async function getLog(store, count) {
