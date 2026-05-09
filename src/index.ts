@@ -8,6 +8,7 @@ import { EventStore } from "./store.js";
 import { registerHooks } from "./hooks/index.js";
 import { registerCli } from "./cli/index.js";
 import { registerDashboard } from "./dashboard/index.js";
+import { registerProvider } from "./provider/index.js";
 
 export default function definePluginEntry(api: any) {
   const state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]);
@@ -15,6 +16,9 @@ export default function definePluginEntry(api: any) {
 
   // 注册 Hook Layer
   registerHooks(api, state, store);
+
+  // 注册 Provider Layer
+  registerProvider(api, state, store);
 
   // 注册 CLI
   registerCli(api, state, store);
