@@ -48,11 +48,31 @@ export function createModelCallEndedHandler(state, store) {
         }
         state.updateRunCost(event.runId, estimatedTokens);
         state.updateSourceStats(source, estimatedTokens);
-        // Token 速率检测 + 调用频率检测
+        // Token 速率 + 调用频率 + 零产出检测
         if (event.outcome === "completed") {
             state.breaker.recordTokens(source, estimatedTokens);
+            // 零产出检测：花了 token 但 output 为零
+            if (estimatedTokens > 0 && event.responseStreamBytes && event.responseStreamBytes < 100) {
+                store.append({
+                    type: "zero_output_warning",
+                    source,
+                    provider: event.provider,
+                    model: event.model,
+                    estimatedCost: estimatedTokens,
+                });
+            }
         }
         state.breaker.recordCall(source);
+        // 单 run 累计 token 告警
+        const runCumulative = run.cumulativeCost + estimatedTokens;
+        if (runCumulative > 200000) {
+            store.append({
+                type: "run_token_warning",
+                runId: event.runId,
+                source,
+                cumulativeTokens: runCumulative,
+            });
+        }
         store.append({
             type: "model_call_ended",
             runId: event.runId,

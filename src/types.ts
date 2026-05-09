@@ -96,6 +96,7 @@ export interface FirewallEvent {
   outcome?: string;
   failureKind?: string;
   estimatedCost?: number;
+  cumulativeTokens?: number;
   reason?: string;
   layer?: "hook" | "provider";
 }
