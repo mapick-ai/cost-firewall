@@ -1,40 +1,118 @@
 /**
  * CLI 命令实现
+ *
+ * 注册 openclaw mapick <subcommand> 命令组
  */
 import { readFile } from "node:fs/promises";
-export function registerCli(api, state, store) {
-    // CLI 功能通过 HTTP route 暴露
-    // 实际实现依赖 OpenClaw 的 CLI 扩展机制
-}
 /** 从 JSONL 聚合今日统计数据 */
-async function aggregateFromJsonl(store, memSpent, memBlocked) {
+export async function aggregateFromJsonl(store, memSpent, memBlocked) {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayTs = todayStart.getTime();
     const events = [];
     try {
         const raw = await readFile(store.getEventsFilePath(), "utf-8");
-        const lines = raw.trim().split("\n");
-        for (const line of lines) {
+        for (const line of raw.trim().split("\n")) {
             try {
                 const e = JSON.parse(line);
-                if (e.timestamp >= todayTs) {
+                if (e.timestamp >= todayTs)
                     events.push(e);
-                }
             }
             catch { /* skip */ }
         }
     }
-    catch { /* file not found, use mem only */ }
-    const jsonlSpent = events
-        .filter((e) => e.type === "model_call_ended")
-        .reduce((sum, e) => sum + (e.estimatedCost ?? 0), 0);
+    catch { /* file not found */ }
+    const jsonlSpent = events.filter((e) => e.type === "model_call_ended").reduce((sum, e) => sum + (e.estimatedCost ?? 0), 0);
     const jsonlBlocked = events.filter((e) => e.type === "blocked").length;
-    return {
-        today_spent: Math.max(memSpent, jsonlSpent),
-        today_blocked: Math.max(memBlocked, jsonlBlocked),
-        events,
-    };
+    return { today_spent: Math.max(memSpent, jsonlSpent), today_blocked: Math.max(memBlocked, jsonlBlocked), events };
+}
+export function registerCli(api, state, store) {
+    api.registerCli(({ program }) => {
+        const mapick = program.command("mapick").description("Mapick Cost Firewall commands");
+        mapick.command("status")
+            .description("Show firewall status")
+            .action(async () => {
+            const agg = await aggregateFromJsonl(store, state.globalStats.todaySpent, state.globalStats.todayBlocked);
+            console.log(JSON.stringify({
+                mode: state.globalStats.mode,
+                emergency_stop: state.globalStats.emergencyStop,
+                today_spent: agg.today_spent,
+                today_blocked: agg.today_blocked,
+                daily_budget: state.config.dailyBudgetUsd,
+                cooldown: state.config.breaker?.cooldownSec,
+            }, null, 2));
+        });
+        mapick.command("mode")
+            .description("Switch mode (observe|protect)")
+            .argument("<mode>", "observe or protect")
+            .action((mode) => {
+            if (mode !== "observe" && mode !== "protect") {
+                console.error("Invalid mode. Use 'observe' or 'protect'.");
+                return;
+            }
+            state.setMode(mode);
+            console.log(`Mode set to ${mode}`);
+        });
+        mapick.command("stop")
+            .description("Emergency stop all AI calls")
+            .action(() => {
+            state.setEmergencyStop(true);
+            console.log("Emergency stop activated.");
+        });
+        mapick.command("resume")
+            .description("Resume AI calls after emergency stop")
+            .action(() => {
+            state.setEmergencyStop(false);
+            console.log("Resumed.");
+        });
+        mapick.command("budget")
+            .description("Set or reset daily budget")
+            .argument("<action>", "set <amount> or reset")
+            .argument("[amount]", "Budget in USD")
+            .action((action, amount) => {
+            if (action === "set" && amount) {
+                state.config.dailyBudgetUsd = parseFloat(amount);
+                console.log(`Daily budget set to $${amount}`);
+            }
+            else if (action === "reset") {
+                state.config.dailyBudgetUsd = null;
+                console.log("Daily budget reset.");
+            }
+            else {
+                console.error("Usage: mapick budget set <amount> | mapick budget reset");
+            }
+        });
+        mapick.command("log")
+            .description("Show recent events")
+            .option("--last <count>", "Number of events", "10")
+            .action(async (opts) => {
+            const count = parseInt(opts.last, 10) || 10;
+            try {
+                const raw = await readFile(store.getEventsFilePath(), "utf-8");
+                const lines = raw.trim().split("\n");
+                const recent = lines.slice(-count).map((l) => {
+                    try {
+                        return JSON.parse(l);
+                    }
+                    catch {
+                        return null;
+                    }
+                }).filter(Boolean);
+                for (const e of recent) {
+                    const t = new Date(e.timestamp).toISOString().slice(11, 19);
+                    const cost = e.estimatedCost ? `$${e.estimatedCost.toFixed(6)}` : "";
+                    console.log(`${t} | ${e.type.padEnd(22)} | ${(e.provider ?? "").padEnd(12)} | ${(e.model ?? "").padEnd(30)} | ${(e.outcome ?? "").padEnd(10)} | ${cost}`);
+                }
+            }
+            catch {
+                console.log("No events recorded yet.");
+            }
+        });
+    }, {
+        descriptors: [
+            { name: "mapick", description: "Mapick Cost Firewall commands", hasSubcommands: true },
+        ],
+    });
 }
 export async function getStatus(state, store) {
     let spent = state.globalStats.todaySpent;
@@ -51,37 +129,18 @@ export async function getStatus(state, store) {
         today_blocked: blocked,
         today_saved_estimate: state.globalStats.todaySavedEstimate,
         daily_budget: state.config.dailyBudgetUsd,
-        breaker: {
-            consecutive_failures_threshold: state.config.breaker?.consecutiveFailures,
-            cooldown_sec: state.config.breaker?.cooldownSec,
-        },
+        breaker: { consecutive_failures_threshold: state.config.breaker?.consecutiveFailures, cooldown_sec: state.config.breaker?.cooldownSec },
     };
-}
-export function setMode(state, mode) {
-    state.setMode(mode);
-}
-export function stop(state) {
-    state.setEmergencyStop(true);
-}
-export function resume(state) {
-    state.setEmergencyStop(false);
-}
-export function setBudget(state, amount) {
-    state.config.dailyBudgetUsd = amount;
 }
 export async function getLog(store, count) {
     try {
         const raw = await readFile(store.getEventsFilePath(), "utf-8");
-        const lines = raw.trim().split("\n");
-        const events = lines.slice(-count).map((l) => {
-            try {
-                return JSON.parse(l);
-            }
-            catch {
-                return null;
-            }
-        }).filter(Boolean);
-        return events;
+        return raw.trim().split("\n").slice(-count).map((l) => { try {
+            return JSON.parse(l);
+        }
+        catch {
+            return null;
+        } }).filter(Boolean);
     }
     catch {
         return [];

@@ -10,7 +10,9 @@ import type { FirewallEvent } from "./types.js";
 export type { FirewallEvent };
 
 const FLUSH_INTERVAL_MS = 1000;
-const STATE_DIR = join(homedir(), ".openclaw", "plugins", "mapick-firewall");
+const STATE_DIR = process.env.OPENCLAW_STATE_DIR
+  ? join(process.env.OPENCLAW_STATE_DIR, "plugins", "mapick-firewall")
+  : join(homedir(), ".openclaw", "plugins", "mapick-firewall");
 const EVENTS_FILE = join(STATE_DIR, "events.jsonl");
 
 export class EventStore {

@@ -16,7 +16,7 @@ export default {
   version: "0.1.0",
 
   register(api: any) {
-    const state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]);
+    const state = new FirewallState(api.config?.plugins?.entries?.[PLUGIN_ID]?.config ?? {});
     const store = new EventStore();
 
     // 注册 Hook Layer
