@@ -1,0 +1,6 @@
+{
+  "id": "mapick-firewall",
+  "name": "Mapick Cost Firewall",
+  "description": "AI call circuit breaker — block runaway requests, see who's burning money, one-click emergency stop.",
+  "version": "0.1.0"
+}
