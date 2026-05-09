@@ -4,7 +4,9 @@
  * 注册 openclaw mapick <subcommand> 命令组
  */
 
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { homedir } from "node:os";
 import type { FirewallState } from "../state.js";
 import { EventStore } from "../store.js";
 import type { FirewallEvent } from "../types.js";
@@ -81,18 +83,30 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
         });
 
       mapick.command("budget")
-        .description("Set or reset daily budget")
+        .description("Set or reset daily token limit")
         .argument("<action>", "set <amount> or reset")
-        .argument("[amount]", "Budget in USD")
-        .action((action: string, amount?: string) => {
-          if (action === "set" && amount) {
-            (state.config as any).dailyTokenLimit = parseFloat(amount);
-            console.log(`Daily budget set to $${amount}`);
-          } else if (action === "reset") {
-            (state.config as any).dailyTokenLimit = null;
-            console.log("Daily budget reset.");
-          } else {
-            console.error("Usage: mapick budget set <amount> | mapick budget reset");
+        .argument("[amount]", "Token count")
+        .action(async (action: string, amount?: string) => {
+          const configPath = process.env.OPENCLAW_CONFIG_PATH
+            ?? join(process.env.OPENCLAW_STATE_DIR ?? join(homedir(), ".openclaw"), "openclaw.json");
+          try {
+            const raw = await readFile(configPath, "utf-8");
+            const openclawConfig = JSON.parse(raw);
+            const entry = openclawConfig?.plugins?.entries?.["mapick-firewall"];
+            if (!entry?.config) throw new Error("mapick-firewall config not found");
+            if (action === "set" && amount) {
+              entry.config.dailyTokenLimit = parseInt(amount, 10);
+              (state.config as any).dailyTokenLimit = entry.config.dailyTokenLimit;
+              await writeFile(configPath, JSON.stringify(openclawConfig, null, 2));
+              console.log(`Daily token limit set to ${amount}.`);
+            } else if (action === "reset") {
+              entry.config.dailyTokenLimit = null;
+              (state.config as any).dailyTokenLimit = null;
+              await writeFile(configPath, JSON.stringify(openclawConfig, null, 2));
+              console.log("Daily token limit reset. No limit.");
+            }
+          } catch (e: any) {
+            console.error("Failed to update config:", e.message);
           }
         });
 

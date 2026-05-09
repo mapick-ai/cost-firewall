@@ -26,14 +26,11 @@ const PRICING = {
 // 兜底：按 response bytes 估算（假设 1 token ≈ 4 bytes, $3/1M tokens）
 const FALLBACK_COST_PER_BYTE = 3 / 1_000_000 / 4;
 export function estimateCost(usage, provider, model, responseStreamBytes) {
-    const pricing = PRICING[provider]?.[model];
     if (usage?.prompt_tokens || usage?.completion_tokens) {
-        const inputCost = ((usage.prompt_tokens ?? 0) / 1_000_000) * (pricing?.input ?? 3);
-        const outputCost = ((usage.completion_tokens ?? 0) / 1_000_000) * (pricing?.output ?? 15);
-        return inputCost + outputCost;
+        return (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0);
     }
     if (responseStreamBytes) {
-        return responseStreamBytes * FALLBACK_COST_PER_BYTE;
+        return responseStreamBytes;
     }
     return 0;
 }
