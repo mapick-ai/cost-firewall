@@ -10,6 +10,7 @@ import { registerCli } from "./cli/index.js";
 import { registerDashboard } from "./dashboard/index.js";
 import { registerProvider } from "./provider/index.js";
 import { registerTools } from "./tools/index.js";
+import { detectConfigRisks } from "./config-warn.js";
 
 export default {
   id: PLUGIN_ID,
@@ -32,6 +33,12 @@ export default {
 
     // 注册 Agent Tools（/mapick status/stop/resume 等对话命令）
     registerTools(api, state, store);
+
+    // 配置风险检测（fallback bypass 等）
+    const warnings = detectConfigRisks(api.config);
+    for (const w of warnings) {
+      store.append({ type: "config_warning", reason: w.message, source: w.level });
+    }
 
     // 注册 Dashboard
     const sse = registerDashboard(api, state, store);

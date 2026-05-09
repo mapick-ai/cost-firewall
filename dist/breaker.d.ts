@@ -20,5 +20,11 @@ export declare class Breaker {
     getBlockedReason(source: SourceKey): string | undefined;
     reset(source: SourceKey): void;
     getCooldownRemaining(source: SourceKey): number;
+    /** 返回所有正在冷却的 source 列表 */
+    getCoolingSources(): {
+        source: string;
+        reason: string;
+        remainingSec: number;
+    }[];
 }
 //# sourceMappingURL=breaker.d.ts.map

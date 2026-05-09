@@ -46,14 +46,24 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
         .description("Show firewall status")
         .action(async () => {
           const agg = await aggregateFromJsonl(store, state.globalStats.todayTokens, state.globalStats.todayBlocked);
+          const cooling = state.breaker.getCoolingSources();
           console.log(JSON.stringify({
             mode: state.globalStats.mode,
             emergency_stop: state.globalStats.emergencyStop,
             today_tokens: agg.today_tokens,
             today_blocked: agg.today_blocked,
             daily_token_limit: state.config.dailyTokenLimit,
-            cooldown: state.config.breaker?.cooldownSec,
+            cooldown_sec: state.config.breaker?.cooldownSec,
+            cooling_sources: cooling,
           }, null, 2));
+        });
+
+      mapick.command("reset")
+        .description("Reset a source from cooldown")
+        .argument("<source>", "Source name to reset")
+        .action((source: string) => {
+          state.breaker.reset(source);
+          console.log(`Source ${source} reset.`);
         });
 
       mapick.command("mode")

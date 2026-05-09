@@ -112,5 +112,20 @@ export class Breaker {
             return 0;
         return Math.max(0, state.brokenUntil - Date.now());
     }
+    /** 返回所有正在冷却的 source 列表 */
+    getCoolingSources() {
+        const now = Date.now();
+        const result = [];
+        for (const [source, state] of this.states) {
+            if (state.brokenUntil && now < state.brokenUntil) {
+                result.push({
+                    source,
+                    reason: state.reason ?? "unknown",
+                    remainingSec: Math.round((state.brokenUntil - now) / 1000),
+                });
+            }
+        }
+        return result;
+    }
 }
 //# sourceMappingURL=breaker.js.map
