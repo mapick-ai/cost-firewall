@@ -4,7 +4,7 @@ import { resolveConfig, DEFAULT_CONFIG } from "../../src/config.js";
 describe("resolveConfig", () => {
   it("返回默认配置当输入为空", () => {
     const config = resolveConfig({});
-    expect(config.breaker?.consecutiveFailures).toBe(5);
+    expect(config.breaker?.consecutiveFailures).toBe(3);
     expect(config.breaker?.cooldownSec).toBe(30);
     expect(config.dailyTokenLimit).toBeNull();
     expect(config.privacy?.storePromptText).toBe(false);

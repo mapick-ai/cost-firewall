@@ -58,12 +58,6 @@ export interface GlobalStats {
 // 插件配置
 export interface FirewallConfig {
   breaker?: {
-    tokenVelocityWindowSec?: number;
-    tokenVelocityThreshold?: number;
-    cumulativeTokenThreshold?: number;
-    callFrequencyWindowSec?: number;
-    callFrequencyThreshold?: number;
-    promptRepeatThreshold?: number;
     consecutiveFailures?: number;
     cooldownSec?: number;
   };

@@ -26,13 +26,7 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "tokenVelocityWindowSec": { "type": "number", "default": 60 },
-          "tokenVelocityThreshold": { "type": "number", "default": 50000 },
-          "cumulativeTokenThreshold": { "type": "number", "default": 100000 },
-          "callFrequencyWindowSec": { "type": "number", "default": 60 },
-          "callFrequencyThreshold": { "type": "number", "default": 20 },
-          "promptRepeatThreshold": { "type": "number", "default": 3 },
-          "consecutiveFailures": { "type": "number", "default": 5 },
+          "consecutiveFailures": { "type": "number", "default": 3 },
           "cooldownSec": { "type": "number", "default": 30 }
         }
       },

@@ -6,13 +6,7 @@ import type { FirewallConfig } from "./types.js";
 
 export const DEFAULT_CONFIG: Required<FirewallConfig> = {
   breaker: {
-    tokenVelocityWindowSec: 60,
-    tokenVelocityThreshold: 50000,
-    cumulativeTokenThreshold: 100000,
-    callFrequencyWindowSec: 60,
-    callFrequencyThreshold: 20,
-    promptRepeatThreshold: 3,
-    consecutiveFailures: 5,
+    consecutiveFailures: 3,
     cooldownSec: 30,
   },
   dailyTokenLimit: null,

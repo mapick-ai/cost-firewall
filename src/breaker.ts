@@ -6,17 +6,11 @@ import type { FirewallConfig, SourceKey, BreakerState } from "./types.js";
 
 export class Breaker {
   private states = new Map<SourceKey, BreakerState>();
-  private config: Required<NonNullable<FirewallConfig["breaker"]>>;
+  private config: { consecutiveFailures: number; cooldownSec: number };
 
   constructor(config: FirewallConfig) {
     this.config = {
-      tokenVelocityWindowSec: config.breaker?.tokenVelocityWindowSec ?? 60,
-      tokenVelocityThreshold: config.breaker?.tokenVelocityThreshold ?? 0.5,
-      cumulativeTokenThreshold: config.breaker?.cumulativeTokenThreshold ?? 1.0,
-      callFrequencyWindowSec: config.breaker?.callFrequencyWindowSec ?? 60,
-      callFrequencyThreshold: config.breaker?.callFrequencyThreshold ?? 20,
-      promptRepeatThreshold: config.breaker?.promptRepeatThreshold ?? 3,
-      consecutiveFailures: config.breaker?.consecutiveFailures ?? 5,
+      consecutiveFailures: config.breaker?.consecutiveFailures ?? 3,
       cooldownSec: config.breaker?.cooldownSec ?? 30,
     };
   }
