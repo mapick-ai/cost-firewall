@@ -204,7 +204,21 @@ function swToggle(rule){
   else if(rule==='fail'){ document.getElementById('cfgFail').disabled=!on; document.getElementById('cfgCool').disabled=!on; if(!on){document.getElementById('cfgFail').value='0';} }
   else if(rule==='vel'){ document.getElementById('cfgVel').disabled=!on; document.getElementById('cfgVelWin').disabled=!on; if(!on){document.getElementById('cfgVel').value='0';} }
   else if(rule==='freq'){ document.getElementById('cfgFreq').disabled=!on; document.getElementById('cfgFreqWin').disabled=!on; if(!on){document.getElementById('cfgFreq').value='0';} }
-  showMsg(rule+' '+(on?'ON':'OFF')+' — click Save',true);
+  // 立即保存单项，不保存全部（避免干扰其他设置）
+  saveOne(rule, on);
+}
+
+// 保存单项设置
+function saveOne(rule, on){
+  var body={};
+  if(rule==='limit') body.dailyTokenLimit = on ? (+dO('cfgLimit')||10000) : null;
+  else if(rule==='fail') body.breaker = { consecutiveFailures: on ? (+dO('cfgFail')||3) : 0, cooldownSec: +dO('cfgCool')||30 };
+  else if(rule==='vel') body.breaker = { tokenVelocityThreshold: on ? (+dO('cfgVel')||100000) : 0, tokenVelocityWindowSec: +dO('cfgVelWin')||60 };
+  else if(rule==='freq') body.breaker = { callFrequencyThreshold: on ? (+dO('cfgFreq')||30) : 0, callFrequencyWindowSec: +dO('cfgFreqWin')||60 };
+  _saving=true; showMsg(rule+' '+(on?'ON':'OFF'),true);
+  fetch(API+'/config',{method:'POST',body:JSON.stringify(body)}).then(function(r){return r.json()}).then(function(d){
+    _saving=false; showMsg(rule+' '+(on?'ON':'OFF')+(d.ok?' ✓':' ✗'),!!d.ok);
+  }).catch(function(e){_saving=false;showMsg('Error',false)});
 }
 
 // ---- Save config ----
