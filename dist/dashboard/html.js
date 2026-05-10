@@ -171,10 +171,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);overflo
 
 <script>
 const API='http://127.0.0.1:18789/mapick/api';
-var _msgTimer;
+var _msgTimer, _saving=false;
+
 function showMsg(text,ok){var m=document.getElementById('msg');m.textContent=text;m.style.color=ok?'#00c853':'#ff3d3d';clearTimeout(_msgTimer);_msgTimer=setTimeout(function(){m.textContent=''},3000)}
-function api(p){showMsg('Calling '+p+'...',true);fetch(API+'/'+p).then(function(r){return r.ok?showMsg(p+' OK',true):showMsg(p+' FAIL: '+r.status,false)}).catch(function(e){showMsg(p+' ERR: '+e.message,false)}).then(refresh)}
-function setMode(m){showMsg('Setting mode to '+m+'...',true);fetch(API+'/config',{method:'POST',body:JSON.stringify({mode:m})}).then(function(r){return r.json()}).then(function(d){showMsg('Mode: '+m+(d.ok?' ✓':' ✗'),d.ok)}).catch(function(e){showMsg('Error: '+e.message,false)}).then(refresh)}
+function api(p){showMsg('Calling '+p+'...',true);fetch(API+'/'+p).then(function(r){r.ok?showMsg(p+' OK',true):showMsg(p+' FAIL',false)}).catch(function(e){showMsg(p+' ERR: '+e.message,false)}).then(refresh)}
+function setMode(m){showMsg('Setting '+m+'...',true);_saving=true;fetch(API+'/config',{method:'POST',body:JSON.stringify({mode:m})}).then(function(r){return r.json()}).then(function(d){_saving=false;showMsg('Mode: '+m+(d.ok?' ✓':' ✗'),d.ok)}).catch(function(e){_saving=false;showMsg('Error: '+e.message,false)}).then(refresh)}
 function resetSource(src){showMsg('Resetting '+src+'...',true);fetch(API+'/reset-source?source='+encodeURIComponent(src)).then(function(r){showMsg(r.ok?'Reset OK':'Reset failed',r.ok)}).catch(function(e){showMsg('Error: '+e.message,false)}).then(refresh)}
 
 // ---- Edit modal ----
@@ -203,11 +204,13 @@ function swToggle(rule){
   else if(rule==='fail'){ document.getElementById('cfgFail').disabled=!on; document.getElementById('cfgCool').disabled=!on; if(!on){document.getElementById('cfgFail').value='0';} }
   else if(rule==='vel'){ document.getElementById('cfgVel').disabled=!on; document.getElementById('cfgVelWin').disabled=!on; if(!on){document.getElementById('cfgVel').value='0';} }
   else if(rule==='freq'){ document.getElementById('cfgFreq').disabled=!on; document.getElementById('cfgFreqWin').disabled=!on; if(!on){document.getElementById('cfgFreq').value='0';} }
-  saveConfig();
+  showMsg(rule+' '+(on?'ON':'OFF')+' — click Save',true);
 }
 
 // ---- Save config ----
 async function saveConfig(){
+  if(_saving) return;
+  _saving=true; showMsg('Saving...',true);
   var c={
     breaker:{
       consecutiveFailures:+dO('cfgFail'),cooldownSec:+dO('cfgCool'),
@@ -216,13 +219,19 @@ async function saveConfig(){
     }
   };
   var lt=+dO('cfgLimit');c.dailyTokenLimit=lt>0?lt:null;
-  await fetch(API+'/config',{method:'POST',body:JSON.stringify(c)});
+  try{
+    var r=await fetch(API+'/config',{method:'POST',body:JSON.stringify(c)});
+    var d=await r.json();
+    showMsg(d.ok?'Saved ✓':'Error: '+d.error,!!d.ok);
+  }catch(e){ showMsg('Network error',false) }
+  _saving=false;
   refresh();
 }
 function dO(id){return document.getElementById(id).value}
 
 // ---- Refresh ----
 async function refresh(){
+  if(_saving) return; // 防止保存期间刷新覆盖用户操作
   try{
     var r=await fetch(API+'/stats');var d=await r.json();
     document.getElementById('tokens').textContent=(d.today_tokens||0).toLocaleString();
