@@ -43,7 +43,13 @@ export function registerDashboard(
     auth: "plugin",
     handler: async (_req: any, res: any) => {
       const stats = await getStatus(state, store);
-      res.writeHead(200, { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" });
+      res.writeHead(200, {
+        ...corsHeaders,
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+      });
       res.end(renderDashboardHtml(stats));
     },
   });

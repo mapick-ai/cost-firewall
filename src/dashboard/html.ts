@@ -10,6 +10,9 @@ export function renderDashboardHtml(_stats: any): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Firewall · Mapick</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#080c12;--surface:#11161d;--border:#1e2630;--text:#c8ccd4;--dim:#5c6370;
@@ -108,6 +111,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);overflo
   <button class="btn red" onclick="api('stop')" style="width:100%">⏹ EMERGENCY STOP</button>
   <button class="btn cyan" onclick="api('resume')" style="width:100%">▶ RESUME</button>
   <button class="btn ghost" onclick="refresh()" style="width:100%">⟳ REFRESH</button>
+  <div id="msg" style="font-size:10px;font-family:var(--font-mono);color:var(--green);text-align:center;min-height:14px;margin-top:8px"></div>
 </aside>
 
 <main class="main">
@@ -168,9 +172,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-sans);overflo
 
 <script>
 const API='http://127.0.0.1:18789/mapick/api';
-function api(p){fetch(API+'/'+p).then(refresh)}
-function setMode(m){fetch(API+'/config',{method:'POST',body:JSON.stringify({mode:m})}).then(refresh)}
-function resetSource(src){fetch(API+'/reset-source?source='+encodeURIComponent(src)).then(refresh)}
+var _msgTimer;
+function showMsg(text,ok){var m=document.getElementById('msg');m.textContent=text;m.style.color=ok?'#00c853':'#ff3d3d';clearTimeout(_msgTimer);_msgTimer=setTimeout(function(){m.textContent=''},3000)}
+function api(p){showMsg('Calling '+p+'...',true);fetch(API+'/'+p).then(function(r){return r.ok?showMsg(p+' OK',true):showMsg(p+' FAIL: '+r.status,false)}).catch(function(e){showMsg(p+' ERR: '+e.message,false)}).then(refresh)}
+function setMode(m){showMsg('Setting mode to '+m+'...',true);fetch(API+'/config',{method:'POST',body:JSON.stringify({mode:m})}).then(function(r){return r.json()}).then(function(d){showMsg('Mode: '+m+(d.ok?' ✓':' ✗'),d.ok)}).catch(function(e){showMsg('Error: '+e.message,false)}).then(refresh)}
+function resetSource(src){showMsg('Resetting '+src+'...',true);fetch(API+'/reset-source?source='+encodeURIComponent(src)).then(function(r){showMsg(r.ok?'Reset OK':'Reset failed',r.ok)}).catch(function(e){showMsg('Error: '+e.message,false)}).then(refresh)}
 
 // ---- Edit modal ----
 var editId,editDisplay;
@@ -230,26 +236,26 @@ async function refresh(){
     document.getElementById('btnProt').className='mode-btn protect'+(m==='protect'&&!es?' active':'');
 
     var b=d.breaker||{};
-    document.getElementById('cfgLimit').value=d.daily_token_limit||10000;
-    document.getElementById('vLimit').textContent=d.daily_token_limit||'∞';
+    document.getElementById('cfgLimit').value=d.daily_token_limit ?? '';
+    document.getElementById('vLimit').textContent=d.daily_token_limit ?? '∞';
     document.getElementById('swLimit').checked=d.daily_token_limit!=null;
 
     // API returns snake_case, saveConfig sends camelCase — both work with backend
-    document.getElementById('cfgFail').value=b.consecutive_failures||3;
-    document.getElementById('vFail').textContent=b.consecutive_failures||3;
+    document.getElementById('cfgFail').value=b.consecutive_failures ?? 3;
+    document.getElementById('vFail').textContent=b.consecutive_failures ?? 3;
     document.getElementById('swFail').checked=true;
 
-    document.getElementById('cfgCool').value=b.cooldown_sec||30;
-    document.getElementById('vCool').textContent=(b.cooldown_sec||30)+'s';
-    document.getElementById('cfgVel').value=b.token_velocity_threshold||0;
-    document.getElementById('vVel').textContent=b.token_velocity_threshold||0;
-    document.getElementById('swVel').checked=(b.token_velocity_threshold||0)>0;
+    document.getElementById('cfgCool').value=b.cooldown_sec ?? 30;
+    document.getElementById('vCool').textContent=(b.cooldown_sec ?? 30)+'s';
+    document.getElementById('cfgVel').value=b.token_velocity_threshold ?? 0;
+    document.getElementById('vVel').textContent=b.token_velocity_threshold ?? 0;
+    document.getElementById('swVel').checked=(b.token_velocity_threshold ?? 0)>0;
 
-    document.getElementById('cfgVelWin').value=b.token_velocity_window_sec||60;
-    document.getElementById('vVelWin').textContent=(b.token_velocity_window_sec||60)+'s';
-    document.getElementById('cfgFreq').value=b.call_frequency_threshold||0;
-    document.getElementById('vFreq').textContent=b.call_frequency_threshold||0;
-    document.getElementById('swFreq').checked=(b.call_frequency_threshold||0)>0;
+    document.getElementById('cfgVelWin').value=b.token_velocity_window_sec ?? 60;
+    document.getElementById('vVelWin').textContent=(b.token_velocity_window_sec ?? 60)+'s';
+    document.getElementById('cfgFreq').value=b.call_frequency_threshold ?? 0;
+    document.getElementById('vFreq').textContent=b.call_frequency_threshold ?? 0;
+    document.getElementById('swFreq').checked=(b.call_frequency_threshold ?? 0)>0;
 
     document.getElementById('cfgFreqWin').value=b.call_frequency_window_sec||60;
     document.getElementById('vFreqWin').textContent=(b.call_frequency_window_sec||60)+'s';
