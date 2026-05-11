@@ -1,5 +1,10 @@
 # @mapick/cost-firewall
 
+![Version](https://img.shields.io/github/v/tag/mapick-ai/cost-firewall?label=version&color=2563eb)
+![License](https://img.shields.io/github/license/mapick-ai/cost-firewall?color=16a34a)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)
+![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-Plugin-8B5CF6)
+
 AI Call Firewall — real-time monitoring, budget control, automatic circuit breaker.
 
 ---
@@ -19,15 +24,19 @@ Dashboard: **http://localhost:18789/mapick/dashboard**
 
 ## Commands
 
-| In Chat | CLI | Action |
-|---|---|---|
-| `/firewall` | `openclaw firewall status` | Status |
-| `/firewall stop` | `openclaw firewall stop` | 🛑 Emergency stop |
-| `/firewall resume` | `openclaw firewall resume` | ▶️ Resume |
-| — | `openclaw firewall mode observe\|protect` | Toggle mode |
-| `/firewall budget` | `openclaw firewall budget set\|reset` | Daily token limit |
-| `/firewall log` | `openclaw firewall log` | Recent events |
-| — | `openclaw firewall reset <source>` | Clear cooldown |
+| CLI | Action |
+|---|---|
+| `openclaw firewall status` | View status (mode, tokens, blocked, limit) |
+| `openclaw firewall stop` | 🛑 Emergency stop — block all AI calls |
+| `openclaw firewall resume` | ▶️ Resume after stop |
+| `openclaw firewall mode observe` | Observe mode — record only, no blocking |
+| `openclaw firewall mode protect` | Protect mode — enable all breaker rules |
+| `openclaw firewall budget set 50000` | Set daily token limit to 50K |
+| `openclaw firewall budget reset` | Remove daily token limit |
+| `openclaw firewall log --last 20` | Show last 20 events |
+| `openclaw firewall reset <source>` | Reset a source from cooldown |
+
+In OpenClaw chat: `/firewall status`, `/firewall stop`, `/firewall resume`, `/firewall log`
 
 ---
 
@@ -58,14 +67,26 @@ Dashboard: **http://localhost:18789/mapick/dashboard**
 
 ---
 
-## Defaults
+## Breaking Rules
+
+Firewall has two modes: **Observe** (record, don't block) and **Protect** (active blocking).
+
+| Rule | Trigger | Effect |
+|---|---|---|
+| Emergency Stop | `openclaw firewall stop` | Block all calls |
+| Daily Token Limit | Today's tokens ≥ limit | Block all calls |
+| Consecutive Failures | N failures in a row | Block source for cooldown |
+| Token Velocity | N tokens in W seconds | Block source for cooldown |
+| Call Frequency | N calls in W seconds | Block source for cooldown |
+
+### Defaults
 
 | Rule | Threshold | Window | Cooldown |
 |---|---|---|---|
 | Consecutive Failures | 3 | — | 30s |
 | Token Velocity | 100K tokens | 60s | 30s |
 | Call Frequency | 30 calls | 60s | 30s |
-| Daily Token Limit | unlimited | — | — |
+| Daily Token Limit | None (unlimited) | — | — |
 
 ---
 
