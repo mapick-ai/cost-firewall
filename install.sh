@@ -20,11 +20,25 @@ openclaw plugins enable mapick-firewall
 # 3. Configure with sensible defaults
 echo ""
 echo "→ Configuring..."
-CONFIG="$HOME/.openclaw/openclaw.json"
-if [ -f "$CONFIG" ]; then
+
+# Find OpenClaw config path
+CONFIG="${OPENCLAW_CONFIG_PATH:-}"
+if [ -z "$CONFIG" ] || [ ! -f "$CONFIG" ]; then
+  STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
+  CONFIG="$STATE_DIR/openclaw.json"
+fi
+if [ ! -f "$CONFIG" ]; then
+  CONFIG=$(find "$HOME" /Volumes /opt -maxdepth 4 -name "openclaw.json" -path "*/state/*" 2>/dev/null | head -1)
+fi
+if [ ! -f "$CONFIG" ]; then
+  echo "⚠  Could not find OpenClaw config. Skipping auto-config."
+  echo "   Add this to your OpenClaw config manually:"
+  echo '   "plugins": {"entries": {"mapick-firewall": {"enabled": true, "hooks": {"allowConversationAccess": true}}}}'
+else
+  echo "   Config found: $CONFIG"
   python3 -c "
-import json, os
-config_path = os.environ.get('OPENCLAW_CONFIG_PATH', os.path.expanduser('~/.openclaw/openclaw.json'))
+import json
+config_path = '$CONFIG'
 with open(config_path) as f:
     c = json.load(f)
 c.setdefault('plugins', {}).setdefault('entries', {})['mapick-firewall'] = {
