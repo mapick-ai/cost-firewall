@@ -2,14 +2,20 @@
   "id": "mapick-firewall",
   "name": "Mapick Cost Firewall",
   "description": "AI call circuit breaker — block runaway requests, see who's burning money, one-click emergency stop.",
-  "version": "0.1.1",
-  "providers": ["mapick"],
+  "version": "0.2.0",
+  "providers": [
+    "mapick"
+  ],
   "contracts": {
-    "tools": ["firewall"]
+    "tools": [
+      "firewall"
+    ]
   },
   "toolMetadata": {},
   "modelSupport": {
-    "modelPrefixes": ["mapick/"]
+    "modelPrefixes": [
+      "mapick/"
+    ]
   },
   "activation": {
     "onStartup": true
@@ -22,21 +28,51 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "consecutiveFailures": { "type": "number", "default": 3 },
-          "cooldownSec": { "type": "number", "default": 30 },
-          "tokenVelocityWindowSec": { "type": "number", "default": 60 },
-          "tokenVelocityThreshold": { "type": "number", "default": 100000 },
-          "callFrequencyWindowSec": { "type": "number", "default": 60 },
-          "callFrequencyThreshold": { "type": "number", "default": 30 }
+          "consecutiveFailures": {
+            "type": "number",
+            "default": 3
+          },
+          "cooldownSec": {
+            "type": "number",
+            "default": 30
+          },
+          "tokenVelocityWindowSec": {
+            "type": "number",
+            "default": 60
+          },
+          "tokenVelocityThreshold": {
+            "type": "number",
+            "default": 100000
+          },
+          "callFrequencyWindowSec": {
+            "type": "number",
+            "default": 60
+          },
+          "callFrequencyThreshold": {
+            "type": "number",
+            "default": 30
+          }
         }
       },
-      "dailyTokenLimit": { "type": ["number", "null"], "default": null },
+      "dailyTokenLimit": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "default": null
+      },
       "privacy": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "storePromptText": { "type": "boolean", "default": false },
-          "enableRawConversationHooks": { "type": "boolean", "default": false }
+          "storePromptText": {
+            "type": "boolean",
+            "default": false
+          },
+          "enableRawConversationHooks": {
+            "type": "boolean",
+            "default": false
+          }
         }
       }
     }
