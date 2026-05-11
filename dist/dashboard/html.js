@@ -777,7 +777,7 @@ export function renderDashboardHtml(_stats) {
         log.innerHTML = '<div class="empty">No events</div>';
         return;
       }
-      log.innerHTML = events.slice(0, 100).map(e => {
+      log.innerHTML = events.slice(0, 100).reverse().map(e => {
         const ts = e.timestamp ?? e.time;
         const date = ts ? new Date(ts) : null;
         const timeStr = date ? date.toTimeString().slice(0, 8) : '--:--:--';
