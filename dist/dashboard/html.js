@@ -264,6 +264,22 @@ export function renderDashboardHtml(_stats) {
     .event-type.warning { color: #f59e0b; }
     .event-type.info { color: #2563eb; }
     .event-msg { color: #374151; flex: 1; }
+    .ok { color: #16a34a; }
+    .err { color: #dc2626; font-weight: 500; }
+    .warn { color: #f59e0b; }
+    .dim { color: #6b7280; }
+    .btn-save {
+      padding: 6px 14px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: #e5e7eb;
+      color: #374151;
+      border: none;
+      cursor: pointer;
+      margin-top: 8px;
+      align-self: flex-end;
+    }
+    .btn-save:hover { background: #d1d5db; }
   </style>
 </head>
 <body>
@@ -317,6 +333,7 @@ export function renderDashboardHtml(_stats) {
             <input type="number" class="field-input" id="input-daily-limit" placeholder="50000">
           </div>
         </div>
+        <button class="btn-save" id="btn-save-daily-limit">Save</button>
       </div>
       
       <div class="rule-card">
@@ -338,6 +355,7 @@ export function renderDashboardHtml(_stats) {
             <span class="field-label">sec</span>
           </div>
         </div>
+        <button class="btn-save" id="btn-save-failures">Save</button>
       </div>
       
       <div class="rule-card">
@@ -359,6 +377,7 @@ export function renderDashboardHtml(_stats) {
             <span class="field-label">sec</span>
           </div>
         </div>
+        <button class="btn-save" id="btn-save-velocity">Save</button>
       </div>
       
       <div class="rule-card">
@@ -380,6 +399,7 @@ export function renderDashboardHtml(_stats) {
             <span class="field-label">sec</span>
           </div>
         </div>
+        <button class="btn-save" id="btn-save-frequency">Save</button>
       </div>
     </div>
     
@@ -543,13 +563,61 @@ export function renderDashboardHtml(_stats) {
         log.innerHTML = '<div class="empty-state">No events</div>';
         return;
       }
-      log.innerHTML = events.slice(0, 50).map(e => \`
-        <div class="event-item">
-          <span class="event-time">\${escapeHtml(e.timestamp ?? e.time ?? '')}</span>
-          <span class="event-type \${e.type ?? e.level ?? ''}">\${escapeHtml(e.type ?? e.level ?? 'info')}</span>
-          <span class="event-msg">\${escapeHtml(e.message ?? e.msg ?? '')}</span>
-        </div>
-      \`).join('');
+      log.innerHTML = events.slice(0, 50).map(e => {
+        const ts = e.timestamp ?? e.time;
+        const date = ts ? new Date(ts) : null;
+        const timeStr = date ? date.toTimeString().slice(0, 8) : '--:--:--';
+        const type = e.type ?? 'unknown';
+        let cls = '';
+        let text = '';
+        
+        if (type === 'model_call_ended') {
+          const provider = e.provider ?? 'unknown';
+          const model = e.model ?? 'unknown';
+          const outcome = e.outcome ?? 'completed';
+          const cost = e.estimatedCost ?? 0;
+          const costK = (cost / 1000).toFixed(1);
+          if (outcome === 'completed') {
+            cls = 'ok';
+            text = provider + '/' + model + ' completed — ' + costK + 'K tokens';
+          } else {
+            cls = 'err';
+            text = provider + '/' + model + ' error (' + outcome + ')';
+          }
+        } else if (type === 'blocked') {
+          cls = 'err';
+          const source = e.source ?? 'unknown';
+          const reason = e.reason ?? 'unknown';
+          text = 'BLOCKED ' + source + ' — ' + reason;
+        } else if (type === 'run_status_change') {
+          cls = 'warn';
+          const runId = e.runId ?? 'unknown';
+          const status = e.status ?? 'unknown';
+          const tokens = e.cumulativeTokens ?? 0;
+          const calls = e.runCalls ?? 0;
+          text = 'Run ' + runId + ' → ' + status + ' (' + tokens.toLocaleString() + ' tokens, ' + calls + ' calls)';
+        } else if (type === 'agent_end') {
+          cls = 'dim';
+          const runId = e.runId ?? 'unknown';
+          text = 'Run ' + runId + ' ended';
+        } else if (type === 'config_warning') {
+          cls = 'dim';
+          text = 'Config warning: ' + (e.message ?? e.msg ?? 'unknown');
+        } else if (type === 'zero_output_warning') {
+          cls = 'warn';
+          const provider = e.provider ?? 'unknown';
+          const model = e.model ?? 'unknown';
+          text = 'Zero output: ' + provider + '/' + model + ' — 0 bytes';
+        } else {
+          cls = 'dim';
+          text = (e.message ?? e.msg ?? JSON.stringify(e));
+        }
+        
+        return '<div class="event-item">' +
+          '<span class="event-time">' + escapeHtml(timeStr) + '</span>' +
+          '<span class="event-msg ' + cls + '">' + escapeHtml(text) + '</span>' +
+        '</div>';
+      }).join('');
     }
 
     async function setMode(mode) {
@@ -607,6 +675,29 @@ export function renderDashboardHtml(_stats) {
 
     document.getElementById('switch-frequency').addEventListener('change', function() {
       const threshold = this.checked ? parseInt(document.getElementById('input-frequency').value) || 100 : 0;
+      const window = parseInt(document.getElementById('input-frequency-window').value) || 60;
+      saveConfig({ breaker: { callFrequencyThreshold: threshold, callFrequencyWindowSec: window } });
+    });
+
+    document.getElementById('btn-save-daily-limit').addEventListener('click', function() {
+      const val = parseInt(document.getElementById('input-daily-limit').value) || null;
+      saveConfig({ dailyTokenLimit: val });
+    });
+
+    document.getElementById('btn-save-failures').addEventListener('click', function() {
+      const failures = parseInt(document.getElementById('input-failures').value) || 0;
+      const cooldown = parseInt(document.getElementById('input-cooldown').value) || 30;
+      saveConfig({ breaker: { consecutiveFailures: failures, cooldownSec: cooldown } });
+    });
+
+    document.getElementById('btn-save-velocity').addEventListener('click', function() {
+      const threshold = parseInt(document.getElementById('input-velocity').value) || 0;
+      const window = parseInt(document.getElementById('input-velocity-window').value) || 60;
+      saveConfig({ breaker: { tokenVelocityThreshold: threshold, tokenVelocityWindowSec: window } });
+    });
+
+    document.getElementById('btn-save-frequency').addEventListener('click', function() {
+      const threshold = parseInt(document.getElementById('input-frequency').value) || 0;
       const window = parseInt(document.getElementById('input-frequency-window').value) || 60;
       saveConfig({ breaker: { callFrequencyThreshold: threshold, callFrequencyWindowSec: window } });
     });
