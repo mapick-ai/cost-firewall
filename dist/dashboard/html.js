@@ -111,8 +111,15 @@ export function renderDashboardHtml(_stats) {
     }
     .rules-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 1200px) {
+      .rules-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .rules-grid { grid-template-columns: 1fr; }
+    }
       margin-bottom: 24px;
     }
     .rule-card {
