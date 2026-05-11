@@ -54,21 +54,43 @@ export function renderDashboardHtml(_stats: any): string {
       padding: 2px;
       border: 1px solid var(--border);
     }
+    .mode-toggle {
+      display: inline-flex;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 2px;
+    }
     .mode-btn {
-      padding: 6px 16px;
+      padding: 6px 18px;
       border: none;
       background: transparent;
-      color: var(--muted);
+      color: #64748b;
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.15s ease;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .mode-btn:hover {
+      color: #334155;
     }
     .mode-btn.active {
-      background: var(--card);
-      color: var(--fg);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      background: #fff;
+      color: #1e293b;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      font-weight: 600;
+    }
+    .mode-btn.protect-mode.active {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .mode-label {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-left: 6px;
+      font-weight: 400;
     }
     .header-actions {
       display: flex;
@@ -422,8 +444,10 @@ export function renderDashboardHtml(_stats: any): string {
   <header class="header">
     <div class="header-title">Firewall</div>
     <div class="header-center">
-      <button class="mode-btn active" id="mode-observe">Observe</button>
-      <button class="mode-btn" id="mode-protect">Protect</button>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-observe">Observe</button>
+        <button class="mode-btn" id="mode-protect">Protect</button>
+      </div>
     </div>
     <div class="header-actions">
       <button class="btn btn-destructive" id="btn-stop">Stop</button>
@@ -646,6 +670,9 @@ export function renderDashboardHtml(_stats: any): string {
     async function setMode(m) {
       await saveConfig({ mode: m });
       fetchStats();
+      // Update button styles
+      document.getElementById('mode-observe').className = 'mode-btn' + (m === 'observe' ? ' active' : '');
+      document.getElementById('mode-protect').className = 'mode-btn protect-mode' + (m === 'protect' ? ' active' : '');
     }
 
     async function emergencyStop() {
@@ -681,13 +708,8 @@ export function renderDashboardHtml(_stats: any): string {
 
       const modeObserve = document.getElementById('mode-observe');
       const modeProtect = document.getElementById('mode-protect');
-      if (data.mode === 'protect') {
-        modeProtect.classList.add('active');
-        modeObserve.classList.remove('active');
-      } else {
-        modeObserve.classList.add('active');
-        modeProtect.classList.remove('active');
-      }
+      modeObserve.className = 'mode-btn' + (data.mode === 'observe' ? ' active' : '');
+      modeProtect.className = 'mode-btn protect-mode' + (data.mode === 'protect' ? ' active' : '');
 
       const btnStop = document.getElementById('btn-stop');
       const btnResume = document.getElementById('btn-resume');
