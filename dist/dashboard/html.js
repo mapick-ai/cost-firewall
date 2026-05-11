@@ -112,38 +112,102 @@ export function renderDashboardHtml(_stats) {
     .rules-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      gap: 12px;
       margin-bottom: 24px;
     }
     .rule-card {
       background: #fff;
       border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 10px 12px;
+      border-radius: 8px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
+    }
+    .rule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      margin-bottom: 2px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .rule-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #d1d5db;
+      transition: 0.2s;
+      border-radius: 12px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #2563eb;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    .rule-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
     }
     .field-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .field-label {
-      font-size: 12px;
+      font-size: 11px;
       color: #6b7280;
-      min-width: 80px;
+      min-width: 60px;
+      flex-shrink: 0;
     }
     .field-input {
       flex: 1;
-      padding: 6px 10px;
+      padding: 4px 8px;
       border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      font-size: 13px;
+      border-radius: 4px;
+      font-size: 12px;
+      min-width: 0;
     }
     .field-input:focus {
       outline: none;
       border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb;
+    }
+    .field-hint {
+      font-size: 11px;
+      color: #9ca3af;
     }
     .lists-grid {
       display: grid;
@@ -229,17 +293,21 @@ export function renderDashboardHtml(_stats) {
     .warn { color: #f59e0b; }
     .dim { color: #6b7280; }
     .btn-save {
-      padding: 6px 14px;
+      padding: 3px 10px;
       font-size: 11px;
       border-radius: 4px;
-      background: #e5e7eb;
+      background: #f3f4f6;
       color: #374151;
-      border: none;
+      border: 1px solid #e5e7eb;
       cursor: pointer;
-      margin-top: 8px;
+      margin-top: 2px;
       align-self: flex-end;
+      transition: all 0.2s;
     }
-    .btn-save:hover { background: #d1d5db; }
+    .btn-save:hover {
+      background: #e5e7eb;
+      border-color: #d1d5db;
+    }
   </style>
 </head>
 <body>
@@ -291,6 +359,7 @@ export function renderDashboardHtml(_stats) {
           <div class="field-row">
             <span class="field-label">Limit:</span>
             <input type="number" class="field-input" id="input-daily-limit" placeholder="50000">
+            <span class="field-hint">tokens</span>
           </div>
         </div>
         <button class="btn-save" id="btn-save-daily-limit">Save</button>
@@ -312,7 +381,7 @@ export function renderDashboardHtml(_stats) {
           <div class="field-row">
             <span class="field-label">Cooldown:</span>
             <input type="number" class="field-input" id="input-cooldown" placeholder="30">
-            <span class="field-label">sec</span>
+            <span class="field-hint">sec</span>
           </div>
         </div>
         <button class="btn-save" id="btn-save-failures">Save</button>
@@ -330,11 +399,12 @@ export function renderDashboardHtml(_stats) {
           <div class="field-row">
             <span class="field-label">Threshold:</span>
             <input type="number" class="field-input" id="input-velocity" placeholder="1000">
+            <span class="field-hint">tokens</span>
           </div>
           <div class="field-row">
             <span class="field-label">Window:</span>
             <input type="number" class="field-input" id="input-velocity-window" placeholder="60">
-            <span class="field-label">sec</span>
+            <span class="field-hint">sec</span>
           </div>
         </div>
         <button class="btn-save" id="btn-save-velocity">Save</button>
@@ -352,11 +422,12 @@ export function renderDashboardHtml(_stats) {
           <div class="field-row">
             <span class="field-label">Threshold:</span>
             <input type="number" class="field-input" id="input-frequency" placeholder="100">
+            <span class="field-hint">calls</span>
           </div>
           <div class="field-row">
             <span class="field-label">Window:</span>
             <input type="number" class="field-input" id="input-frequency-window" placeholder="60">
-            <span class="field-label">sec</span>
+            <span class="field-hint">sec</span>
           </div>
         </div>
         <button class="btn-save" id="btn-save-frequency">Save</button>
