@@ -92,72 +92,34 @@ Firewall has two modes: **Observe** (record, don't block) and **Protect** (activ
 
 ## AI Installation Checklist
 
-Use this checklist when installing the firewall automatically:
+Copy the entire block below and execute:
 
-```markdown
-## Installation Steps
+```bash
+# 1. Install the plugin
+openclaw plugins install @mapick/cost-firewall
 
-1. Install the npm package:
-   ```bash
-   openclaw plugins install @mapick/cost-firewall
-   ```
+# 2. Enable it
+openclaw plugins enable mapick-firewall
 
-2. Enable the plugin:
-   ```bash
-   openclaw plugins enable mapick-firewall
-   ```
+# 3. Verify registration
+openclaw plugins list | grep mapick-firewall
 
-3. Verify it's registered:
-   ```bash
-   openclaw plugins list | grep mapick-firewall
-   ```
-   Expected: should show `mapick-firewall` in the list.
+# 4. Restart gateway
+openclaw gateway restart
 
-4. Restart gateway:
-   ```bash
-   openclaw gateway restart
-   ```
+# 5. Verify it works
+openclaw firewall status
 
-5. Verify it's working:
-   ```bash
-   openclaw firewall status
-   ```
-   Expected: returns JSON with mode, today_tokens, today_blocked, etc.
-
-6. Optionally, set a daily token budget:
-   ```bash
-   openclaw firewall budget set 500000
-   ```
-
-## Routing calls through the firewall
-
-To route AI calls through the firewall, configure the model with `mapick/` prefix:
-
-```json
-{
-  "agents": {
-    "defaults": {
-      "model": {
-        "primary": "mapick/deepseek/deepseek-chat",
-        "fallbacks": ["mapick/anthropic/claude-sonnet-4-20250514"]
-      }
-    }
-  }
-}
+# 6. Optional: set a daily token budget
+openclaw firewall budget set 500000
 ```
 
-Format: `mapick/<upstream>/<model-id>`
-Supported upstreams: `openai`, `anthropic`, `deepseek`, `openrouter`, `qwen`
-
-## Validation
-
-After installation, the AI should verify:
+After installation, verify:
 - [ ] `openclaw plugins list` shows `mapick-firewall` (enabled)
 - [ ] `openclaw firewall status` returns valid JSON
 - [ ] Dashboard accessible at http://localhost:18789/mapick/dashboard
 - [ ] Model config uses `mapick/` prefix if firewall protection is desired
 - [ ] Fallbacks also use `mapick/` prefix (non-mapick fallbacks bypass the firewall)
-```
 
 ---
 
