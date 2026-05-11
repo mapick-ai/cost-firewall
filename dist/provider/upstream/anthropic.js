@@ -1,7 +1,7 @@
 /**
  * Anthropic Messages API upstream transport
  */
-export async function* streamAnthropic(options) {
+export async function* streamAnthropic(options, timeoutMs = 30_000) {
     const { apiKey, model, messages, max_tokens = 4096, stream = true, ...rest } = options;
     const url = "https://api.anthropic.com/v1/messages";
     // 30s timeout

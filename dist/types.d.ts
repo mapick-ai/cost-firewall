@@ -54,6 +54,7 @@ export interface FirewallConfig {
         callFrequencyThreshold?: number;
     };
     dailyTokenLimit?: number | null;
+    upstreamTimeoutMs?: number;
     privacy?: {
         storePromptText?: boolean;
         enableRawConversationHooks?: boolean;

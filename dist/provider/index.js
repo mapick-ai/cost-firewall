@@ -108,13 +108,14 @@ export function registerProvider(api, state, store) {
                 }
                 // Resolve upstream auth
                 const auth = await resolveUpstreamAuth(api, route.upstream, route.model);
+                const timeout = state.config.upstreamTimeoutMs ?? 30_000;
                 let inputTokens = 0;
                 let outputTokens = 0;
                 let responseStreamBytes = 0;
                 try {
                     const s = route.upstream === "anthropic"
-                        ? streamAnthropic({ apiKey: auth.apiKey, model: route.model, messages: context?.messages ?? [], ...options })
-                        : streamOpenAi({ baseUrl: getOpenAiBaseUrl(route.upstream), apiKey: auth.apiKey, model: route.model, messages: context?.messages ?? [], ...options });
+                        ? streamAnthropic({ apiKey: auth.apiKey, model: route.model, messages: context?.messages ?? [], ...options }, timeout)
+                        : streamOpenAi({ baseUrl: getOpenAiBaseUrl(route.upstream), apiKey: auth.apiKey, model: route.model, messages: context?.messages ?? [], ...options }, timeout);
                     for await (const chunk of s) {
                         responseStreamBytes += JSON.stringify(chunk).length;
                         if (chunk.usage) {

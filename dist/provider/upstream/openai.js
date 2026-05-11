@@ -4,12 +4,11 @@
  * Supports /v1/chat/completions
  * Compatible with OpenRouter, DeepSeek, Qwen and other OpenAI-compatible providers
  */
-export async function* streamOpenAi(options) {
+export async function* streamOpenAi(options, timeoutMs = 30_000) {
     const { baseUrl, apiKey, model, messages, stream = true, ...rest } = options;
     const url = `${baseUrl}/v1/chat/completions`;
-    // 30s timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30_000);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
         const response = await fetch(url, {
             method: "POST",

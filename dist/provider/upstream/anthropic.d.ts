@@ -9,5 +9,5 @@ export interface AnthropicStreamOptions {
     stream?: boolean;
     [key: string]: any;
 }
-export declare function streamAnthropic(options: AnthropicStreamOptions): AsyncGenerator<any>;
+export declare function streamAnthropic(options: AnthropicStreamOptions, timeoutMs?: number): AsyncGenerator<any>;
 //# sourceMappingURL=anthropic.d.ts.map

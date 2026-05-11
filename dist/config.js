@@ -11,6 +11,7 @@ export const DEFAULT_CONFIG = {
         callFrequencyThreshold: 30,
     },
     dailyTokenLimit: null,
+    upstreamTimeoutMs: 30_000,
     privacy: {
         storePromptText: false,
         enableRawConversationHooks: false,
@@ -23,6 +24,7 @@ export function resolveConfig(input) {
             ...input.breaker,
         },
         dailyTokenLimit: input.dailyTokenLimit ?? DEFAULT_CONFIG.dailyTokenLimit,
+        upstreamTimeoutMs: input.upstreamTimeoutMs ?? DEFAULT_CONFIG.upstreamTimeoutMs,
         privacy: {
             ...DEFAULT_CONFIG.privacy,
             ...input.privacy,

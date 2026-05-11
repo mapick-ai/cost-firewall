@@ -14,6 +14,7 @@ export const DEFAULT_CONFIG: Required<FirewallConfig> = {
     callFrequencyThreshold: 30,
   },
   dailyTokenLimit: null,
+  upstreamTimeoutMs: 30_000,
   privacy: {
     storePromptText: false,
     enableRawConversationHooks: false,
@@ -27,6 +28,7 @@ export function resolveConfig(input: Partial<FirewallConfig>): FirewallConfig {
       ...input.breaker,
     },
     dailyTokenLimit: input.dailyTokenLimit ?? DEFAULT_CONFIG.dailyTokenLimit,
+    upstreamTimeoutMs: input.upstreamTimeoutMs ?? DEFAULT_CONFIG.upstreamTimeoutMs,
     privacy: {
       ...DEFAULT_CONFIG.privacy,
       ...input.privacy,

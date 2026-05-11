@@ -115,8 +115,9 @@ export function createModelCallEndedHandler(
     }
 
     state.updateRunCost(event.runId, estimatedTokens);
-    // Provider layer counts tokens for mapick calls — avoid double-counting
-    if (event.provider !== "mapick") {
+    // Provider layer tracks tokens for mapick/* calls — skip to avoid double-counting
+    // Uses model prefix check (more reliable than provider field)
+    if (!event.model?.startsWith("mapick/")) {
       state.updateSourceStats(source, estimatedTokens);
     }
 

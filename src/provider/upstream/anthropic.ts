@@ -12,7 +12,8 @@ export interface AnthropicStreamOptions {
 }
 
 export async function* streamAnthropic(
-  options: AnthropicStreamOptions
+  options: AnthropicStreamOptions,
+  timeoutMs: number = 30_000
 ): AsyncGenerator<any> {
   const { apiKey, model, messages, max_tokens = 4096, stream = true, ...rest } = options;
 

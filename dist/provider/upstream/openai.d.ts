@@ -12,6 +12,6 @@ export interface OpenAiStreamOptions {
     stream?: boolean;
     [key: string]: any;
 }
-export declare function streamOpenAi(options: OpenAiStreamOptions): AsyncGenerator<any>;
+export declare function streamOpenAi(options: OpenAiStreamOptions, timeoutMs?: number): AsyncGenerator<any>;
 export declare function getOpenAiBaseUrl(upstream: string): string;
 //# sourceMappingURL=openai.d.ts.map
