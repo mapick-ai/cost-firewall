@@ -6,6 +6,11 @@
  * - Daily Budget blocking
  * - Source Cooldown blocking
  */
+// Test block flag — set by llm_input hook when user types 'block test'
+export let testBlockRequested = null;
+export function clearTestBlock() {
+    testBlockRequested = null;
+}
 export function createBeforeAgentReplyHandler(state, store) {
     return async function handleBeforeAgentReply(event, ctx) {
         const source = event.agentId ?? event.sessionKey ?? "unknown";
@@ -36,7 +41,32 @@ export function createBeforeAgentReplyHandler(state, store) {
                 reason: result.reason,
             };
         }
+        // Test block trigger
+        if (testBlockRequested) {
+            const src = testBlockRequested.source || "unknown";
+            testBlockRequested = null;
+            store.append({ type: "blocked", source: src, reason: "test_block", layer: "hook" });
+            state.globalStats.todayBlocked++;
+            return {
+                handled: true,
+                reply: {
+                    text: `🧪 Block test triggered successfully for source "${src}". The firewall is working. Use \`openclaw firewall status\` to verify the blocked count increased.`,
+                    isError: true,
+                },
+                reason: "test_block",
+            };
+        }
         return undefined;
+    };
+}
+/** Handle llm_input — check for test block trigger phrase */
+export function createTestBlockDetector(store) {
+    return function detectTestBlock(event, _ctx) {
+        const prompt = event.prompt ?? "";
+        if (prompt.includes("阻断测试") || prompt.includes("block test") || prompt.includes("test block")) {
+            testBlockRequested = { source: event.provider ?? "chat" };
+            store.append({ type: "test_block_triggered", reason: "user requested block test" });
+        }
     };
 }
 //# sourceMappingURL=before-agent-reply.js.map

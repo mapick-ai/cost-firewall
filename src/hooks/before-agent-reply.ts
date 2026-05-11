@@ -10,6 +10,13 @@
 import type { FirewallState } from "../state.js";
 import type { EventStore } from "../store.js";
 
+// Test block flag — set by llm_input hook when user types 'block test'
+export let testBlockRequested: { source?: string } | null = null;
+
+export function clearTestBlock(): void {
+  testBlockRequested = null;
+}
+
 export interface BeforeAgentReplyEvent {
   agentId?: string;
   sessionId?: string;
@@ -71,6 +78,33 @@ export function createBeforeAgentReplyHandler(
       };
     }
 
+    // Test block trigger
+    if (testBlockRequested) {
+      const src = testBlockRequested.source || "unknown";
+      testBlockRequested = null;
+      store.append({ type: "blocked", source: src, reason: "test_block", layer: "hook" });
+      state.globalStats.todayBlocked++;
+      return {
+        handled: true,
+        reply: {
+          text: `🧪 Block test triggered successfully for source "${src}". The firewall is working. Use \`openclaw firewall status\` to verify the blocked count increased.`,
+          isError: true,
+        },
+        reason: "test_block",
+      };
+    }
+
     return undefined;
+  };
+}
+
+/** Handle llm_input — check for test block trigger phrase */
+export function createTestBlockDetector(store: EventStore) {
+  return function detectTestBlock(event: { prompt?: string; provider?: string }, _ctx: any): void {
+    const prompt = event.prompt ?? "";
+    if (prompt.includes("阻断测试") || prompt.includes("block test") || prompt.includes("test block")) {
+      testBlockRequested = { source: event.provider ?? "chat" };
+      store.append({ type: "test_block_triggered", reason: "user requested block test" });
+    }
   };
 }
