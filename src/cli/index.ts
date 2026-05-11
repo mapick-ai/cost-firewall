@@ -7,9 +7,29 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import http from "node:http";
 import type { FirewallState } from "../state.js";
 import { EventStore } from "../store.js";
 import type { FirewallEvent } from "../types.js";
+
+const API_BASE = "http://127.0.0.1:18789";
+
+function apiGet(path: string): Promise<void> {
+  return new Promise((resolve) => {
+    http.get(`${API_BASE}${path}`, () => resolve()).on("error", () => resolve());
+  });
+}
+
+function apiPost(body: object): Promise<void> {
+  return new Promise((resolve) => {
+    const data = JSON.stringify(body);
+    const url = new URL(`${API_BASE}/mapick/api/config`);
+    const req = http.request(url, { method: "POST", headers: { "Content-Type": "application/json" } }, () => resolve());
+    req.on("error", () => resolve());
+    req.write(data);
+    req.end();
+  });
+}
 
 /** Aggregate today's stats from JSONL */
 export async function aggregateFromJsonl(store: EventStore, memTokens: number, memBlocked: number): Promise<{
@@ -69,26 +89,30 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
       firewall.command("mode")
         .description("Switch mode (observe|protect)")
         .argument("<mode>", "observe or protect")
-        .action((mode: string) => {
+        .action(async (mode: string) => {
           if (mode !== "observe" && mode !== "protect") {
             console.error("Invalid mode. Use 'observe' or 'protect'.");
             return;
           }
           state.setMode(mode);
+          await apiPost({ mode });
           console.log(`Mode set to ${mode}`);
         });
 
       firewall.command("stop")
         .description("Emergency stop all AI calls")
-        .action(() => {
+        .action(async () => {
           state.setEmergencyStop(true);
+          await apiPost({});
+          await apiGet("/mapick/api/stop");
           console.log("Emergency stop activated.");
         });
 
       firewall.command("resume")
         .description("Resume AI calls after emergency stop")
-        .action(() => {
+        .action(async () => {
           state.setEmergencyStop(false);
+          await apiGet("/mapick/api/resume");
           console.log("Resumed.");
         });
 
@@ -139,7 +163,7 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
             }).filter(Boolean);
             for (const e of recent) {
               const t = new Date(e.timestamp).toISOString().slice(11, 19);
-              const cost = e.estimatedCost ? `$${e.estimatedCost.toFixed(6)}` : "";
+              const cost = e.estimatedCost ? `${Math.round(e.estimatedCost ?? 0)}t` : "";
               console.log(`${t} | ${e.type.padEnd(22)} | ${(e.provider ?? "").padEnd(12)} | ${(e.model ?? "").padEnd(30)} | ${(e.outcome ?? "").padEnd(10)} | ${cost}`);
             }
           } catch {

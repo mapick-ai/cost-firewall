@@ -173,8 +173,14 @@ export class FirewallState {
    * Returns { allow: true } if all checks pass, otherwise { allow: false, reason, layer }
    */
   precheck(source: SourceKey): PrecheckResult {
+    // Emergency stop is a global override - always blocks regardless of mode
     if (this.globalStats.emergencyStop) {
       return { allow: false, reason: "emergency_stop", layer: "hook" };
+    }
+
+    // Observe mode bypasses all other checks
+    if (this.globalStats.mode === "observe") {
+      return { allow: true, layer: "hook" };
     }
 
     if (this.isLimitExceeded()) {
