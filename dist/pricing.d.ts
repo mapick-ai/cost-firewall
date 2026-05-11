@@ -1,5 +1,7 @@
 /**
  * 模型定价与费用估算
+ *
+ * OpenRouter: pass-through pricing (inherits upstream provider pricing)
  */
 export interface TokenUsage {
     prompt_tokens?: number;

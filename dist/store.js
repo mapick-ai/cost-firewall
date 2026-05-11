@@ -1,7 +1,7 @@
 /**
  * JSONL 事件落盘（异步，不阻塞 hook）
  */
-import { appendFile, mkdir } from "node:fs/promises";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 const FLUSH_INTERVAL_MS = 1000;
@@ -16,10 +16,10 @@ export class EventStore {
     constructor() {
         this.startFlushTimer();
     }
-    async ensureDir() {
+    ensureDir() {
         if (this.dirReady)
             return;
-        await mkdir(STATE_DIR, { recursive: true });
+        mkdirSync(STATE_DIR, { recursive: true });
         this.dirReady = true;
     }
     append(event) {
@@ -31,26 +31,32 @@ export class EventStore {
     }
     startFlushTimer() {
         this.flushTimer = setInterval(() => {
-            this.flush().catch(() => { });
+            this.flush();
         }, FLUSH_INTERVAL_MS);
         if (this.flushTimer.unref) {
             this.flushTimer.unref();
         }
     }
-    async flush() {
+    /**
+     * Flush buffer to disk (synchronous, copy-and-replace pattern)
+     * This prevents concurrent flushes from double-writing or interleaving events
+     */
+    flush() {
         if (this.buffer.length === 0)
             return;
-        await this.ensureDir();
-        const events = this.buffer.splice(0);
-        const lines = events.map((e) => JSON.stringify(e)).join("\n") + "\n";
-        await appendFile(EVENTS_FILE, lines, "utf-8");
+        // Copy-and-replace: grab current buffer and clear it atomically
+        const batch = this.buffer;
+        this.buffer = [];
+        this.ensureDir();
+        const lines = batch.map((e) => JSON.stringify(e)).join("\n") + "\n";
+        writeFileSync(EVENTS_FILE, lines, "utf-8");
     }
     async close() {
         if (this.flushTimer) {
             clearInterval(this.flushTimer);
             this.flushTimer = null;
         }
-        await this.flush();
+        this.flush();
     }
     getStateDir() {
         return STATE_DIR;

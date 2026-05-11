@@ -84,6 +84,13 @@ export interface BlockDecision {
   layer: "hook" | "provider";
 }
 
+// Precheck 结果
+export interface PrecheckResult {
+  allow: boolean;
+  reason?: string;
+  layer: "hook" | "provider";
+}
+
 // 事件记录
 export interface FirewallEvent {
   type: string;

@@ -22,22 +22,22 @@ export function createStreamFn(state, store, api) {
             }
             const source = sourceFromProviderContext({ ...context, ...ctx }, route);
             // Precheck
-            const decision = precheckRequest(state, source, route.upstream, route.model);
-            if (!decision.allow) {
+            const result = state.precheck(source);
+            if (!result.allow) {
                 store.append({
                     type: "blocked",
                     source,
                     provider: route.upstream,
                     model: route.model,
-                    reason: decision.reason,
-                    layer: "provider",
+                    reason: result.reason,
+                    layer: result.layer,
                 });
                 state.globalStats.todayBlocked++;
                 state.globalStats.todaySavedEstimate += estimateCost(null, route.upstream, route.model);
                 yield* createBlockedStream({
                     provider: route.upstream,
                     model: route.model,
-                    reason: decision.reason,
+                    reason: result.reason,
                     format: route.upstream === "anthropic" ? "anthropic" : "openai",
                 });
                 return;
@@ -101,18 +101,6 @@ export function createStreamFn(state, store, api) {
             }
         };
     };
-}
-function precheckRequest(state, source, upstream, model) {
-    if (state.globalStats.emergencyStop) {
-        return { allow: false, reason: "emergency_stop" };
-    }
-    if (state.isLimitExceeded()) {
-        return { allow: false, reason: "daily_token_limit" };
-    }
-    if (state.breaker.isCoolingDown(source)) {
-        return { allow: false, reason: state.breaker.getBlockedReason(source) };
-    }
-    return { allow: true };
 }
 function categorizeError(err) {
     if (err.message.includes("timeout"))

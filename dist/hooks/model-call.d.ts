@@ -28,6 +28,11 @@ export interface ModelCallEndedEvent extends ModelCallStartedEvent {
     responseStreamBytes?: number;
     timeToFirstByteMs?: number;
     upstreamRequestIdHash?: string;
+    usage?: {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+    };
 }
 export declare function createModelCallStartedHandler(state: FirewallState, store: EventStore): (event: ModelCallStartedEvent, ctx: any) => void;
 export declare function createModelCallEndedHandler(state: FirewallState, store: EventStore): (event: ModelCallEndedEvent, ctx: any) => void;

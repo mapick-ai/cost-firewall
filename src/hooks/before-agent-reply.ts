@@ -38,60 +38,36 @@ export function createBeforeAgentReplyHandler(
     event: BeforeAgentReplyEvent,
     ctx: BeforeAgentReplyCtx
   ): Promise<HandledReply | undefined> {
-    if (state.globalStats.emergencyStop) {
-      const source = event.agentId ?? "unknown";
-      store.append({
-        type: "blocked",
-        source,
-        reason: "emergency_stop",
-        layer: "hook",
-      });
-      state.globalStats.todayBlocked++;
-      return {
-        handled: true,
-        reply: {
-          text: "Mapick Cost Firewall: all AI calls are paused.",
-          isError: true,
-        },
-        reason: "emergency_stop",
-      };
-    }
-
-    if (state.isLimitExceeded()) {
-      const source = event.agentId ?? "unknown";
-      store.append({
-        type: "blocked",
-        source,
-        reason: "daily_token_limit",
-        layer: "hook",
-      });
-      state.globalStats.todayBlocked++;
-      return {
-        handled: true,
-        reply: {
-          text: "Mapick Cost Firewall: today's token limit has been reached.",
-          isError: true,
-        },
-        reason: "daily_token_limit",
-      };
-    }
-
     const source = event.agentId ?? event.sessionKey ?? "unknown";
-    if (state.breaker.isCoolingDown(source)) {
+
+    // Unified precheck
+    const result = state.precheck(source);
+
+    if (!result.allow) {
       store.append({
         type: "blocked",
         source,
-        reason: state.breaker.getBlockedReason(source),
-        layer: "hook",
+        reason: result.reason!,
+        layer: result.layer,
       });
       state.globalStats.todayBlocked++;
+
+      const messages: Record<string, string> = {
+        emergency_stop: "Mapick Cost Firewall: all AI calls are paused.",
+        daily_token_limit: "Mapick Cost Firewall: today's token limit has been reached.",
+        source_cooldown: "Mapick Cost Firewall: this source is cooling down.",
+        consecutive_failures: "Mapick Cost Firewall: this source is cooling down due to consecutive failures.",
+        token_velocity: "Mapick Cost Firewall: this source is cooling down due to high token velocity.",
+        call_frequency: "Mapick Cost Firewall: this source is cooling down due to high call frequency.",
+      };
+
       return {
         handled: true,
         reply: {
-          text: "Mapick Cost Firewall: this source is cooling down.",
+          text: messages[result.reason!] ?? "Mapick Cost Firewall: request blocked.",
           isError: true,
         },
-        reason: "source_cooldown",
+        reason: result.reason!,
       };
     }
 

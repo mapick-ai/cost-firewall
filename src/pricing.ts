@@ -1,5 +1,7 @@
 /**
  * 模型定价与费用估算
+ *
+ * OpenRouter: pass-through pricing (inherits upstream provider pricing)
  */
 
 // 定价表：$/1M tokens
@@ -12,16 +14,17 @@ const PRICING: Record<string, Record<string, { input: number; output: number }>>
   },
   anthropic: {
     "claude-sonnet-4-6": { input: 3, output: 15 },
+    "claude-sonnet-4-20250514": { input: 3, output: 15 },
     "claude-sonnet-4-5": { input: 3, output: 15 },
     "claude-haiku-3-5": { input: 0.8, output: 4 },
   },
-  openrouter: {},
+  openrouter: {}, // pass-through pricing
   deepseek: {
-    "deepseek-chat": { input: 0.14, output: 0.28 },
+    "deepseek-chat": { input: 0.28, output: 0.42 },
     "deepseek-reasoner": { input: 0.55, output: 2.19 },
   },
   qwen: {
-    "qwen3.6-plus": { input: 0.5, output: 2 },
+    "qwen3-plus": { input: 0.5, output: 2 },
   },
 };
 

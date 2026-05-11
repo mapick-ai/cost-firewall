@@ -122,7 +122,6 @@ export function registerDashboard(
     auth: "plugin",
     handler: async (_req: any, res: any) => {
       try {
-        const { readFile } = await import("node:fs/promises");
         const raw = await readFile(store.getEventsFilePath(), "utf-8");
         const events = raw.trim().split("\n").slice(-30).map((l: string) => {
           try { return JSON.parse(l); } catch { return null; }

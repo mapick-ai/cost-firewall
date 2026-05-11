@@ -84,36 +84,24 @@ export function registerProvider(
         const route = parseMapickModelRef(modelId);
         if (!route) throw new Error(`Invalid Mapick model reference: ${modelId}`);
 
-        // Precheck — Emergency Stop
-        if (state.globalStats.emergencyStop) {
-          state.globalStats.todayBlocked++;
-          store.append({ type: "blocked", provider: route.upstream, model: route.model, reason: "emergency_stop", layer: "provider" });
-          yield* createBlockedStream({
-            provider: route.upstream, model: route.model, reason: "emergency_stop",
-            format: route.upstream === "anthropic" ? "anthropic" : "openai",
-          });
-          return;
-        }
-
-        // Precheck — Budget
-        if (state.isLimitExceeded()) {
-          state.globalStats.todayBlocked++;
-          store.append({ type: "blocked", provider: route.upstream, model: route.model, reason: "daily_token_limit", layer: "provider" });
-          yield* createBlockedStream({
-            provider: route.upstream, model: route.model, reason: "daily_token_limit",
-            format: route.upstream === "anthropic" ? "anthropic" : "openai",
-          });
-          return;
-        }
-
-        // Precheck — Cooldown
         const src = route.upstream;
-        if (state.breaker.isCoolingDown(src)) {
+
+        // Unified precheck
+        const result = state.precheck(src);
+
+        if (!result.allow) {
           state.globalStats.todayBlocked++;
-          const reason = state.breaker.getBlockedReason(src) ?? "source_cooldown";
-          store.append({ type: "blocked", provider: route.upstream, model: route.model, reason, layer: "provider" });
+          store.append({
+            type: "blocked",
+            provider: route.upstream,
+            model: route.model,
+            reason: result.reason!,
+            layer: result.layer,
+          });
           yield* createBlockedStream({
-            provider: route.upstream, model: route.model, reason,
+            provider: route.upstream,
+            model: route.model,
+            reason: result.reason!,
             format: route.upstream === "anthropic" ? "anthropic" : "openai",
           });
           return;

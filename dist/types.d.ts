@@ -71,6 +71,11 @@ export interface BlockDecision {
     reason?: string;
     layer: "hook" | "provider";
 }
+export interface PrecheckResult {
+    allow: boolean;
+    reason?: string;
+    layer: "hook" | "provider";
+}
 export interface FirewallEvent {
     type: string;
     timestamp: number;

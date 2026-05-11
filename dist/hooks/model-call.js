@@ -27,9 +27,17 @@ export function createModelCallEndedHandler(state, store) {
     return function handleModelCallEnded(event, ctx) {
         const source = sourceFromModelCall(event, ctx);
         const run = state.getOrCreateRun(event.runId, source, event.sessionId, event.sessionKey);
-        // 估算 token 数：1 token ≈ 4 bytes
-        const totalBytes = (event.requestPayloadBytes ?? 0) + (event.responseStreamBytes ?? 0);
-        const estimatedTokens = Math.round(totalBytes / 4);
+        // Use precise usage if available from the event, otherwise fallback to bytes/4 estimation
+        let estimatedTokens;
+        if (event.usage?.prompt_tokens || event.usage?.completion_tokens) {
+            // Precise token count from upstream provider
+            estimatedTokens = (event.usage.prompt_tokens ?? 0) + (event.usage.completion_tokens ?? 0);
+        }
+        else {
+            // Fallback: 1 token ≈ 4 bytes
+            const totalBytes = (event.requestPayloadBytes ?? 0) + (event.responseStreamBytes ?? 0);
+            estimatedTokens = Math.round(totalBytes / 4);
+        }
         const call = run.calls.get(event.callId);
         if (call) {
             call.durationMs = event.durationMs;

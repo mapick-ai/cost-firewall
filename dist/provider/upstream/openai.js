@@ -7,30 +7,34 @@
 export async function* streamOpenAi(options) {
     const { baseUrl, apiKey, model, messages, stream = true, ...rest } = options;
     const url = `${baseUrl}/v1/chat/completions`;
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-            model,
-            messages,
-            stream,
-            ...rest,
-        }),
-    });
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`OpenAI upstream error ${response.status}: ${errorText}`);
-    }
-    if (!response.body) {
-        throw new Error("OpenAI upstream returned empty body");
-    }
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
+    // 30s timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30_000);
     try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model,
+                messages,
+                stream,
+                ...rest,
+            }),
+            signal: controller.signal,
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`OpenAI upstream error ${response.status}: ${errorText}`);
+        }
+        if (!response.body) {
+            throw new Error("OpenAI upstream returned empty body");
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
         while (true) {
             const { done, value } = await reader.read();
             if (done)
@@ -55,7 +59,8 @@ export async function* streamOpenAi(options) {
         }
     }
     finally {
-        reader.releaseLock();
+        clearTimeout(timeoutId);
+        // Reader is released in the normal flow, no need to releaseLock here
     }
 }
 export function getOpenAiBaseUrl(upstream) {

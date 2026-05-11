@@ -65,7 +65,7 @@ describe("Hook Layer 集成", () => {
       const handler = createBeforeAgentReplyHandler(state, store);
       const result = await handler({ agentId: "test" }, {});
       expect(result).toBeDefined();
-      expect(result?.reason).toBe("source_cooldown");
+      expect(result?.reason).toBe("consecutive_failures");
     });
   });
 });

@@ -79,6 +79,6 @@ describe("E2E 完整流程", () => {
     const replyHandler = createBeforeAgentReplyHandler(state, store);
     const result = await replyHandler({ agentId: "test-agent" }, {});
     expect(result).toBeDefined();
-    expect(result?.reason).toBe("source_cooldown");
+    expect(result?.reason).toBe("consecutive_failures");
   });
 });
