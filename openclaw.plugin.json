@@ -5,13 +5,9 @@
   "version": "0.1.0",
   "providers": ["mapick"],
   "contracts": {
-    "tools": ["mapick"]
+    "tools": ["firewall"]
   },
-  "toolMetadata": {
-    "mapick_stop": { "optional": false },
-    "mapick_resume": { "optional": false },
-    "mapick_budget": { "optional": false }
-  },
+  "toolMetadata": {}
   "modelSupport": {
     "modelPrefixes": ["mapick/"]
   },

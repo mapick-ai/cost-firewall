@@ -24,7 +24,7 @@ export default {
         registerProvider(api, state, store);
         // Register CLI
         registerCli(api, state, store);
-        // Register Agent Tools (/mapick status/stop/resume conversational commands)
+        // Register Agent Tools (/firewall status/stop/resume conversational commands)
         registerTools(api, state, store);
         // Config risk detection (fallback bypass etc.)
         const warnings = detectConfigRisks(api.config);
