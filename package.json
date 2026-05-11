@@ -1,6 +1,7 @@
 {
   "name": "@mapick/cost-firewall",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Mapick Cost Firewall — OpenClaw Plugs",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,6 +15,7 @@
   "files": [
     "dist",
     "README.md",
+    "LICENSE",
     "openclaw.plugin.json"
   ],
   "scripts": {
