@@ -118,51 +118,11 @@ export function renderDashboardHtml(_stats: any): string {
     .rule-card {
       background: #fff;
       border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 16px;
-    }
-    .rule-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .rule-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #111827;
-    }
-    .switch {
-      position: relative;
-      width: 44px;
-      height: 24px;
-    }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background: #e5e7eb;
-      border-radius: 24px;
-      transition: 0.2s;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background: #fff;
-      border-radius: 50%;
-      transition: 0.2s;
-    }
-    input:checked + .slider { background: #2563eb; }
-    input:checked + .slider:before { transform: translateX(20px); }
-    .rule-fields {
+      border-radius: 10px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .field-row {
       display: flex;
@@ -206,7 +166,7 @@ export function renderDashboardHtml(_stats: any): string {
       color: #374151;
     }
     .list-body {
-      max-height: 200px;
+      max-height: 300px;
       overflow-y: auto;
       padding: 8px;
     }
@@ -239,7 +199,7 @@ export function renderDashboardHtml(_stats: any): string {
       overflow: hidden;
     }
     .events-body {
-      max-height: 300px;
+      max-height: 500px;
       overflow-y: auto;
       padding: 12px;
     }
