@@ -151,7 +151,7 @@ export class Breaker {
         result.push({
           source,
           reason: state.reason ?? "unknown",
-          remainingSec: Math.round((state.brokenUntil - now) / 1000),
+          remainingSec: Math.max(0, Math.round((state.brokenUntil - now) / 1000)),
         });
       }
     }

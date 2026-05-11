@@ -56,7 +56,7 @@ describe("sourceFromProviderContext", () => {
       { workspaceDir: "/home/user/project" },
       { upstream: "openai", model: "gpt-4o" }
     );
-    expect(source).toBe("/home/user/project/openai/gpt-4o");
+    expect(source).toBe("project/openai/gpt-4o");
   });
 
   it("无 workspaceDir 时使用 upstream + model", () => {

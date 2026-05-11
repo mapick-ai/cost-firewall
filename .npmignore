@@ -1,0 +1,34 @@
+# Source
+src/
+test/
+
+# Build artifacts (only dist/ needed)
+tsconfig.json
+tsconfig.tsbuildinfo
+
+# Config
+vitest.config.ts
+.prettierrc
+.eslintrc*
+.eslint*
+
+# Documentation not needed at runtime
+RELEASE.md
+CHANGELOG.md
+
+# Lockfiles
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Development artifacts
+dashboard.html
+.dashboard-backup
+tmp/
+
+# OS
+.DS_Store
+
+# Git
+.gitignore
+.gitattributes

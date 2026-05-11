@@ -3,9 +3,7 @@
  *
  * 注册 openclaw mapick <subcommand> 命令组
  */
-import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { homedir } from "node:os";
+import { readFile } from "node:fs/promises";
 /** 从 JSONL 聚合今日统计数据 */
 export async function aggregateFromJsonl(store, memTokens, memBlocked) {
     const todayStart = new Date();
@@ -81,30 +79,39 @@ export function registerCli(api, state, store) {
             .argument("<action>", "set <amount> or reset")
             .argument("[amount]", "Token count")
             .action(async (action, amount) => {
-            const configPath = process.env.OPENCLAW_CONFIG_PATH
-                ?? join(process.env.OPENCLAW_STATE_DIR ?? join(homedir(), ".openclaw"), "openclaw.json");
-            try {
-                const raw = await readFile(configPath, "utf-8");
-                const openclawConfig = JSON.parse(raw);
-                const entry = openclawConfig?.plugins?.entries?.["mapick-firewall"];
-                if (!entry?.config)
-                    throw new Error("mapick-firewall config not found");
-                if (action === "set" && amount) {
-                    entry.config.dailyTokenLimit = parseInt(amount, 10);
-                    state.config.dailyTokenLimit = entry.config.dailyTokenLimit;
-                    await writeFile(configPath, JSON.stringify(openclawConfig, null, 2));
-                    console.log(`Daily token limit set to ${amount}.`);
-                }
-                else if (action === "reset") {
-                    entry.config.dailyTokenLimit = null;
-                    state.config.dailyTokenLimit = null;
-                    await writeFile(configPath, JSON.stringify(openclawConfig, null, 2));
-                    console.log("Daily token limit reset. No limit.");
-                }
+            // 通过 gateway 的 /config API 更新（不直接写文件，避免破坏格式）
+            const http = await import("node:http");
+            let body;
+            if (action === "set" && amount) {
+                body = JSON.stringify({ dailyTokenLimit: parseInt(amount, 10) });
+                state.config.dailyTokenLimit = parseInt(amount, 10);
             }
-            catch (e) {
-                console.error("Failed to update config:", e.message);
+            else if (action === "reset") {
+                body = JSON.stringify({ dailyTokenLimit: null });
+                state.config.dailyTokenLimit = null;
             }
+            else {
+                console.error("Usage: mapick budget set <amount> | mapick budget reset");
+                return;
+            }
+            // 写内存 + 通知 gateway (fire-and-forget)
+            const url = new URL("http://127.0.0.1:18789/mapick/api/config");
+            const req = http.request(url, { method: "POST", headers: { "Content-Type": "application/json" } }, (res) => {
+                let data = "";
+                res.on("data", (c) => data += c);
+                res.on("end", () => {
+                    try {
+                        const d = JSON.parse(data);
+                        console.log(d.ok ? "Saved." : "Error: " + (d.error || "unknown"));
+                    }
+                    catch {
+                        console.log("Config updated.");
+                    }
+                });
+            });
+            req.on("error", () => console.log("Config updated (gateway unreachable, memory only)."));
+            req.write(body);
+            req.end();
         });
         mapick.command("log")
             .description("Show recent events")

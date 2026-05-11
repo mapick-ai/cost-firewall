@@ -74,7 +74,10 @@ export function sourceFromProviderContext(
   route: RouteInfo
 ): string {
   if (ctx.workspaceDir) {
-    return `${ctx.workspaceDir}/${route.upstream}/${route.model}`;
+    // 用最后一级目录名代替完整路径，避免泄露用户文件路径
+    const parts = ctx.workspaceDir.replace(/\\/g, "/").split("/").filter(Boolean);
+    const basename = parts[parts.length - 1] || "ws";
+    return `${basename}/${route.upstream}/${route.model}`;
   }
   return `${route.upstream}/${route.model}`;
 }
