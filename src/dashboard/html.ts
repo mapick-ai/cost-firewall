@@ -460,7 +460,13 @@ export function renderDashboardHtml(_stats: any): string {
 </head>
 <body>
   <header class="header">
-    <div class="header-title">Firewall</div>
+    <div class="header-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;margin-right:6px">
+        <path d="M12 2L3 6v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V6l-9-4z"/>
+        <path d="M8 12l3 3 5-5"/>
+      </svg>
+      Firewall
+    </div>
     <div class="header-center">
       <div class="mode-toggle">
         <button class="mode-btn active" id="mode-observe">Observe</button>
