@@ -15,14 +15,22 @@ const ENV_VAR_MAP = {
     qwen: "DASHSCOPE_API_KEY",
 };
 export async function resolveUpstreamAuth(api, upstream, model) {
+    // Helper: extract key from response (could be string or { apiKey, ... })
+    function extractKey(raw) {
+        if (!raw)
+            return undefined;
+        if (typeof raw === "string")
+            return raw;
+        return raw.apiKey ?? raw.key ?? raw.value ?? undefined;
+    }
     // 1. Try SDK runtime auth
     if (api.runtime?.modelAuth?.getApiKeyForModel) {
         try {
-            const key = await api.runtime.modelAuth.getApiKeyForModel({
+            const key = extractKey(await api.runtime.modelAuth.getApiKeyForModel({
                 model: { provider: upstream, id: model },
                 cfg: api.config,
                 workspaceDir: api.workspaceDir,
-            });
+            }));
             if (key)
                 return { apiKey: key };
         }
@@ -30,7 +38,7 @@ export async function resolveUpstreamAuth(api, upstream, model) {
     }
     if (api.runtime?.modelAuth?.resolveApiKeyForProvider) {
         try {
-            const key = await api.runtime.modelAuth.resolveApiKeyForProvider(upstream);
+            const key = extractKey(await api.runtime.modelAuth.resolveApiKeyForProvider(upstream));
             if (key)
                 return { apiKey: key };
         }

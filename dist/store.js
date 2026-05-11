@@ -1,7 +1,7 @@
 /**
  * JSONL event storage (async, non-blocking hook)
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { appendFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 const FLUSH_INTERVAL_MS = 1000;
@@ -15,12 +15,6 @@ export class EventStore {
     dirReady = false;
     constructor() {
         this.startFlushTimer();
-    }
-    ensureDir() {
-        if (this.dirReady)
-            return;
-        mkdirSync(STATE_DIR, { recursive: true });
-        this.dirReady = true;
     }
     append(event) {
         const fullEvent = {
@@ -38,18 +32,18 @@ export class EventStore {
         }
     }
     /**
-     * Flush buffer to disk (synchronous, copy-and-replace pattern)
-     * This prevents concurrent flushes from double-writing or interleaving events
+     * Flush buffer to disk (append mode — preserves history)
+     * Copy-and-replace pattern prevents concurrent flushes from interleaving
      */
     flush() {
         if (this.buffer.length === 0)
             return;
-        // Copy-and-replace: grab current buffer and clear it atomically
         const batch = this.buffer;
         this.buffer = [];
-        this.ensureDir();
+        if (!existsSync(STATE_DIR))
+            mkdirSync(STATE_DIR, { recursive: true });
         const lines = batch.map((e) => JSON.stringify(e)).join("\n") + "\n";
-        writeFileSync(EVENTS_FILE, lines, "utf-8");
+        appendFileSync(EVENTS_FILE, lines, "utf-8");
     }
     async close() {
         if (this.flushTimer) {

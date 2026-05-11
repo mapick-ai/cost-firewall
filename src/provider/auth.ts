@@ -26,21 +26,28 @@ export async function resolveUpstreamAuth(
   upstream: string,
   model: string
 ): Promise<AuthResult> {
+  // Helper: extract key from response (could be string or { apiKey, ... })
+  function extractKey(raw: any): string | undefined {
+    if (!raw) return undefined;
+    if (typeof raw === "string") return raw;
+    return raw.apiKey ?? raw.key ?? raw.value ?? undefined;
+  }
+
   // 1. Try SDK runtime auth
   if (api.runtime?.modelAuth?.getApiKeyForModel) {
     try {
-      const key = await api.runtime.modelAuth.getApiKeyForModel({
+      const key = extractKey(await api.runtime.modelAuth.getApiKeyForModel({
         model: { provider: upstream, id: model },
         cfg: api.config,
         workspaceDir: api.workspaceDir,
-      });
+      }));
       if (key) return { apiKey: key };
     } catch { /* continue */ }
   }
 
   if (api.runtime?.modelAuth?.resolveApiKeyForProvider) {
     try {
-      const key = await api.runtime.modelAuth.resolveApiKeyForProvider(upstream);
+      const key = extractKey(await api.runtime.modelAuth.resolveApiKeyForProvider(upstream));
       if (key) return { apiKey: key };
     } catch { /* continue */ }
   }

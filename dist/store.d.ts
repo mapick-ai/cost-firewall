@@ -8,12 +8,11 @@ export declare class EventStore {
     private flushTimer;
     private dirReady;
     constructor();
-    private ensureDir;
     append(event: Omit<FirewallEvent, "timestamp">): void;
     private startFlushTimer;
     /**
-     * Flush buffer to disk (synchronous, copy-and-replace pattern)
-     * This prevents concurrent flushes from double-writing or interleaving events
+     * Flush buffer to disk (append mode — preserves history)
+     * Copy-and-replace pattern prevents concurrent flushes from interleaving
      */
     flush(): void;
     close(): Promise<void>;
