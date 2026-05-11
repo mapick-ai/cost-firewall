@@ -382,9 +382,9 @@ export function renderDashboardHtml(_stats) {
     .status-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border-radius: 6px;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       overflow: hidden;
       margin-bottom: 24px;
     }
@@ -400,6 +400,18 @@ export function renderDashboardHtml(_stats) {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .status-item:nth-child(4n) { border-right: none; }
+    .status-item:nth-last-child(-n+4):nth-child(n+1) { border-bottom: none; }
+    @media (max-width: 900px) {
+      .status-item:nth-child(4n) { border-right: 1px solid var(--border); }
+      .status-item:nth-child(2n) { border-right: none; }
+    }
+    @media (max-width: 500px) {
+      .status-item { border-right: none; }
+    }
     }
     .status-item-label {
       font-size: 13px;
