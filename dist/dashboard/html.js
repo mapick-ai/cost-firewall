@@ -1,305 +1,624 @@
-/**
- * Dashboard HTML — Security Operations Console
- * Aesthetic: Industrial cyber-security, dark terminal, neon accents
- */
 export function renderDashboardHtml(_stats) {
     return `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Firewall · Mapick</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#f8f9fb;--surface:#fff;--border:#e5e7eb;--text:#1a1a2e;--dim:#6b7280;
-  --blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626;
-  --font-mono:'JetBrains Mono',monospace;--font-sans:system-ui,-apple-system,sans-serif}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px}
-.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
-/* Sidebar */
-.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 18px;display:flex;flex-direction:column;gap:16px}
-.logo{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
-.logo span{font-size:10px;color:var(--dim);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;background:var(--bg);padding:2px 6px;border-radius:4px}
-/* Stat block */
-.stat-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px}
-.stat-val{font-family:var(--font-mono);font-size:24px;font-weight:700;line-height:1}
-.stat-label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;display:flex;align-items:center;gap:4px}
-.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
-.dot.green{background:var(--green)}.dot.amber{background:var(--amber)}.dot.red{background:var(--red)}
-/* Mode buttons */
-.mode-group{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px}
-.mode-btn{flex:1;padding:8px 0;text-align:center;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;background:transparent;color:var(--dim);font-family:var(--font-sans);transition:.15s}
-.mode-btn.active{background:var(--blue);color:#fff}
-.mode-btn.protect.active{background:var(--amber);color:#fff}
-/* Main */
-.main{padding:24px 28px;overflow-y:auto}
-.main h2{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:600;display:flex;align-items:center;gap:8px}
-.main h2::after{content:'';flex:1;height:1px;background:var(--border)}
-/* Settings grid */
-.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.set-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;position:relative;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
-.set-card:hover{border-color:#d1d5db}
-.set-card .sw{position:absolute;top:12px;right:14px}
-.set-card label{font-size:11px;color:var(--dim);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
-.set-card .val{font-family:var(--font-mono);font-size:20px;font-weight:600;color:var(--text);margin-bottom:2px;cursor:pointer;padding:2px 0;border-radius:4px}
-.set-card .val:hover{background:var(--bg)}
-.set-card .hint{font-size:11px;color:var(--dim)}
-/* Switch */
-.sw{position:relative;width:36px;height:20px}
-.sw input{display:none}
-.sw .track{position:absolute;inset:0;background:#d1d5db;border-radius:10px;cursor:pointer;transition:.2s}
-.sw .track::after{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15)}
-.sw input:checked+.track{background:var(--blue)}
-.sw input:checked+.track::after{transform:translateX(16px)}
-/* Sources */
-.source-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
-.source-item{background:var(--surface);border:1px solid #fecaca;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px}
-.source-item .reason{font-family:var(--font-mono);font-size:11px;color:var(--red);font-weight:600;min-width:130px}
-.source-item .src{font-family:var(--font-mono);font-size:12px;color:var(--text);flex:1}
-.source-item .time{font-family:var(--font-mono);font-size:11px;color:var(--dim)}
-/* Buttons */
-.btn{font-family:var(--font-sans);font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:none;cursor:pointer;transition:.15s}
-.btn.blue{background:var(--blue);color:#fff}.btn.blue:hover{opacity:.9}
-.btn.red{background:var(--red);color:#fff}.btn.red:hover{opacity:.9}
-.btn.amber{background:var(--amber);color:#fff}.btn.amber:hover{opacity:.9}
-.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}.btn.ghost:hover{border-color:var(--blue);color:var(--blue)}
-/* Runs */
-.run-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;margin-bottom:6px}
-.run-item .status{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
-.run-item .status.danger{background:#fef2f2;color:var(--red)}.run-item .status.warning{background:#fffbeb;color:var(--amber)}
-.empty{font-size:12px;color:var(--dim);text-align:center;padding:20px}
-/* Events */
-.events{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--font-mono);font-size:11px;line-height:1.8;max-height:280px;overflow:auto;color:var(--dim)}
-.events .ts{color:var(--dim)}.events .err{color:var(--red)}.events .ok{color:var(--green)}.events .warn{color:var(--amber)}.events .blk{color:var(--red)}
-/* Tip */
-.tip{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid var(--border);color:var(--dim);text-align:center;line-height:12px;font-size:9px;cursor:help;font-weight:700;margin-left:3px}
-.tip:hover{border-color:var(--blue);color:var(--blue);background:#eff6ff}
-/* Modal */
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:10;align-items:center;justify-content:center}
-.modal.show{display:flex}
-.modal-inner{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;min-width:340px;box-shadow:0 4px 24px rgba(0,0,0,0.12)}
-.modal-inner input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:16px;padding:10px 12px;border-radius:6px;margin:8px 0}
-.modal-inner input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
-::selection{background:var(--blue);color:#fff}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cost Firewall Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fb;
+      color: #1f2937;
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 280px;
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sidebar h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .stat-card {
+      background: #f8f9fb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .stat-card .label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #111827;
+    }
+    .mode-switch {
+      display: flex;
+      gap: 8px;
+      padding: 4px;
+      background: #f8f9fb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      background: transparent;
+      color: #6b7280;
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      background: #fff;
+      color: #2563eb;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary {
+      background: #f8f9fb;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+    }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .rule-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .rule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .rule-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+    }
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #e5e7eb;
+      border-radius: 24px;
+      transition: 0.2s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    input:checked + .slider { background: #2563eb; }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .rule-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .field-label {
+      font-size: 12px;
+      color: #6b7280;
+      min-width: 80px;
+    }
+    .field-input {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .field-input:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+    .lists-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .list-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .list-header {
+      padding: 12px 16px;
+      background: #f8f9fb;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+    }
+    .list-body {
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f8f9fb;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    .list-item:last-child { margin-bottom: 0; }
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 4px;
+    }
+    .empty-state {
+      padding: 20px;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 12px;
+    }
+    .events-section {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .events-body {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 12px;
+    }
+    .event-item {
+      display: flex;
+      gap: 12px;
+      padding: 8px 12px;
+      font-size: 12px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-time {
+      color: #6b7280;
+      font-family: monospace;
+      min-width: 140px;
+    }
+    .event-type {
+      font-weight: 500;
+      min-width: 80px;
+    }
+    .event-type.blocked { color: #dc2626; }
+    .event-type.warning { color: #f59e0b; }
+    .event-type.info { color: #2563eb; }
+    .event-msg { color: #374151; flex: 1; }
+  </style>
 </head>
 <body>
-<div class="app">
-<aside class="sidebar">
-  <div class="logo">◈ Firewall <span>v0.1</span></div>
-
-  <div class="stat-block"><div class="stat-val" id="tokens" style="color:var(--cyan)">0</div><div class="stat-label">Today Tokens <span class="tip" title="累计消耗 token 数（字节÷4 估算）"></span></div></div>
-  <div class="stat-block"><div class="stat-val" id="blocked" style="color:var(--red)">0</div><div class="stat-label">Blocked <span class="tip" title="被熔断规则拦截的次数"></span></div></div>
-  <div class="stat-block"><div class="stat-val" id="limit" style="color:var(--amber)">∞</div><div class="stat-label">Daily Limit <span class="tip" title="token 上限，达到后拦截；∞=无限制"></span></div></div>
-  <div class="stat-block"><div class="stat-val" id="calls" style="color:var(--green)">0</div><div class="stat-label">Calls <span class="tip" title="今日 LLM 调用总次数"></span></div></div>
-
-  <div class="mode-group">
-    <button class="mode-btn active" id="btnObs" onclick="setMode('observe')">OBSERVE</button>
-    <button class="mode-btn protect" id="btnProt" onclick="setMode('protect')">PROTECT</button>
+  <div class="sidebar">
+    <h1>Cost Firewall</h1>
+    
+    <div class="stat-card">
+      <div class="label">Today Tokens</div>
+      <div class="value" id="stat-tokens">-</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="label">Blocked</div>
+      <div class="value" id="stat-blocked">-</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="label">Daily Limit</div>
+      <div class="value" id="stat-limit">-</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="label">Active Calls</div>
+      <div class="value" id="stat-calls">-</div>
+    </div>
+    
+    <div class="mode-switch">
+      <button class="mode-btn" id="mode-observe">Observe</button>
+      <button class="mode-btn" id="mode-protect">Protect</button>
+    </div>
+    
+    <button class="btn btn-danger" id="btn-stop">Emergency Stop</button>
+    <button class="btn btn-primary" id="btn-resume" style="display:none">Resume</button>
+    <button class="btn btn-secondary" id="btn-refresh">Refresh</button>
+  </div>
+  
+  <div class="main">
+    <div class="section-title">Rules Configuration</div>
+    <div class="rules-grid">
+      <div class="rule-card">
+        <div class="rule-header">
+          <span class="rule-title">Daily Token Limit</span>
+          <label class="switch">
+            <input type="checkbox" id="switch-daily-limit">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="rule-fields">
+          <div class="field-row">
+            <span class="field-label">Limit:</span>
+            <input type="number" class="field-input" id="input-daily-limit" placeholder="50000">
+          </div>
+        </div>
+      </div>
+      
+      <div class="rule-card">
+        <div class="rule-header">
+          <span class="rule-title">Consecutive Failures</span>
+          <label class="switch">
+            <input type="checkbox" id="switch-failures">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="rule-fields">
+          <div class="field-row">
+            <span class="field-label">Failures:</span>
+            <input type="number" class="field-input" id="input-failures" placeholder="3">
+          </div>
+          <div class="field-row">
+            <span class="field-label">Cooldown:</span>
+            <input type="number" class="field-input" id="input-cooldown" placeholder="30">
+            <span class="field-label">sec</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="rule-card">
+        <div class="rule-header">
+          <span class="rule-title">Token Velocity</span>
+          <label class="switch">
+            <input type="checkbox" id="switch-velocity">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="rule-fields">
+          <div class="field-row">
+            <span class="field-label">Threshold:</span>
+            <input type="number" class="field-input" id="input-velocity" placeholder="1000">
+          </div>
+          <div class="field-row">
+            <span class="field-label">Window:</span>
+            <input type="number" class="field-input" id="input-velocity-window" placeholder="60">
+            <span class="field-label">sec</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="rule-card">
+        <div class="rule-header">
+          <span class="rule-title">Call Frequency</span>
+          <label class="switch">
+            <input type="checkbox" id="switch-frequency">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="rule-fields">
+          <div class="field-row">
+            <span class="field-label">Threshold:</span>
+            <input type="number" class="field-input" id="input-frequency" placeholder="100">
+          </div>
+          <div class="field-row">
+            <span class="field-label">Window:</span>
+            <input type="number" class="field-input" id="input-frequency-window" placeholder="60">
+            <span class="field-label">sec</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section-title">Monitoring</div>
+    <div class="lists-grid">
+      <div class="list-card">
+        <div class="list-header">Cooling Sources</div>
+        <div class="list-body" id="list-cooling">
+          <div class="empty-state">No cooling sources</div>
+        </div>
+      </div>
+      
+      <div class="list-card">
+        <div class="list-header">Active Runs</div>
+        <div class="list-body" id="list-runs">
+          <div class="empty-state">No active runs</div>
+        </div>
+      </div>
+      
+      <div class="list-card">
+        <div class="list-header">Status</div>
+        <div class="list-body" id="list-status">
+          <div class="empty-state">Normal</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section-title">Event Log</div>
+    <div class="events-section">
+      <div class="events-body" id="events-log">
+        <div class="empty-state">No events</div>
+      </div>
+    </div>
   </div>
 
-  <button class="btn red" onclick="api('stop')" style="width:100%">⏹ Emergency Stop</button>
-  <button class="btn blue" onclick="api('resume')" style="width:100%">▶ Resume</button>
-  <button class="btn ghost" onclick="refresh()" style="width:100%">⟳ Refresh</button>
-  <div id="msg" style="font-size:10px;font-family:var(--font-mono);color:var(--green);text-align:center;min-height:14px;margin-top:8px"></div>
-</aside>
+  <script>
+    let _saving = false;
+    let _refreshTimer = null;
 
-<main class="main">
-  <h2>Breaking Rules</h2>
-  <div class="settings">
-    <div class="set-card">
-      <label class="sw"><input type="checkbox" id="swLimit" checked onchange="swToggle('limit')"><span class="track"></span></label>
-      <label>Daily Token Limit</label>
-      <div class="val" id="vLimit" onclick="editVal('cfgLimit','vLimit','token limit')">10000</div>
-      <div class="hint">Block all when exceeded</div>
-    </div>
-    <div class="set-card">
-      <label class="sw"><input type="checkbox" id="swFail" checked onchange="swToggle('fail')"><span class="track"></span></label>
-      <label>Consecutive Failures</label>
-      <div class="val" id="vFail" onclick="editVal('cfgFail','vFail','failures')">3</div>
-      <div class="hint">Failures → break <span id="vCool" onclick="editVal('cfgCool','vCool','cooldown')" style="color:var(--amber);cursor:pointer">30s</span></div>
-    </div>
-    <div class="set-card">
-      <label class="sw"><input type="checkbox" id="swVel" onchange="swToggle('vel')"><span class="track"></span></label>
-      <label>Token Velocity</label>
-      <div class="val" id="vVel" onclick="editVal('cfgVel','vVel','tokens')">100000</div>
-      <div class="hint">tokens / <span id="vVelWin" onclick="editVal('cfgVelWin','vVelWin','window sec')" style="color:var(--cyan);cursor:pointer">60s</span> window</div>
-    </div>
-    <div class="set-card">
-      <label class="sw"><input type="checkbox" id="swFreq" onchange="swToggle('freq')"><span class="track"></span></label>
-      <label>Call Frequency</label>
-      <div class="val" id="vFreq" onclick="editVal('cfgFreq','vFreq','calls')">30</div>
-      <div class="hint">calls / <span id="vFreqWin" onclick="editVal('cfgFreqWin','vFreqWin','window sec')" style="color:var(--cyan);cursor:pointer">60s</span> window</div>
-    </div>
-  </div>
-
-  <h2>Breaker Sources</h2>
-  <div class="source-list" id="coolingList"><div class="empty">All clear — no sources in cooldown</div></div>
-
-  <h2>Active Runs</h2>
-  <div id="runsList"><div class="empty">No active runs</div></div>
-
-  <h2>Event Log</h2>
-  <div class="events" id="events">Loading…</div>
-</main>
-</div>
-
-<!-- Hidden inputs for editing -->
-<input id="cfgLimit" type="hidden" value="10000">
-<input id="cfgFail" type="hidden" value="3"><input id="cfgCool" type="hidden" value="30">
-<input id="cfgVel" type="hidden" value="0"><input id="cfgVelWin" type="hidden" value="60">
-<input id="cfgFreq" type="hidden" value="0"><input id="cfgFreqWin" type="hidden" value="60">
-
-<!-- Edit modal -->
-<div class="modal" id="modal"><div class="modal-inner">
-  <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px" id="modalLabel"></div>
-  <input id="modalInput" type="number" min="0" autofocus>
-  <div style="display:flex;gap:8px;margin-top:12px">
-    <button class="btn blue" onclick="saveEdit()">Save</button>
-    <button class="btn ghost" onclick="closeModal()">Cancel</button>
-  </div>
-</div></div>
-
-<script>
-const API='http://127.0.0.1:18789/mapick/api';
-var _msgTimer, _saving=false;
-
-function showMsg(text,ok){var m=document.getElementById('msg');m.textContent=text;m.style.color=ok?'#00c853':'#ff3d3d';clearTimeout(_msgTimer);_msgTimer=setTimeout(function(){m.textContent=''},3000)}
-function api(p){showMsg('Calling '+p+'...',true);fetch(API+'/'+p).then(function(r){r.ok?showMsg(p+' OK',true):showMsg(p+' FAIL',false)}).catch(function(e){showMsg(p+' ERR: '+e.message,false)}).then(refresh)}
-function setMode(m){showMsg('Setting '+m+'...',true);_saving=true;fetch(API+'/config',{method:'POST',body:JSON.stringify({mode:m})}).then(function(r){return r.json()}).then(function(d){_saving=false;showMsg('Mode: '+m+(d.ok?' ✓':' ✗'),d.ok)}).catch(function(e){_saving=false;showMsg('Error: '+e.message,false)}).then(refresh)}
-function resetSource(src){showMsg('Resetting '+src+'...',true);fetch(API+'/reset-source?source='+encodeURIComponent(src)).then(function(r){showMsg(r.ok?'Reset OK':'Reset failed',r.ok)}).catch(function(e){showMsg('Error: '+e.message,false)}).then(refresh)}
-
-// ---- Edit modal ----
-var editId,editDisplay;
-function editVal(id,display,label){
-  editId=id;editDisplay=display;
-  document.getElementById('modalLabel').textContent='Edit '+label;
-  document.getElementById('modalInput').value=document.getElementById(id).value;
-  document.getElementById('modal').classList.add('show');
-  document.getElementById('modalInput').focus();
-}
-function closeModal(){document.getElementById('modal').classList.remove('show')}
-function saveEdit(){
-  document.getElementById(editId).value=document.getElementById('modalInput').value;
-  document.getElementById(editDisplay).textContent=document.getElementById('modalInput').value;
-  closeModal();saveConfig()
-}
-document.getElementById('modalInput').addEventListener('keydown',function(e){if(e.key==='Enter')saveEdit();if(e.key==='Escape')closeModal()});
-document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
-
-// ---- Switch toggle ----
-function swToggle(rule){
-  var sw=document.getElementById('sw'+rule.charAt(0).toUpperCase()+rule.slice(1));
-  var on=sw.checked;
-  if(rule==='limit'){ document.getElementById('cfgLimit').disabled=!on; if(!on)document.getElementById('cfgLimit').value='0'; }
-  else if(rule==='fail'){ document.getElementById('cfgFail').disabled=!on; document.getElementById('cfgCool').disabled=!on; if(!on){document.getElementById('cfgFail').value='0';} }
-  else if(rule==='vel'){ document.getElementById('cfgVel').disabled=!on; document.getElementById('cfgVelWin').disabled=!on; if(!on){document.getElementById('cfgVel').value='0';} }
-  else if(rule==='freq'){ document.getElementById('cfgFreq').disabled=!on; document.getElementById('cfgFreqWin').disabled=!on; if(!on){document.getElementById('cfgFreq').value='0';} }
-  // 立即保存单项，不保存全部（避免干扰其他设置）
-  saveOne(rule, on);
-}
-
-// 保存单项设置
-function saveOne(rule, on){
-  var body={};
-  if(rule==='limit') body.dailyTokenLimit = on ? (+dO('cfgLimit')||10000) : null;
-  else if(rule==='fail') body.breaker = { consecutiveFailures: on ? (+dO('cfgFail')||3) : 0, cooldownSec: +dO('cfgCool')||30 };
-  else if(rule==='vel') body.breaker = { tokenVelocityThreshold: on ? (+dO('cfgVel')||100000) : 0, tokenVelocityWindowSec: +dO('cfgVelWin')||60 };
-  else if(rule==='freq') body.breaker = { callFrequencyThreshold: on ? (+dO('cfgFreq')||30) : 0, callFrequencyWindowSec: +dO('cfgFreqWin')||60 };
-  _saving=true; showMsg(rule+' '+(on?'ON':'OFF'),true);
-  fetch(API+'/config',{method:'POST',body:JSON.stringify(body)}).then(function(r){return r.json()}).then(function(d){
-    _saving=false; showMsg(rule+' '+(on?'ON':'OFF')+(d.ok?' ✓':' ✗'),!!d.ok);
-  }).catch(function(e){_saving=false;showMsg('Error',false)});
-}
-
-// ---- Save config ----
-async function saveConfig(){
-  if(_saving) return;
-  _saving=true; showMsg('Saving...',true);
-  var c={
-    breaker:{
-      consecutiveFailures:+dO('cfgFail'),cooldownSec:+dO('cfgCool'),
-      tokenVelocityThreshold:+dO('cfgVel'),tokenVelocityWindowSec:+dO('cfgVelWin'),
-      callFrequencyThreshold:+dO('cfgFreq'),callFrequencyWindowSec:+dO('cfgFreqWin')
+    async function fetchStats() {
+      if (_saving) return;
+      try {
+        const res = await fetch('/mapick/api/stats');
+        const data = await res.json();
+        updateUI(data);
+      } catch (e) {
+        console.error('Failed to fetch stats:', e);
+      }
     }
-  };
-  var lt=+dO('cfgLimit');c.dailyTokenLimit=lt>0?lt:null;
-  try{
-    var r=await fetch(API+'/config',{method:'POST',body:JSON.stringify(c)});
-    var d=await r.json();
-    showMsg(d.ok?'Saved ✓':'Error: '+d.error,!!d.ok);
-  }catch(e){ showMsg('Network error',false) }
-  _saving=false;
-  refresh();
-}
-function dO(id){return document.getElementById(id).value}
 
-// ---- Refresh ----
-async function refresh(){
-  if(_saving) return; // 防止保存期间刷新覆盖用户操作
-  try{
-    var r=await fetch(API+'/stats');var d=await r.json();
-    document.getElementById('tokens').textContent=(d.today_tokens||0).toLocaleString();
-    document.getElementById('blocked').textContent=d.today_blocked||0;
-    document.getElementById('limit').textContent=d.daily_token_limit!=null?d.daily_token_limit.toLocaleString():'∞';
-    document.getElementById('calls').textContent=(d.today_calls||0).toLocaleString();
+    function updateUI(data) {
+      document.getElementById('stat-tokens').textContent = (data.today_tokens ?? 0).toLocaleString();
+      document.getElementById('stat-blocked').textContent = data.today_blocked ?? 0;
+      document.getElementById('stat-limit').textContent = data.daily_token_limit ? data.daily_token_limit.toLocaleString() : 'None';
+      document.getElementById('stat-calls').textContent = (data.active_runs ?? []).length;
 
-    var m=d.mode||'observe';var es=d.emergency_stop;
-    document.getElementById('btnObs').className='mode-btn'+(m==='observe'&&!es?' active':'');
-    document.getElementById('btnProt').className='mode-btn protect'+(m==='protect'&&!es?' active':'');
+      const modeObserve = document.getElementById('mode-observe');
+      const modeProtect = document.getElementById('mode-protect');
+      if (data.mode === 'protect') {
+        modeProtect.classList.add('active');
+        modeObserve.classList.remove('active');
+      } else {
+        modeObserve.classList.add('active');
+        modeProtect.classList.remove('active');
+      }
 
-    var b=d.breaker||{};
-    document.getElementById('cfgLimit').value=d.daily_token_limit ?? '';
-    document.getElementById('vLimit').textContent=d.daily_token_limit ?? '∞';
-    document.getElementById('swLimit').checked=d.daily_token_limit!=null;
+      const btnStop = document.getElementById('btn-stop');
+      const btnResume = document.getElementById('btn-resume');
+      if (data.emergency_stop) {
+        btnStop.style.display = 'none';
+        btnResume.style.display = 'block';
+      } else {
+        btnStop.style.display = 'block';
+        btnResume.style.display = 'none';
+      }
 
-    // API returns snake_case, saveConfig sends camelCase — both work with backend
-    document.getElementById('cfgFail').value=b.consecutive_failures ?? 3;
-    document.getElementById('vFail').textContent=b.consecutive_failures ?? 3;
-    document.getElementById('swFail').checked=(b.consecutive_failures ?? 0) > 0;
+      const breaker = data.breaker ?? {};
+      
+      const switchDailyLimit = document.getElementById('switch-daily-limit');
+      const inputDailyLimit = document.getElementById('input-daily-limit');
+      const hasDailyLimit = data.daily_token_limit != null && data.daily_token_limit > 0;
+      switchDailyLimit.checked = hasDailyLimit;
+      inputDailyLimit.value = data.daily_token_limit ?? '';
 
-    document.getElementById('cfgCool').value=b.cooldown_sec ?? 30;
-    document.getElementById('vCool').textContent=(b.cooldown_sec ?? 30)+'s';
-    document.getElementById('cfgVel').value=b.token_velocity_threshold ?? 0;
-    document.getElementById('vVel').textContent=b.token_velocity_threshold ?? 0;
-    document.getElementById('swVel').checked=(b.token_velocity_threshold ?? 0)>0;
+      const switchFailures = document.getElementById('switch-failures');
+      const inputFailures = document.getElementById('input-failures');
+      const inputCooldown = document.getElementById('input-cooldown');
+      const hasFailures = breaker.consecutive_failures > 0;
+      switchFailures.checked = hasFailures;
+      inputFailures.value = breaker.consecutive_failures ?? '';
+      inputCooldown.value = breaker.cooldown_sec ?? '';
 
-    document.getElementById('cfgVelWin').value=b.token_velocity_window_sec ?? 60;
-    document.getElementById('vVelWin').textContent=(b.token_velocity_window_sec ?? 60)+'s';
-    document.getElementById('cfgFreq').value=b.call_frequency_threshold ?? 0;
-    document.getElementById('vFreq').textContent=b.call_frequency_threshold ?? 0;
-    document.getElementById('swFreq').checked=(b.call_frequency_threshold ?? 0)>0;
+      const switchVelocity = document.getElementById('switch-velocity');
+      const inputVelocity = document.getElementById('input-velocity');
+      const inputVelocityWindow = document.getElementById('input-velocity-window');
+      const hasVelocity = breaker.token_velocity_threshold > 0;
+      switchVelocity.checked = hasVelocity;
+      inputVelocity.value = breaker.token_velocity_threshold ?? '';
+      inputVelocityWindow.value = breaker.token_velocity_window_sec ?? '';
 
-    document.getElementById('cfgFreqWin').value=b.call_frequency_window_sec||60;
-    document.getElementById('vFreqWin').textContent=(b.call_frequency_window_sec||60)+'s';
+      const switchFrequency = document.getElementById('switch-frequency');
+      const inputFrequency = document.getElementById('input-frequency');
+      const inputFrequencyWindow = document.getElementById('input-frequency-window');
+      const hasFrequency = breaker.call_frequency_threshold > 0;
+      switchFrequency.checked = hasFrequency;
+      inputFrequency.value = breaker.call_frequency_threshold ?? '';
+      inputFrequencyWindow.value = breaker.call_frequency_window_sec ?? '';
 
-    // Breaker sources
-    var cs=d.cooling_sources||[];
-    var cl=document.getElementById('coolingList');
-    cl.innerHTML=cs.length?cs.map(function(s){return'<div class="source-item"><span class="reason">'+s.reason+'</span><span class="src">'+s.source+'</span><span class="time">'+s.remainingSec+'s</span><button class="btn red" style="font-size:10px;padding:3px 8px" onclick="resetSource(\\''+s.source+'\\')">Reset</button></div>'}).join(''):'<div class="empty">All clear — no sources in cooldown</div>';
+      const coolingSources = data.cooling_sources ?? [];
+      const coolingList = document.getElementById('list-cooling');
+      if (coolingSources.length > 0) {
+        coolingList.innerHTML = coolingSources.map(s => \`
+          <div class="list-item">
+            <span>\${escapeHtml(s.source ?? s)}</span>
+            <button class="btn btn-sm btn-secondary" onclick="resetSource('\${escapeHtml(s.source ?? s)}')">Reset</button>
+          </div>
+        \`).join('');
+      } else {
+        coolingList.innerHTML = '<div class="empty-state">No cooling sources</div>';
+      }
 
-    // Runs
-    var ar=d.active_runs||[];
-    document.getElementById('runsList').innerHTML=ar.length?ar.map(function(r){return'<div class="run-item"><span class="src" style="flex:1;font-family:var(--font-mono);font-size:11px">'+r.runId.slice(0,8)+' <span style="color:var(--dim)">'+r.source+'</span></span><span style="font-family:var(--font-mono);font-size:11px;color:var(--dim)">'+r.calls+' calls | '+(r.tokens||0).toLocaleString()+' t</span><span class="status '+(r.status==='danger'?'danger':'warning')+'">'+r.status+'</span></div>'}).join(''):'<div class="empty">No active runs</div>';
+      const activeRuns = data.active_runs ?? [];
+      const runsList = document.getElementById('list-runs');
+      if (activeRuns.length > 0) {
+        runsList.innerHTML = activeRuns.map(r => \`
+          <div class="list-item">
+            <span>\${escapeHtml(r.id ?? r)}</span>
+          </div>
+        \`).join('');
+      } else {
+        runsList.innerHTML = '<div class="empty-state">No active runs</div>';
+      }
+    }
 
-    // Events
-    try{
-      var ev=await fetch(API+'/events');var evd=await ev.json();
-      document.getElementById('events').innerHTML=evd.length?evd.map(function(e){
-        var t=new Date(e.timestamp).toISOString().slice(11,19);
-        var c='ok';if(e.type==='blocked')c='blk';else if(e.outcome==='error')c='err';else if(e.type==='run_status_change')c='warn';
-        return'<span class="ts">'+t+'</span> <span class="'+c+'">'+e.type+'</span> '+(e.provider||'')+' '+(e.model||'')+' '+(e.outcome||'')+' '+(e.reason||'')+'<br>';
-      }).join(''):'<span class="empty">No events yet</span>';
-    }catch(ex){document.getElementById('events').textContent='Failed to load events'}
-  }catch(ex){console.error(ex)}
-}
-refresh();setInterval(refresh,3000);
-</script>
-</body></html>`;
+    async function saveConfig(body) {
+      _saving = true;
+      try {
+        await fetch('/mapick/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      } finally {
+        _saving = false;
+      }
+    }
+
+    async function fetchEvents() {
+      try {
+        const res = await fetch('/mapick/api/events');
+        const events = await res.json();
+        renderEvents(events);
+      } catch (e) {
+        console.error('Failed to fetch events:', e);
+      }
+    }
+
+    function renderEvents(events) {
+      const log = document.getElementById('events-log');
+      if (!events || events.length === 0) {
+        log.innerHTML = '<div class="empty-state">No events</div>';
+        return;
+      }
+      log.innerHTML = events.slice(0, 50).map(e => \`
+        <div class="event-item">
+          <span class="event-time">\${escapeHtml(e.timestamp ?? e.time ?? '')}</span>
+          <span class="event-type \${e.type ?? e.level ?? ''}">\${escapeHtml(e.type ?? e.level ?? 'info')}</span>
+          <span class="event-msg">\${escapeHtml(e.message ?? e.msg ?? '')}</span>
+        </div>
+      \`).join('');
+    }
+
+    async function setMode(mode) {
+      await saveConfig({ mode });
+      fetchStats();
+    }
+
+    async function emergencyStop() {
+      await fetch('/mapick/api/stop');
+      fetchStats();
+    }
+
+    async function resume() {
+      await fetch('/mapick/api/resume');
+      fetchStats();
+    }
+
+    async function resetSource(source) {
+      await fetch('/mapick/api/reset-source?source=' + encodeURIComponent(source));
+      fetchStats();
+    }
+
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    document.getElementById('mode-observe').addEventListener('click', () => setMode('observe'));
+    document.getElementById('mode-protect').addEventListener('click', () => setMode('protect'));
+    document.getElementById('btn-stop').addEventListener('click', emergencyStop);
+    document.getElementById('btn-resume').addEventListener('click', resume);
+    document.getElementById('btn-refresh').addEventListener('click', () => { fetchStats(); fetchEvents(); });
+
+    document.getElementById('switch-daily-limit').addEventListener('change', function() {
+      const val = this.checked ? parseInt(document.getElementById('input-daily-limit').value) || 50000 : null;
+      saveConfig({ dailyTokenLimit: val });
+    });
+
+    document.getElementById('switch-failures').addEventListener('change', function() {
+      const failures = this.checked ? parseInt(document.getElementById('input-failures').value) || 3 : 0;
+      const cooldown = parseInt(document.getElementById('input-cooldown').value) || 30;
+      saveConfig({ breaker: { consecutiveFailures: failures, cooldownSec: cooldown } });
+    });
+
+    document.getElementById('switch-velocity').addEventListener('change', function() {
+      const threshold = this.checked ? parseInt(document.getElementById('input-velocity').value) || 1000 : 0;
+      const window = parseInt(document.getElementById('input-velocity-window').value) || 60;
+      saveConfig({ breaker: { tokenVelocityThreshold: threshold, tokenVelocityWindowSec: window } });
+    });
+
+    document.getElementById('switch-frequency').addEventListener('change', function() {
+      const threshold = this.checked ? parseInt(document.getElementById('input-frequency').value) || 100 : 0;
+      const window = parseInt(document.getElementById('input-frequency-window').value) || 60;
+      saveConfig({ breaker: { callFrequencyThreshold: threshold, callFrequencyWindowSec: window } });
+    });
+
+    fetchStats();
+    fetchEvents();
+    _refreshTimer = setInterval(() => {
+      fetchStats();
+      fetchEvents();
+    }, 3000);
+  </script>
+</body>
+</html>`;
 }
 //# sourceMappingURL=html.js.map
