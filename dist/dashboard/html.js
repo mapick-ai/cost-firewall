@@ -1,6 +1,6 @@
 export function renderDashboardHtml(_stats) {
     return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -439,13 +439,13 @@ export function renderDashboardHtml(_stats) {
     let _saving = false;
     let _refreshTimer = null;
 
-    // 检查元素是否聚焦（用户正在编辑），如果是则跳过 value 更新
+    // Check if element is focused (user is editing), skip value update if so
     function isFocused(id) {
       var el = document.getElementById(id);
       return el && document.activeElement === el;
     }
     function safeSetValue(id, value) {
-      if (isFocused(id)) return; // 用户正在编辑，不覆盖
+      if (isFocused(id)) return; // User is editing, don't override
       var el = document.getElementById(id);
       if (el) el.value = value ?? '';
     }

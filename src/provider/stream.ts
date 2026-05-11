@@ -1,8 +1,8 @@
 /**
- * createStreamFn 实现
+ * createStreamFn implementation
  *
- * 核心：在真实 upstream request 发出前做 precheck
- * SDK 约定：createStreamFn(ctx) => async function*(model, context, options)
+ * Core: precheck before real upstream request is sent
+ * SDK convention: createStreamFn(ctx) => async function*(model, context, options)
  */
 
 import type { FirewallState } from "../state.js";
@@ -20,8 +20,8 @@ export function createStreamFn(
   store: EventStore,
   api: any
 ) {
-  // 返回符合 SDK 签名的 createStreamFn
-  // OpenClaw 调用 createStreamFn(ctx)，返回 async generator function
+  // Return createStreamFn matching SDK signature
+  // OpenClaw calls createStreamFn(ctx), returns async generator function
   return function (ctx: any) {
     return async function* stream(model: string, context: any, options: any) {
       const route = parseMapickModelRef(model);
@@ -55,10 +55,10 @@ export function createStreamFn(
         return;
       }
 
-      // 获取 upstream auth
+      // Get upstream auth
       const auth = await resolveUpstreamAuth(api, route.upstream, route.model);
 
-      // 调用 upstream
+      // Call upstream
       let inputTokens = 0;
       let outputTokens = 0;
       let responseStreamBytes = 0;

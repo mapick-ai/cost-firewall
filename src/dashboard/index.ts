@@ -1,5 +1,5 @@
 /**
- * Dashboard HTTP route 注册
+ * Dashboard HTTP route registration
  */
 
 import type { FirewallState } from "../state.js";

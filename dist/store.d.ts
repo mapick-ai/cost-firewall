@@ -1,5 +1,5 @@
 /**
- * JSONL 事件落盘（异步，不阻塞 hook）
+ * JSONL event storage (async, non-blocking hook)
  */
 import type { FirewallEvent } from "./types.js";
 export type { FirewallEvent };

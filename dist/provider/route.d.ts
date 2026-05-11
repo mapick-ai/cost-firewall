@@ -1,5 +1,5 @@
 /**
- * mapick/<upstream>/<model> 路由解析
+ * mapick/<upstream>/<model> route resolution
  */
 export interface RouteInfo {
     upstream: string;

@@ -1,10 +1,10 @@
 /**
- * 模型定价与费用估算
+ * Model pricing and cost estimation
  *
  * OpenRouter: pass-through pricing (inherits upstream provider pricing)
  */
 
-// 定价表：$/1M tokens
+// Pricing table: $/1M tokens
 const PRICING: Record<string, Record<string, { input: number; output: number }>> = {
   openai: {
     "gpt-4o": { input: 2.5, output: 10 },
@@ -28,7 +28,7 @@ const PRICING: Record<string, Record<string, { input: number; output: number }>>
   },
 };
 
-// 兜底：按 response bytes 估算（假设 1 token ≈ 4 bytes, $3/1M tokens）
+// Fallback: estimate by response bytes (assuming 1 token ≈ 4 bytes, $3/1M tokens)
 const FALLBACK_COST_PER_BYTE = 3 / 1_000_000 / 4;
 
 export interface TokenUsage {

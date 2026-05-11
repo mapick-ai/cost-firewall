@@ -1,10 +1,10 @@
 /**
- * 熔断逻辑
+ * Breaker logic
  *
- * 三条规则：
- * 1. 连续失败 (consecutiveFailures)
- * 2. Token 速率 (tokenVelocity) — 窗口内 token 消耗超过阈值
- * 3. 调用频率 (callFrequency) — 窗口内调用次数超过阈值
+ * Three rules:
+ * 1. Consecutive failures (consecutiveFailures)
+ * 2. Token velocity (tokenVelocity) — token consumption exceeds threshold within window
+ * 3. Call frequency (callFrequency) — call count exceeds threshold within window
  */
 import type { FirewallConfig, SourceKey } from "./types.js";
 export declare class Breaker {
@@ -20,7 +20,7 @@ export declare class Breaker {
     getBlockedReason(source: SourceKey): string | undefined;
     reset(source: SourceKey): void;
     getCooldownRemaining(source: SourceKey): number;
-    /** 返回所有正在冷却的 source 列表 */
+    /** Return list of all cooling sources */
     getCoolingSources(): {
         source: string;
         reason: string;

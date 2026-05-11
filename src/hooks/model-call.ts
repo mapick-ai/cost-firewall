@@ -1,11 +1,11 @@
 /**
- * model_call_started / model_call_ended hook 处理
+ * model_call_started / model_call_ended hook handler
  *
- * 职责：
- * - 记录每次 LLM call 的 metadata
- * - 估算费用
- * - 更新 breaker 状态
- * - 写入事件日志
+ * Responsibilities:
+ * - Record metadata for each LLM call
+ * - Estimate cost
+ * - Update breaker state
+ * - Write event log
  */
 
 import type { FirewallState } from "../state.js";
@@ -106,10 +106,10 @@ export function createModelCallEndedHandler(
     state.updateRunCost(event.runId, estimatedTokens);
     state.updateSourceStats(source, estimatedTokens);
 
-    // Token 速率 + 调用频率 + 零产出检测
+    // Token velocity + call frequency + zero output detection
     if (event.outcome === "completed") {
       state.breaker.recordTokens(source, estimatedTokens);
-      // 零产出检测：花了 token 但 output 为零
+      // Zero output detection: spent tokens but output is zero
       if (estimatedTokens > 0 && event.responseStreamBytes && event.responseStreamBytes < 100) {
         store.append({
           type: "zero_output_warning",
@@ -122,7 +122,7 @@ export function createModelCallEndedHandler(
     }
     state.breaker.recordCall(source);
 
-    // RunState 状态检测：累计 token / 调用次数 / 重复 prompt
+    // RunState status detection: cumulative tokens / call count / repeated prompts
     const runTokens = run.cumulativeCost + estimatedTokens;
     const runCalls = run.llmCallTimestamps.length;
     const prevStatus = run.status;
@@ -147,7 +147,7 @@ export function createModelCallEndedHandler(
       });
     }
 
-    // 单 run 累计 token 告警
+    // Single run cumulative token warning
     const runCumulative = run.cumulativeCost + estimatedTokens;
     if (runCumulative > 200000) {
       store.append({

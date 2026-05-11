@@ -1,10 +1,10 @@
 /**
- * CLI 命令实现
+ * CLI command implementation
  *
- * 注册 openclaw mapick <subcommand> 命令组
+ * Register openclaw mapick <subcommand> command group
  */
 import { readFile } from "node:fs/promises";
-/** 从 JSONL 聚合今日统计数据 */
+/** Aggregate today's stats from JSONL */
 export async function aggregateFromJsonl(store, memTokens, memBlocked) {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -79,7 +79,7 @@ export function registerCli(api, state, store) {
             .argument("<action>", "set <amount> or reset")
             .argument("[amount]", "Token count")
             .action(async (action, amount) => {
-            // 通过 gateway 的 /config API 更新（不直接写文件，避免破坏格式）
+            // Update via gateway's /config API (don't write file directly to avoid breaking format)
             const http = await import("node:http");
             let body;
             if (action === "set" && amount) {
@@ -94,7 +94,7 @@ export function registerCli(api, state, store) {
                 console.error("Usage: firewall budget set <amount> | firewall budget reset");
                 return;
             }
-            // 写内存 + 通知 gateway (fire-and-forget)
+            // Write to memory + notify gateway (fire-and-forget)
             const url = new URL("http://127.0.0.1:18789/mapick/api/config");
             const req = http.request(url, { method: "POST", headers: { "Content-Type": "application/json" } }, (res) => {
                 let data = "";
@@ -154,7 +154,7 @@ export async function getStatus(state, store) {
         const agg = await aggregateFromJsonl(store, spent, blocked);
         spent = agg.today_tokens;
         blocked = agg.today_blocked;
-        // 从 events 聚合 cooling sources（最近 blocked 事件的 source+reason）
+        // Aggregate cooling sources from events (source+reason of recent blocked events)
         const recentBlocks = agg.events
             .filter((e) => e.type === "blocked")
             .slice(-10);
@@ -165,7 +165,7 @@ export async function getStatus(state, store) {
                 remainingSec: 0,
             }));
         }
-        // 从 events 聚合 active runs（没有对应 agent_end 的 run）
+        // Aggregate active runs from events (runs without corresponding agent_end)
         const runEnded = new Set(agg.events.filter((e) => e.type === "agent_end").map((e) => e.runId));
         const activeRunMap = new Map();
         for (const e of agg.events) {

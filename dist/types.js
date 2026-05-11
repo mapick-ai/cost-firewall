@@ -1,5 +1,5 @@
 /**
- * 共享类型定义
+ * Shared type definitions
  */
 // Plugin ID
 export const PLUGIN_ID = "mapick-firewall";

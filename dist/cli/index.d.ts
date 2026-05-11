@@ -1,12 +1,12 @@
 /**
- * CLI 命令实现
+ * CLI command implementation
  *
- * 注册 openclaw mapick <subcommand> 命令组
+ * Register openclaw mapick <subcommand> command group
  */
 import type { FirewallState } from "../state.js";
 import { EventStore } from "../store.js";
 import type { FirewallEvent } from "../types.js";
-/** 从 JSONL 聚合今日统计数据 */
+/** Aggregate today's stats from JSONL */
 export declare function aggregateFromJsonl(store: EventStore, memTokens: number, memBlocked: number): Promise<{
     today_tokens: number;
     today_blocked: number;

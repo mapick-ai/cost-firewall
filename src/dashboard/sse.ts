@@ -1,5 +1,5 @@
 /**
- * SSE 实时推送
+ * SSE real-time push
  */
 
 export class SseManager {

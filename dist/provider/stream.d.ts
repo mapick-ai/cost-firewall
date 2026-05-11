@@ -1,8 +1,8 @@
 /**
- * createStreamFn 实现
+ * createStreamFn implementation
  *
- * 核心：在真实 upstream request 发出前做 precheck
- * SDK 约定：createStreamFn(ctx) => async function*(model, context, options)
+ * Core: precheck before real upstream request is sent
+ * SDK convention: createStreamFn(ctx) => async function*(model, context, options)
  */
 import type { FirewallState } from "../state.js";
 import type { EventStore } from "../store.js";

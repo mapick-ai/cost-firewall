@@ -1,9 +1,9 @@
 /**
- * agent_end hook 处理
+ * agent_end hook handler
  *
- * 职责：
- * - run 收尾统计
- * - 延迟清理 run state
+ * Responsibilities:
+ * - Run finalization stats
+ * - Delayed cleanup of run state
  */
 import type { FirewallState } from "../state.js";
 import type { EventStore } from "../store.js";

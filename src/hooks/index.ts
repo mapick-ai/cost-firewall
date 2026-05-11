@@ -1,5 +1,5 @@
 /**
- * Hook 注册入口
+ * Hook registration entry point
  */
 
 import type { FirewallState } from "../state.js";
@@ -19,7 +19,7 @@ export function registerHooks(
   api.on("agent_end", createAgentEndHandler(state, store));
 
   if (state.config.privacy?.enableRawConversationHooks) {
-    // llm_input/output — 仅 opt-in
-    // 后续版本实现
+    // llm_input/output — opt-in only
+    // To be implemented in future versions
   }
 }

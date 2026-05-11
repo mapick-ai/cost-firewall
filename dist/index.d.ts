@@ -1,5 +1,5 @@
 /**
- * @mapick/cost-firewall — OpenClaw 插件入口
+ * @mapick/cost-firewall — OpenClaw plugin entry point
  */
 import { PLUGIN_ID, PLUGIN_NAME } from "./types.js";
 declare const _default: {

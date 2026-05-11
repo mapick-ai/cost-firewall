@@ -1,5 +1,5 @@
 /**
- * 全局状态管理（in-memory）
+ * Global state management (in-memory)
  */
 import type { RunState, CallState, GlobalStats, SourceKey, FirewallConfig, PrecheckResult } from "./types.js";
 import { Breaker } from "./breaker.js";
@@ -44,7 +44,7 @@ export declare class FirewallState {
      */
     precheck(source: SourceKey): PrecheckResult;
     getTodayTokens(): number;
-    /** 活跃 run 概要 */
+    /** Active run summary */
     getActiveRuns(): {
         runId: string;
         source: string;

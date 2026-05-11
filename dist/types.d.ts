@@ -1,5 +1,5 @@
 /**
- * 共享类型定义
+ * Shared type definitions
  */
 export type SourceKey = string;
 export interface CallState {

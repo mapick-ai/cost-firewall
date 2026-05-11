@@ -1,10 +1,10 @@
 /**
- * before_agent_reply hook 处理
+ * before_agent_reply hook handler
  *
- * 职责：
- * - Emergency Stop 阻断
- * - Daily Budget 阻断
- * - Source Cooldown 阻断
+ * Responsibilities:
+ * - Emergency Stop blocking
+ * - Daily Budget blocking
+ * - Source Cooldown blocking
  */
 export function createBeforeAgentReplyHandler(state, store) {
     return async function handleBeforeAgentReply(event, ctx) {

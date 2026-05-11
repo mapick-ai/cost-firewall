@@ -1,10 +1,10 @@
 /**
- * Provider 注册入口
+ * Provider registration entry point
  *
- * mapick/<upstream>/<model> 路由
- * - catalog: 声明模型目录
- * - resolveDynamicModel: 动态接受任意 upstream model ID
- * - createStreamFn: precheck + upstream 转发
+ * mapick/<upstream>/<model> routing
+ * - catalog: declare model catalog
+ * - resolveDynamicModel: dynamically accept any upstream model ID
+ * - createStreamFn: precheck + upstream forwarding
  */
 import type { FirewallState } from "../state.js";
 import type { EventStore } from "../store.js";

@@ -1,11 +1,11 @@
 /**
- * model_call_started / model_call_ended hook 处理
+ * model_call_started / model_call_ended hook handler
  *
- * 职责：
- * - 记录每次 LLM call 的 metadata
- * - 估算费用
- * - 更新 breaker 状态
- * - 写入事件日志
+ * Responsibilities:
+ * - Record metadata for each LLM call
+ * - Estimate cost
+ * - Update breaker state
+ * - Write event log
  */
 import type { FirewallState } from "../state.js";
 import type { EventStore } from "../store.js";

@@ -1,10 +1,10 @@
 /**
  * Upstream auth resolution
  *
- * 优先级：
+ * Priority:
  * 1. api.runtime.modelAuth (OpenClaw SDK)
- * 2. api.config.models.providers (直接读 config)
- * 3. 环境变量
+ * 2. api.config.models.providers (direct config read)
+ * 3. Environment variables
  */
 
 export interface AuthResult {
@@ -12,7 +12,7 @@ export interface AuthResult {
   headers?: Record<string, string>;
 }
 
-// 环境变量名映射
+// Environment variable name mapping
 const ENV_VAR_MAP: Record<string, string> = {
   openai: "OPENAI_API_KEY",
   anthropic: "ANTHROPIC_API_KEY",
@@ -26,7 +26,7 @@ export async function resolveUpstreamAuth(
   upstream: string,
   model: string
 ): Promise<AuthResult> {
-  // 1. 尝试 SDK runtime auth
+  // 1. Try SDK runtime auth
   if (api.runtime?.modelAuth?.getApiKeyForModel) {
     try {
       const key = await api.runtime.modelAuth.getApiKeyForModel({
@@ -45,13 +45,13 @@ export async function resolveUpstreamAuth(
     } catch { /* continue */ }
   }
 
-  // 2. 直接从 config 读取
+  // 2. Read directly from config
   const providerConfig = api.config?.models?.providers?.[upstream];
   if (providerConfig?.apiKey) {
     return { apiKey: providerConfig.apiKey };
   }
 
-  // 3. 从环境变量读取
+  // 3. Read from environment variables
   const envVar = ENV_VAR_MAP[upstream];
   if (envVar && process.env[envVar]) {
     return { apiKey: process.env[envVar]! };

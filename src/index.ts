@@ -1,5 +1,5 @@
 /**
- * @mapick/cost-firewall — OpenClaw 插件入口
+ * @mapick/cost-firewall — OpenClaw plugin entry point
  */
 
 import { PLUGIN_ID, PLUGIN_NAME } from "./types.js";
@@ -22,28 +22,28 @@ export default {
     const state = new FirewallState(config);
     const store = new EventStore();
 
-    // 注册 Hook Layer
+    // Register Hook Layer
     registerHooks(api, state, store);
 
-    // 注册 Provider Layer
+    // Register Provider Layer
     registerProvider(api, state, store);
 
-    // 注册 CLI
+    // Register CLI
     registerCli(api, state, store);
 
-    // 注册 Agent Tools（/mapick status/stop/resume 等对话命令）
+    // Register Agent Tools (/mapick status/stop/resume conversational commands)
     registerTools(api, state, store);
 
-    // 配置风险检测（fallback bypass 等）
+    // Config risk detection (fallback bypass etc.)
     const warnings = detectConfigRisks(api.config);
     for (const w of warnings) {
       store.append({ type: "config_warning", reason: w.message, source: w.level });
     }
 
-    // 注册 Dashboard
+    // Register Dashboard
     const sse = registerDashboard(api, state, store);
 
-    // 广播统计更新
+    // Broadcast stats update
     const originalUpdate = state.updateSourceStats.bind(state);
     state.updateSourceStats = (source, cost) => {
       originalUpdate(source, cost);

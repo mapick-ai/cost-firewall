@@ -1,10 +1,10 @@
 /**
- * 熔断逻辑
+ * Breaker logic
  *
- * 三条规则：
- * 1. 连续失败 (consecutiveFailures)
- * 2. Token 速率 (tokenVelocity) — 窗口内 token 消耗超过阈值
- * 3. 调用频率 (callFrequency) — 窗口内调用次数超过阈值
+ * Three rules:
+ * 1. Consecutive failures (consecutiveFailures)
+ * 2. Token velocity (tokenVelocity) — token consumption exceeds threshold within window
+ * 3. Call frequency (callFrequency) — call count exceeds threshold within window
  */
 const DEFAULT_BREAKER = {
     consecutiveFailures: 3,
@@ -38,7 +38,7 @@ export class Breaker {
         }
         return this.states.get(source);
     }
-    // ----- 连续失败 -----
+    // ----- Consecutive failures -----
     recordFailure(source) {
         const state = this.getState(source);
         state.consecutiveFailures++;
@@ -51,7 +51,7 @@ export class Breaker {
         const state = this.getState(source);
         state.consecutiveFailures = 0;
     }
-    // ----- Token 速率（滑动窗口）-----
+    // ----- Token velocity (sliding window) -----
     recordTokens(source, tokens) {
         const state = this.getState(source);
         const now = Date.now();
@@ -60,7 +60,7 @@ export class Breaker {
         if (threshold <= 0)
             return undefined;
         state.tokenHistory.push({ ts: now, tokens });
-        // 清理过期记录
+        // Purge expired records
         state.tokenHistory = state.tokenHistory.filter((h) => now - h.ts < windowMs);
         const total = state.tokenHistory.reduce((sum, h) => sum + h.tokens, 0);
         if (total >= threshold) {
@@ -70,7 +70,7 @@ export class Breaker {
         }
         return undefined;
     }
-    // ----- 调用频率（滑动窗口）-----
+    // ----- Call frequency (sliding window) -----
     recordCall(source) {
         const state = this.getState(source);
         const now = Date.now();
@@ -87,7 +87,7 @@ export class Breaker {
         }
         return undefined;
     }
-    // ----- 通用 -----
+    // ----- Common -----
     isCoolingDown(source) {
         const state = this.getState(source);
         if (!state.brokenUntil)
@@ -112,7 +112,7 @@ export class Breaker {
             return 0;
         return Math.max(0, state.brokenUntil - Date.now());
     }
-    /** 返回所有正在冷却的 source 列表 */
+    /** Return list of all cooling sources */
     getCoolingSources() {
         const now = Date.now();
         const result = [];

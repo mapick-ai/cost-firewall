@@ -1,7 +1,7 @@
 /**
- * 配置风险检测
+ * Config risk detection
  *
- * 启动时检测 fallback 配置是否可能绕过 Mapick
+ * Check at startup whether fallback config may bypass Mapick
  */
 export function detectConfigRisks(config) {
     const warnings = [];

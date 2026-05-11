@@ -1,11 +1,11 @@
 /**
- * 共享类型定义
+ * Shared type definitions
  */
 
-// Source key 标识调用来源
+// Source key identifies call origin
 export type SourceKey = string;
 
-// 单次 LLM call 状态
+// Single LLM call state
 export interface CallState {
   callId: string;
   provider: string;
@@ -22,7 +22,7 @@ export interface CallState {
   estimatedCost?: number;
 }
 
-// 单次 run 状态（一次 agent reply）
+// Single run state (one agent reply)
 export interface RunState {
   runId: string;
   sessionId?: string;
@@ -38,21 +38,21 @@ export interface RunState {
   reason?: string;
 }
 
-// 熔断器状态
+// Breaker state
 export interface BreakerState {
   source: SourceKey;
   consecutiveFailures: number;
   brokenUntil?: number;
   reason?: string;
-  // 滑动窗口追踪
+  // Sliding window tracking
   tokenHistory: { ts: number; tokens: number }[];
   callTimestamps: number[];
-  // 上次调用信息
+  // Last call info
   lastCallTs?: number;
   lastCallTokens?: number;
 }
 
-// 插件配置
+// Plugin config
 export interface FirewallConfig {
   breaker?: {
     consecutiveFailures?: number;
@@ -69,7 +69,7 @@ export interface FirewallConfig {
   };
 }
 
-// 全局统计
+// Global stats
 export interface GlobalStats {
   emergencyStop: boolean;
   mode: "observe" | "protect";
@@ -77,21 +77,21 @@ export interface GlobalStats {
   todayBlocked: number;
   todaySavedEstimate: number;
 }
-// Block 决策
+// Block decision
 export interface BlockDecision {
   allow: boolean;
   reason?: string;
   layer: "hook" | "provider";
 }
 
-// Precheck 结果
+// Precheck result
 export interface PrecheckResult {
   allow: boolean;
   reason?: string;
   layer: "hook" | "provider";
 }
 
-// 事件记录
+// Event record
 export interface FirewallEvent {
   type: string;
   timestamp: number;

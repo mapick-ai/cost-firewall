@@ -1,8 +1,8 @@
 /**
  * OpenAI-compatible upstream transport
  *
- * 支持 /v1/chat/completions
- * 兼容 OpenRouter, DeepSeek, Qwen 等 OpenAI-compatible providers
+ * Supports /v1/chat/completions
+ * Compatible with OpenRouter, DeepSeek, Qwen and other OpenAI-compatible providers
  */
 export interface OpenAiStreamOptions {
     baseUrl: string;

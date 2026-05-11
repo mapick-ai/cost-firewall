@@ -50,7 +50,7 @@ export async function* streamAnthropic(options) {
                     yield JSON.parse(data);
                 }
                 catch {
-                    // 跳过无效 JSON
+                    // Skip invalid JSON
                 }
             }
         }

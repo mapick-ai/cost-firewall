@@ -1,5 +1,5 @@
 /**
- * 配置解析与默认值
+ * Config parsing and defaults
  */
 export const DEFAULT_CONFIG = {
     breaker: {

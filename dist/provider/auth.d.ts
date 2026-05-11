@@ -1,10 +1,10 @@
 /**
  * Upstream auth resolution
  *
- * 优先级：
+ * Priority:
  * 1. api.runtime.modelAuth (OpenClaw SDK)
- * 2. api.config.models.providers (直接读 config)
- * 3. 环境变量
+ * 2. api.config.models.providers (direct config read)
+ * 3. Environment variables
  */
 export interface AuthResult {
     apiKey: string;

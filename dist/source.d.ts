@@ -1,7 +1,7 @@
 /**
- * Source key 解析
+ * Source key resolution
  *
- * 优先级：
+ * Priority:
  * 1. agentId + sessionId
  * 2. sessionKey
  * 3. workspaceDir + provider + model

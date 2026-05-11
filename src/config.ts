@@ -1,5 +1,5 @@
 /**
- * 配置解析与默认值
+ * Config parsing and defaults
  */
 
 import type { FirewallConfig } from "./types.js";

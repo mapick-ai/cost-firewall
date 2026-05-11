@@ -1,5 +1,5 @@
 /**
- * Hook 注册入口
+ * Hook registration entry point
  */
 import type { FirewallState } from "../state.js";
 import type { EventStore } from "../store.js";

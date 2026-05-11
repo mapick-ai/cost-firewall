@@ -1,5 +1,5 @@
 /**
- * 模型定价与费用估算
+ * Model pricing and cost estimation
  *
  * OpenRouter: pass-through pricing (inherits upstream provider pricing)
  */

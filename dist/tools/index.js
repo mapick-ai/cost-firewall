@@ -1,21 +1,21 @@
 /**
- * Agent Tools 注册 — 用户通过对话控制 Cost Firewall
+ * Agent Tools registration — users control Cost Firewall via conversation
  *
- * 用法：
- *   /mapick status  → 查看状态
- *   /mapick stop    → 紧急熔断
- *   /mapick resume  → 恢复
- *   /mapick log     → 查看最近事件
+ * Usage:
+ *   /firewall status  → view status
+ *   /firewall stop    → emergency breaker
+ *   /firewall resume  → resume
+ *   /firewall log     → view recent events
  */
 import { getStatus, getLog } from "../cli/index.js";
 export function registerTools(api, state, store) {
     api.logger?.info(`[mapick-firewall] registerTools: mode=${api.registrationMode}`);
-    // 使用 api.registerCommand 替代 api.registerTool 试试
+    // Try using api.registerCommand instead of api.registerTool
     if (typeof api.registerCommand === "function") {
         api.logger?.info(`[mapick-firewall] registerCommand is available`);
         api.registerCommand({
-            name: "mapick",
-            description: "Mapick Cost Firewall commands",
+            name: "firewall",
+            description: "Cost Firewall commands",
             parameters: {
                 type: "object",
                 properties: {
@@ -49,8 +49,8 @@ export function registerTools(api, state, store) {
     else {
         api.logger?.warn(`[mapick-firewall] registerCommand NOT available, trying registerTool...`);
         api.registerTool({
-            name: "mapick_status",
-            description: "View Mapick Cost Firewall status: mode, tokens used, blocked count, token limit.",
+            name: "firewall_status",
+            description: "View Cost Firewall status: mode, tokens used, blocked count, token limit.",
             parameters: { type: "object", properties: {}, required: [] },
             async execute() {
                 const s = await getStatus(state, store);

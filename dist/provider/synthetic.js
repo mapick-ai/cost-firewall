@@ -1,7 +1,7 @@
 /**
- * Blocked response 生成
+ * Blocked response generation
  *
- * 当请求被 Mapick 拦截时，返回 synthetic stream
+ * Return synthetic stream when request is blocked by Mapick
  */
 export async function* createBlockedStream(options) {
     const { provider, model, reason, format = "openai" } = options;

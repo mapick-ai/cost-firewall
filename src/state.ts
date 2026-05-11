@@ -1,5 +1,5 @@
 /**
- * 全局状态管理（in-memory）
+ * Global state management (in-memory)
  */
 
 import type {
@@ -192,7 +192,7 @@ export class FirewallState {
     return this.globalStats.todayTokens;
   }
 
-  /** 活跃 run 概要 */
+  /** Active run summary */
   getActiveRuns(): { runId: string; source: string; calls: number; tokens: number; status: string }[] {
     const result: any[] = [];
     for (const [id, run] of this.runs) {

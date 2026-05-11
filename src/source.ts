@@ -1,7 +1,7 @@
 /**
- * Source key 解析
+ * Source key resolution
  *
- * 优先级：
+ * Priority:
  * 1. agentId + sessionId
  * 2. sessionKey
  * 3. workspaceDir + provider + model
@@ -74,7 +74,7 @@ export function sourceFromProviderContext(
   route: RouteInfo
 ): string {
   if (ctx.workspaceDir) {
-    // 用最后一级目录名代替完整路径，避免泄露用户文件路径
+    // Use last-level directory name instead of full path to avoid leaking user file paths
     const parts = ctx.workspaceDir.replace(/\\/g, "/").split("/").filter(Boolean);
     const basename = parts[parts.length - 1] || "ws";
     return `${basename}/${route.upstream}/${route.model}`;

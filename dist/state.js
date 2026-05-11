@@ -1,5 +1,5 @@
 /**
- * 全局状态管理（in-memory）
+ * Global state management (in-memory)
  */
 import { Breaker } from "./breaker.js";
 import { resolveConfig } from "./config.js";
@@ -154,7 +154,7 @@ export class FirewallState {
     getTodayTokens() {
         return this.globalStats.todayTokens;
     }
-    /** 活跃 run 概要 */
+    /** Active run summary */
     getActiveRuns() {
         const result = [];
         for (const [id, run] of this.runs) {

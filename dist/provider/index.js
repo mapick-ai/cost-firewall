@@ -1,10 +1,10 @@
 /**
- * Provider 注册入口
+ * Provider registration entry point
  *
- * mapick/<upstream>/<model> 路由
- * - catalog: 声明模型目录
- * - resolveDynamicModel: 动态接受任意 upstream model ID
- * - createStreamFn: precheck + upstream 转发
+ * mapick/<upstream>/<model> routing
+ * - catalog: declare model catalog
+ * - resolveDynamicModel: dynamically accept any upstream model ID
+ * - createStreamFn: precheck + upstream forwarding
  */
 import { parseMapickModelRef } from "./route.js";
 import { resolveUpstreamAuth } from "./auth.js";
@@ -74,7 +74,7 @@ export function registerProvider(api, state, store) {
         createStreamFn() {
             const self = this;
             return async function* stream(model, context, options) {
-                // model 可能来自 ctx，直接使用 catalog + resolveDynamicModel 提供的 model
+                // model may come from ctx, use catalog + resolveDynamicModel provided model
                 const modelId = typeof model === "string" ? model : model?.id ?? "";
                 const route = parseMapickModelRef(modelId);
                 if (!route)
