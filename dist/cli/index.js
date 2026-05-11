@@ -49,17 +49,31 @@ export function registerCli(api, state, store) {
         firewall.command("status")
             .description("Show firewall status")
             .action(async () => {
-            const agg = await aggregateFromJsonl(store, state.globalStats.todayTokens, state.globalStats.todayBlocked);
-            const cooling = state.breaker.getCoolingSources();
-            console.log(JSON.stringify({
-                mode: state.globalStats.mode,
-                emergency_stop: state.globalStats.emergencyStop,
-                today_tokens: agg.today_tokens,
-                today_blocked: agg.today_blocked,
-                daily_token_limit: state.config.dailyTokenLimit,
-                cooldown_sec: state.config.breaker?.cooldownSec,
-                cooling_sources: cooling,
-            }, null, 2));
+            // Read from gateway to get the real runtime state
+            const data = await new Promise((resolve) => {
+                http.get(`${API_BASE}/mapick/api/stats`, (res) => {
+                    let body = "";
+                    res.on("data", (c) => body += c);
+                    res.on("end", () => resolve(body));
+                }).on("error", () => resolve(""));
+            });
+            if (data) {
+                console.log(JSON.stringify(JSON.parse(data), null, 2));
+            }
+            else {
+                // Fallback to local state
+                const agg = await aggregateFromJsonl(store, state.globalStats.todayTokens, state.globalStats.todayBlocked);
+                const cooling = state.breaker.getCoolingSources();
+                console.log(JSON.stringify({
+                    mode: state.globalStats.mode,
+                    emergency_stop: state.globalStats.emergencyStop,
+                    today_tokens: agg.today_tokens,
+                    today_blocked: agg.today_blocked,
+                    daily_token_limit: state.config.dailyTokenLimit,
+                    cooldown_sec: state.config.breaker?.cooldownSec,
+                    cooling_sources: cooling,
+                }, null, 2));
+            }
         });
         firewall.command("reset")
             .description("Reset a source from cooldown")
