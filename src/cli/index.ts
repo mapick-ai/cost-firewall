@@ -40,9 +40,9 @@ export async function aggregateFromJsonl(store: EventStore, memTokens: number, m
 export function registerCli(api: any, state: FirewallState, store: EventStore): void {
   api.registerCli(
     ({ program }: any) => {
-      const mapick = program.command("mapick").description("Mapick Cost Firewall commands");
+      const firewall = program.command("firewall").description("Mapick Cost Firewall commands");
 
-      mapick.command("status")
+      firewall.command("status")
         .description("Show firewall status")
         .action(async () => {
           const agg = await aggregateFromJsonl(store, state.globalStats.todayTokens, state.globalStats.todayBlocked);
@@ -58,7 +58,7 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
           }, null, 2));
         });
 
-      mapick.command("reset")
+      firewall.command("reset")
         .description("Reset a source from cooldown")
         .argument("<source>", "Source name to reset")
         .action((source: string) => {
@@ -66,7 +66,7 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
           console.log(`Source ${source} reset.`);
         });
 
-      mapick.command("mode")
+      firewall.command("mode")
         .description("Switch mode (observe|protect)")
         .argument("<mode>", "observe or protect")
         .action((mode: string) => {
@@ -78,21 +78,21 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
           console.log(`Mode set to ${mode}`);
         });
 
-      mapick.command("stop")
+      firewall.command("stop")
         .description("Emergency stop all AI calls")
         .action(() => {
           state.setEmergencyStop(true);
           console.log("Emergency stop activated.");
         });
 
-      mapick.command("resume")
+      firewall.command("resume")
         .description("Resume AI calls after emergency stop")
         .action(() => {
           state.setEmergencyStop(false);
           console.log("Resumed.");
         });
 
-      mapick.command("budget")
+      firewall.command("budget")
         .description("Set or reset daily token limit")
         .argument("<action>", "set <amount> or reset")
         .argument("[amount]", "Token count")
@@ -107,7 +107,7 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
             body = JSON.stringify({ dailyTokenLimit: null });
             (state.config as any).dailyTokenLimit = null;
           } else {
-            console.error("Usage: mapick budget set <amount> | mapick budget reset");
+            console.error("Usage: firewall budget set <amount> | firewall budget reset");
             return;
           }
           // 写内存 + 通知 gateway (fire-and-forget)
@@ -126,7 +126,7 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
           req.end();
         });
 
-      mapick.command("log")
+      firewall.command("log")
         .description("Show recent events")
         .option("--last <count>", "Number of events", "10")
         .action(async (opts: any) => {
@@ -149,7 +149,7 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
     },
     {
       descriptors: [
-        { name: "mapick", description: "Mapick Cost Firewall commands", hasSubcommands: true },
+        { name: "firewall", description: "Mapick Cost Firewall commands", hasSubcommands: true },
       ],
     }
   );
