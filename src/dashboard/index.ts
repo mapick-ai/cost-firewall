@@ -159,6 +159,8 @@ export function registerDashboard(
         if (cfg.breaker) {
           current.breaker = { ...current.breaker, ...cfg.breaker };
           (state.config as any).breaker = { ...(state.config as any).breaker, ...cfg.breaker };
+          // Sync breaker instance with updated config
+          state.breaker.updateConfig(state.config);
         }
 
         entry.config = current;

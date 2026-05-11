@@ -146,6 +146,8 @@ export function registerDashboard(api, state, store) {
                 if (cfg.breaker) {
                     current.breaker = { ...current.breaker, ...cfg.breaker };
                     state.config.breaker = { ...state.config.breaker, ...cfg.breaker };
+                    // Sync breaker instance with updated config
+                    state.breaker.updateConfig(state.config);
                 }
                 entry.config = current;
                 await writeFile(configPath, JSON.stringify(openclawConfig, null, 2));

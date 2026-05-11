@@ -26,9 +26,12 @@ export function createBeforeModelResolveHandler(
   store: EventStore
 ) {
   return function handleBeforeModelResolve(
-    event: BeforeModelResolveEvent,
+    event: any,
     _ctx: any
   ): ModelResolveResult | undefined {
+    // Defensive: real OpenClaw events may have undefined model/provider
+    if (!event.model || !event.provider) return undefined;
+
     // Already using mapick/* — no rewrite needed
     if (isMapickModelRef(event.model)) return undefined;
 

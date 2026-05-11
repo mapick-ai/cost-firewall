@@ -18,7 +18,10 @@ export class Breaker {
     states = new Map();
     config;
     constructor(config) {
-        this.config = {
+        this.config = this.resolveConfig(config);
+    }
+    resolveConfig(config) {
+        return {
             consecutiveFailures: config.breaker?.consecutiveFailures ?? DEFAULT_BREAKER.consecutiveFailures,
             cooldownSec: config.breaker?.cooldownSec ?? DEFAULT_BREAKER.cooldownSec,
             tokenVelocityWindowSec: config.breaker?.tokenVelocityWindowSec ?? DEFAULT_BREAKER.tokenVelocityWindowSec,
@@ -26,6 +29,10 @@ export class Breaker {
             callFrequencyWindowSec: config.breaker?.callFrequencyWindowSec ?? DEFAULT_BREAKER.callFrequencyWindowSec,
             callFrequencyThreshold: config.breaker?.callFrequencyThreshold ?? DEFAULT_BREAKER.callFrequencyThreshold,
         };
+    }
+    /** Update thresholds from config (called when dashboard changes settings) */
+    updateConfig(config) {
+        this.config = this.resolveConfig(config);
     }
     getState(source) {
         if (!this.states.has(source)) {

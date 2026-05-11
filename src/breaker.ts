@@ -32,7 +32,11 @@ export class Breaker {
   private config: BreakerConfig;
 
   constructor(config: FirewallConfig) {
-    this.config = {
+    this.config = this.resolveConfig(config);
+  }
+
+  private resolveConfig(config: FirewallConfig): BreakerConfig {
+    return {
       consecutiveFailures: config.breaker?.consecutiveFailures ?? DEFAULT_BREAKER.consecutiveFailures,
       cooldownSec: config.breaker?.cooldownSec ?? DEFAULT_BREAKER.cooldownSec,
       tokenVelocityWindowSec: config.breaker?.tokenVelocityWindowSec ?? DEFAULT_BREAKER.tokenVelocityWindowSec,
@@ -40,6 +44,11 @@ export class Breaker {
       callFrequencyWindowSec: config.breaker?.callFrequencyWindowSec ?? DEFAULT_BREAKER.callFrequencyWindowSec,
       callFrequencyThreshold: config.breaker?.callFrequencyThreshold ?? DEFAULT_BREAKER.callFrequencyThreshold,
     };
+  }
+
+  /** Update thresholds from config (called when dashboard changes settings) */
+  updateConfig(config: FirewallConfig): void {
+    this.config = this.resolveConfig(config);
   }
 
   private getState(source: SourceKey): BreakerState {

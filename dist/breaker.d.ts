@@ -11,6 +11,9 @@ export declare class Breaker {
     private states;
     private config;
     constructor(config: FirewallConfig);
+    private resolveConfig;
+    /** Update thresholds from config (called when dashboard changes settings) */
+    updateConfig(config: FirewallConfig): void;
     private getState;
     recordFailure(source: SourceKey): void;
     recordSuccess(source: SourceKey): void;

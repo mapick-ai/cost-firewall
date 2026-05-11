@@ -8,15 +8,50 @@ import http from "node:http";
 const API_BASE = "http://127.0.0.1:18789";
 function apiGet(path) {
     return new Promise((resolve) => {
-        http.get(`${API_BASE}${path}`, () => resolve()).on("error", () => resolve());
+        http.get(`${API_BASE}${path}`, (res) => {
+            let body = "";
+            res.on("data", (c) => body += c);
+            res.on("end", () => {
+                // Validate we got JSON, not SPA HTML
+                if (res.headers["content-type"]?.includes("text/html")) {
+                    console.error("Error: Gateway returned HTML — plugin API not mounted.");
+                    resolve({ ok: false, error: "plugin_api_not_mounted" });
+                    return;
+                }
+                try {
+                    const d = JSON.parse(body);
+                    resolve(d.ok !== false ? { ok: true } : { ok: false, error: d.error });
+                }
+                catch {
+                    resolve({ ok: false, error: "invalid_response" });
+                }
+            });
+        }).on("error", () => resolve({ ok: false, error: "network_error" }));
     });
 }
 function apiPost(body) {
     return new Promise((resolve) => {
         const data = JSON.stringify(body);
         const url = new URL(`${API_BASE}/mapick/api/config`);
-        const req = http.request(url, { method: "POST", headers: { "Content-Type": "application/json" } }, () => resolve());
-        req.on("error", () => resolve());
+        const req = http.request(url, { method: "POST", headers: { "Content-Type": "application/json" } }, (res) => {
+            let body2 = "";
+            res.on("data", (c) => body2 += c);
+            res.on("end", () => {
+                if (res.headers["content-type"]?.includes("text/html")) {
+                    console.error("Error: Gateway returned HTML — plugin API not mounted.");
+                    resolve({ ok: false, error: "plugin_api_not_mounted" });
+                    return;
+                }
+                try {
+                    const d = JSON.parse(body2);
+                    resolve(d.ok !== false ? { ok: true } : { ok: false, error: d.error });
+                }
+                catch {
+                    resolve({ ok: false, error: "invalid_response" });
+                }
+            });
+        });
+        req.on("error", () => resolve({ ok: false, error: "network_error" }));
         req.write(data);
         req.end();
     });
@@ -91,8 +126,31 @@ export function registerCli(api, state, store) {
                 return;
             }
             state.setMode(mode);
-            await apiPost({ mode });
-            console.log(`Mode set to ${mode}`);
+            const r = await apiPost({ mode });
+            if (r.ok)
+                console.log(`Mode set to ${mode}`);
+            else
+                console.error(`Failed: ${r.error || "unknown error"}`);
+        });
+        firewall.command("stop")
+            .description("Emergency stop all AI calls")
+            .action(async () => {
+            state.setEmergencyStop(true);
+            const r = await apiGet("/mapick/api/stop");
+            if (r.ok)
+                console.log("Emergency stop activated.");
+            else
+                console.error(`Failed: ${r.error || "unknown error"}`);
+        });
+        firewall.command("resume")
+            .description("Resume AI calls after emergency stop")
+            .action(async () => {
+            state.setEmergencyStop(false);
+            const r = await apiGet("/mapick/api/resume");
+            if (r.ok)
+                console.log("Resumed.");
+            else
+                console.error(`Failed: ${r.error || "unknown error"}`);
         });
         firewall.command("stop")
             .description("Emergency stop all AI calls")
