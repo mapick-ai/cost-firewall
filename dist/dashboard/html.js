@@ -460,10 +460,11 @@ export function renderDashboardHtml(_stats) {
 </head>
 <body>
   <header class="header">
-    <div class="header-title" style="display:flex;align-items:center;gap:8px">
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:4px 10px;display:flex;align-items:center;gap:6px">
-        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABVUAAAMACAMAAAAT13fzAAADAFBMVEUAAAAvNDYdISQSFBgWGBsQEhYKDBAKDBAKDRIJCw8JCxBgf4EzTXptj5BfVlcFBwsGBwynyMqGlZYqPGUgMkojKC0cHyaClJVEXIt0hYY6PkTc2MIlKS88QEp8lZWCk4ZUYGhAR1FyoKJAQUSjrp41Sm2tv79vgIReaXC6vathWliQlJGqu7ues7ZJa3vI0coFCg4DAwUEChsHDiMQFBklgIAMDRILKy4PQEEWGR4JJCcaTkwieXoHEC0oh4cLNTcKGjEdVVQWR0UbYWN3ycoecXIEExYHHR8ZKCqCycoUICQWWV0YMDEoj5ATN3JtvL4VOjoKGCiJ0NEeHyJxw8Vmt7kbaWuOysuU1tcKOEIoLTEHEzkRUFYJGUUeQUEzioyVz9EQLGkLITpNsrMOJV0MHlFXur17w8RZs7U0NTknJScMKUI4lJVWqKoOSksuQkQmNzksl5ctTE9+zc9iwcNCSU0xgYOi1Nc+PkFgra8qdHUTQ3gcEhQxeXx5vL4rWFopbGwvYmM8np48V1kVVWwVITUcToBFYWRmpKdHqKkNQFBOoKKGw8UYX3QncY1srq9dnqEsCAwiQXY8bG04Jyt2s7ZQi44/jI5UlpkpXIo6GB1EdngQR2VNVFkXBghQa25IISgqGBwON19SPkJcYmVZGiRvmZsLLFAfa4A9Bg2goqpBgYRSgYJLDBVGlpheioxIMDWd3N6irLNYSktVdnhaLTbCrbizqLFhlJastbut2Nuwnac1fJSll59waGxncnaWmqJ1qKpvNkAbXoJwgoWZj5Z5oKJ6eXtrSE5sJC+Erq+HlJuHuLzRtsGEa3RxWF19ipGNpKlhfqyXwcRsDRrDoKuDRE+si5dbBhA0a5KLhY2VtLe8vMKJLDuegIt2n7uEXGWE2Np9q8K8kp2ZTlzw28KNd4Hdwcu5fIjbp7R/GCafYGy1UWG3ZnXQf46hOUm/zc/Zk6BrjbWhcHv1mKpScp71scDRanqEo5fszNfngZL06t6VnovT4N3pwKmy5+lHm8hxAAAAMHRSTlMACRQiM0ZacteJ6P7+/v6iv/4u/P7ev3z+UZD8q3en/WWt19f+04rLnP7Q0ljDx73MoPWJAAKls0lEQVR42uzBgQAAAACAoP2pF6kCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGB27RjVbSAKo7Blvyxg1AR3qVTpoXW4MgjCqFSnJQg3UwsyMG4E3kbadOndaSPZQfLfkQkmceClfT4flmwkuT3cGQQAAAAAAAAAAAAAAAAAAAAAAAAAAPDOFNuyrqt7dV3vd9ui2AAA/kNRlKKkNs2PO841jaW1lO2WtgLAW5uqnlpQ3bc7zg7TyGtVl8ysAPCWoEpjCR1HN7psccvisjHLaa3y2MrICgD/oGW/DamjKKn9ssTrA3HxfT+Kk0ZdJawA8JAt+20a9XHN6Sw6X290MczrxRh9/3tmbepyAwB4sJWqCbX31zl9T2mWEIL66TWbdn0WYwi6bnfXsNo+gWuqes+LAQDwR1Pzqj+qqWbOPe277qv8FDvpZ9f7GOwRi27MewEW1qou6SoArIrbbqrXcj8LMffU6Py3rj2EnNb8qLeJVQNrudtuAODZFWVe+2tMVVNv82cntuZvvT8MQwgphdh33txyq/vtYdCNSWnNewHKarV/2TGvAnhq69rfWVNnib6zYPbexxgHicMhnC+XcwphDmpuPg5tq8f0sZk1TedJLbauKqyfdrwQAOCJrfupbh1TrYw5qTGEqCPM6ZRSOn25nIfh+PmUjkd9pxzZXFabWrt2mNM0Jfu3c+7144eXDYBf7J0/b9NAGMYJbWGmS1QkIpQBGIj4El48nWT55IyVKs..." style="height:16px">
-      </div>
+    <div class="header-title">
+      <span style="font-weight:700;color:#2563eb">Mapick</span>
+      <span style="color:#94a3b8;margin:0 6px">/</span>
+      <span>Firewall</span>
+    </div>
       <span style="color:#94a3b8;font-weight:300">/</span>
       <span>Firewall</span>
     </div>
