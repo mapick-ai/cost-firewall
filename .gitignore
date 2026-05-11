@@ -1,0 +1,24 @@
+CONFIG.md
+trash/
+test/
+revisions/
+node_modules/
+dist/
+# Docker compose volumes (postgres / redis 本地数据，绝不进 git)
+data/
+*.log
+.DS_Store
+coverage/
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+logs/
+.env.develop
+.jump
+.env.development
+.env.local
+.pm2/*.log
+package-lock.json
+pnpm-lock.yaml
