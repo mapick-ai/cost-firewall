@@ -576,20 +576,20 @@ export function renderDashboardHtml(_stats) {
       <div class="section-title">Monitoring</div>
       <div class="status-grid">
         <div class="status-item">
-          <span class="status-item-label">Mode</span>
-          <span class="status-item-value" id="status-mode">-</span>
+          <span class="status-item-label">Emergency Stop</span>
+          <span class="status-item-value" id="status-estop">Inactive</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">Status</span>
-          <span class="status-item-value" id="status-state">-</span>
+          <span class="status-item-label">Consecutive Failures</span>
+          <span class="status-item-value" id="status-fail">3</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">Token Limit</span>
-          <span class="status-item-value" id="status-limit">-</span>
+          <span class="status-item-label">Token Velocity</span>
+          <span class="status-item-value" id="status-velocity">100K / 60s</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">Today</span>
-          <span class="status-item-value" id="status-today">-</span>
+          <span class="status-item-label">Call Frequency</span>
+          <span class="status-item-value" id="status-frequency">30 / 60s</span>
         </div>
       </div>
       <div class="monitoring-grid">
@@ -748,14 +748,15 @@ export function renderDashboardHtml(_stats) {
 
       const modeLabel = data.mode ?? 'observe';
       const estop = data.emergency_stop;
-      document.getElementById('status-mode').innerHTML = estop
-        ? '<span class="tag tag-destructive">STOPPED</span>'
-        : modeLabel === 'protect'
-          ? '<span class="tag tag-warning">Protect</span>'
-          : '<span class="tag tag-success">Observe</span>';
-      document.getElementById('status-state').textContent = estop ? 'Emergency Stop' : 'Normal';
-      document.getElementById('status-limit').textContent = data.daily_token_limit ? data.daily_token_limit.toLocaleString() : '∞';
-      document.getElementById('status-today').textContent = (data.today_tokens ?? 0).toLocaleString() + ' tokens | ' + (data.today_blocked ?? 0) + ' blocked';
+      document.getElementById('status-estop').textContent = estop ? '⛔ Active' : 'Inactive';
+      document.getElementById('status-estop').style.color = estop ? 'var(--destructive)' : '';
+      document.getElementById('status-fail').textContent = (breaker.consecutive_failures ?? 3) + ' failures → ' + (breaker.cooldown_sec ?? 30) + 's';
+      document.getElementById('status-velocity').textContent = (breaker.token_velocity_threshold ?? 0) > 0
+        ? (breaker.token_velocity_threshold ?? 0).toLocaleString() + ' / ' + (breaker.token_velocity_window_sec ?? 60) + 's'
+        : 'Off';
+      document.getElementById('status-frequency').textContent = (breaker.call_frequency_threshold ?? 0) > 0
+        ? (breaker.call_frequency_threshold ?? 0) + ' / ' + (breaker.call_frequency_window_sec ?? 60) + 's'
+        : 'Off';
 
       const coolingSources = data.cooling_sources ?? [];
       const coolingList = document.getElementById('list-cooling');
