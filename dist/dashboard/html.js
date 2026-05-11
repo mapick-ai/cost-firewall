@@ -439,6 +439,17 @@ export function renderDashboardHtml(_stats) {
     let _saving = false;
     let _refreshTimer = null;
 
+    // 检查元素是否聚焦（用户正在编辑），如果是则跳过 value 更新
+    function isFocused(id) {
+      var el = document.getElementById(id);
+      return el && document.activeElement === el;
+    }
+    function safeSetValue(id, value) {
+      if (isFocused(id)) return; // 用户正在编辑，不覆盖
+      var el = document.getElementById(id);
+      if (el) el.value = value ?? '';
+    }
+
     async function fetchStats() {
       if (_saving) return;
       try {
@@ -482,31 +493,19 @@ export function renderDashboardHtml(_stats) {
       const inputDailyLimit = document.getElementById('input-daily-limit');
       const hasDailyLimit = data.daily_token_limit != null && data.daily_token_limit > 0;
       switchDailyLimit.checked = hasDailyLimit;
-      inputDailyLimit.value = data.daily_token_limit ?? '';
+      safeSetValue('input-daily-limit', data.daily_token_limit);
 
-      const switchFailures = document.getElementById('switch-failures');
-      const inputFailures = document.getElementById('input-failures');
-      const inputCooldown = document.getElementById('input-cooldown');
-      const hasFailures = breaker.consecutive_failures > 0;
       switchFailures.checked = hasFailures;
-      inputFailures.value = breaker.consecutive_failures ?? '';
-      inputCooldown.value = breaker.cooldown_sec ?? '';
+      safeSetValue('input-failures', breaker.consecutive_failures);
+      safeSetValue('input-cooldown', breaker.cooldown_sec);
 
-      const switchVelocity = document.getElementById('switch-velocity');
-      const inputVelocity = document.getElementById('input-velocity');
-      const inputVelocityWindow = document.getElementById('input-velocity-window');
-      const hasVelocity = breaker.token_velocity_threshold > 0;
       switchVelocity.checked = hasVelocity;
-      inputVelocity.value = breaker.token_velocity_threshold ?? '';
-      inputVelocityWindow.value = breaker.token_velocity_window_sec ?? '';
+      safeSetValue('input-velocity', breaker.token_velocity_threshold);
+      safeSetValue('input-velocity-window', breaker.token_velocity_window_sec);
 
-      const switchFrequency = document.getElementById('switch-frequency');
-      const inputFrequency = document.getElementById('input-frequency');
-      const inputFrequencyWindow = document.getElementById('input-frequency-window');
-      const hasFrequency = breaker.call_frequency_threshold > 0;
       switchFrequency.checked = hasFrequency;
-      inputFrequency.value = breaker.call_frequency_threshold ?? '';
-      inputFrequencyWindow.value = breaker.call_frequency_window_sec ?? '';
+      safeSetValue('input-frequency', breaker.call_frequency_threshold);
+      safeSetValue('input-frequency-window', breaker.call_frequency_window_sec);
 
       // Status section
       const statusList = document.getElementById('list-status');
