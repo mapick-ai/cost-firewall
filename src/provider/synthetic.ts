@@ -15,7 +15,16 @@ export async function* createBlockedStream(
   options: BlockedStreamOptions
 ): AsyncGenerator<any> {
   const { provider, model, reason, format = "openai" } = options;
-  const message = `Mapick Cost Firewall: Request blocked (${reason}). Provider: ${provider}, Model: ${model}.`;
+  const hints: Record<string, string> = {
+    emergency_stop: `🛑 Emergency stop. Use \`openclaw firewall resume\`.`,
+    daily_token_limit: `⛔ Token limit reached. Use \`openclaw firewall budget reset\`.`,
+    consecutive_failures: `⚠️ Consecutive failures. Use \`openclaw firewall reset ${provider}\` to clear.`,
+    token_velocity: `⚡ Token velocity exceeded. Cooldown active.`,
+    call_frequency: `📞 Call frequency exceeded. Cooldown active.`,
+    source_cooldown: `🔥 Source in cooldown. Wait or reset.`,
+  };
+  const hint = hints[reason] ?? `Blocked: ${reason}`;
+  const message = `Mapick Firewall — ${hint}`;
 
   if (format === "anthropic") {
     yield {

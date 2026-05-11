@@ -16,7 +16,7 @@ describe("createBlockedStream", () => {
 
     expect(chunks.length).toBeGreaterThan(0);
     const content = chunks.map((c) => c.choices?.[0]?.delta?.content ?? "").join("");
-    expect(content).toContain("emergency_stop");
+    expect(content).toContain("Emergency stop");
   });
 
   it("生成 Anthropic 格式的 blocked stream", async () => {

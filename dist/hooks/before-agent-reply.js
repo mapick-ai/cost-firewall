@@ -20,12 +20,12 @@ export function createBeforeAgentReplyHandler(state, store) {
             });
             state.globalStats.todayBlocked++;
             const messages = {
-                emergency_stop: "Mapick Cost Firewall: all AI calls are paused.",
-                daily_token_limit: "Mapick Cost Firewall: today's token limit has been reached.",
-                source_cooldown: "Mapick Cost Firewall: this source is cooling down.",
-                consecutive_failures: "Mapick Cost Firewall: this source is cooling down due to consecutive failures.",
-                token_velocity: "Mapick Cost Firewall: this source is cooling down due to high token velocity.",
-                call_frequency: "Mapick Cost Firewall: this source is cooling down due to high call frequency.",
+                emergency_stop: "🛑 Emergency stop activated. All AI calls are blocked. Use `openclaw firewall resume` to restore.",
+                daily_token_limit: `⛔ Daily token limit reached. Today's AI usage has exceeded the limit. Use \`openclaw firewall status\` to check usage or \`openclaw firewall budget reset\` to remove the limit.`,
+                source_cooldown: `🔥 Breaker tripped — source is in cooldown for ${state.breaker.getCooldownRemaining(source)}ms. Wait for cooldown or use \`openclaw firewall reset "${source}"\` to clear.`,
+                consecutive_failures: `⚠️ Source "${source}" blocked: ${state.config.breaker?.consecutiveFailures ?? 3} consecutive failures triggered breaker. Use \`openclaw firewall reset "${source}"\` to clear.`,
+                token_velocity: `⚡ Source "${source}" blocked: token rate exceeded ${state.config.breaker?.tokenVelocityThreshold?.toLocaleString() ?? "limit"} tokens/${state.config.breaker?.tokenVelocityWindowSec ?? 60}s. Use \`openclaw firewall reset "${source}"\` to clear.`,
+                call_frequency: `📞 Source "${source}" blocked: call frequency exceeded ${state.config.breaker?.callFrequencyThreshold ?? 30} calls/${state.config.breaker?.callFrequencyWindowSec ?? 60}s. Use \`openclaw firewall reset "${source}"\` to clear.`,
             };
             return {
                 handled: true,
