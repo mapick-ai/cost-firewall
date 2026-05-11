@@ -17,12 +17,12 @@ export function sourceFromHookContext(event, ctx) {
     if (sessionKey) {
         return sessionKey;
     }
-    return "unknown";
+    return sessionId ? `session:${sessionId}` : "unknown";
 }
 export function sourceFromModelCall(event, ctx) {
     if (event.sessionId) {
-        const agentId = ctx.agentId ?? "unknown";
-        return `${agentId}/${event.sessionId}`;
+        const agentId = ctx.agentId;
+        return agentId ? `${agentId}/${event.sessionId}` : `session:${event.sessionId}`;
     }
     if (event.sessionKey) {
         return event.sessionKey;

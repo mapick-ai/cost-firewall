@@ -50,7 +50,7 @@ export function sourceFromHookContext(
     return sessionKey;
   }
 
-  return "unknown";
+  return sessionId ? `session:${sessionId}` : "unknown";
 }
 
 export function sourceFromModelCall(
@@ -58,8 +58,8 @@ export function sourceFromModelCall(
   ctx: Partial<HookContext>
 ): string {
   if (event.sessionId) {
-    const agentId = ctx.agentId ?? "unknown";
-    return `${agentId}/${event.sessionId}`;
+    const agentId = ctx.agentId;
+    return agentId ? `${agentId}/${event.sessionId}` : `session:${event.sessionId}`;
   }
 
   if (event.sessionKey) {
