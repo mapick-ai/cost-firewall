@@ -381,12 +381,18 @@ export function renderDashboardHtml(_stats: any): string {
     /* Status Card */
     .status-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
       background: var(--border);
       border-radius: 6px;
       overflow: hidden;
       margin-bottom: 24px;
+    }
+    @media (max-width: 900px) {
+      .status-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+      .status-grid { grid-template-columns: 1fr; }
     }
     .status-item {
       background: var(--card);
