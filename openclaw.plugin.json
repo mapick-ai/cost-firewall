@@ -7,7 +7,7 @@
   "contracts": {
     "tools": ["firewall"]
   },
-  "toolMetadata": {}
+  "toolMetadata": {},
   "modelSupport": {
     "modelPrefixes": ["mapick/"]
   },
