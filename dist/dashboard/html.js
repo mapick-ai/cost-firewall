@@ -464,9 +464,6 @@ export function renderDashboardHtml(_stats) {
       <span style="background:#eff6ff;color:#2563eb;font-weight:600;font-size:11px;padding:3px 10px;border-radius:10px;letter-spacing:0.3px">Mapick</span>
       <span>Firewall</span>
     </div>
-      <span style="color:#94a3b8;font-weight:300">/</span>
-      <span>Firewall</span>
-    </div>
     <div class="header-center">
       <div class="mode-toggle">
         <button class="mode-btn active" id="mode-observe">Observe</button>
