@@ -1,0 +1,51 @@
+/**
+ * before_model_resolve hook — transparent model routing through firewall
+ *
+ * Intercepts model resolution and rewrites non-mapick models to
+ * mapick/<provider>/<model>, making the Provider Layer transparent.
+ * Users keep their existing model config — no changes needed.
+ */
+
+import type { FirewallState } from "../state.js";
+import type { EventStore } from "../store.js";
+import { isMapickModelRef } from "../provider/route.js";
+
+export interface BeforeModelResolveEvent {
+  provider: string;
+  model: string;
+  runId?: string;
+}
+
+export interface ModelResolveResult {
+  providerOverride?: string;
+  modelOverride?: string;
+}
+
+export function createBeforeModelResolveHandler(
+  state: FirewallState,
+  store: EventStore
+) {
+  return function handleBeforeModelResolve(
+    event: BeforeModelResolveEvent,
+    _ctx: any
+  ): ModelResolveResult | undefined {
+    // Already using mapick/* — no rewrite needed
+    if (isMapickModelRef(event.model)) return undefined;
+
+    // Only rewrite if in protect mode (observe = just watch)
+    if (state.globalStats.mode !== "protect") return undefined;
+
+    // Rewrite to mapick/<provider>/<model>
+    const newModel = `mapick/${event.provider}/${event.model}`;
+    store.append({
+      type: "model_rewrite",
+      reason: "transparent_firewall_routing",
+      provider: event.provider,
+      model: event.model,
+    });
+
+    return {
+      modelOverride: newModel,
+    };
+  };
+}
