@@ -115,7 +115,10 @@ export function createModelCallEndedHandler(
     }
 
     state.updateRunCost(event.runId, estimatedTokens);
-    state.updateSourceStats(source, estimatedTokens);
+    // Provider layer counts tokens for mapick calls — avoid double-counting
+    if (event.provider !== "mapick") {
+      state.updateSourceStats(source, estimatedTokens);
+    }
 
     // Token velocity + call frequency + zero output detection
     if (event.outcome === "completed") {
