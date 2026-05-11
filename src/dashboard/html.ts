@@ -15,10 +15,10 @@ export function renderDashboardHtml(_stats: any): string {
       min-height: 100vh;
     }
     .sidebar {
-      width: 280px;
+      width: 220px;
       background: #fff;
       border-right: 1px solid #e5e7eb;
-      padding: 20px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       gap: 16px;
