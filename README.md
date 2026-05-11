@@ -11,6 +11,12 @@ AI Call Firewall — real-time monitoring, budget control, automatic circuit bre
 
 ## Install
 
+**One-click:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/main/install.sh | bash
+```
+
+**Manual:**
 ```bash
 openclaw plugins install @mapick/cost-firewall
 openclaw plugins enable mapick-firewall
@@ -123,16 +129,13 @@ After installation, verify:
 
 ---
 
-## Development
+## Dev
 
 ```bash
 pnpm install
 pnpm build
 pnpm test
-pnpm dev          # tsc --watch
 ```
-
-See [RELEASE.md](./RELEASE.md) for release process.
 
 ## License
 
