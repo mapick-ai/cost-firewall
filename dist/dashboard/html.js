@@ -508,13 +508,24 @@ export function renderDashboardHtml(_stats) {
       inputFrequency.value = breaker.call_frequency_threshold ?? '';
       inputFrequencyWindow.value = breaker.call_frequency_window_sec ?? '';
 
+      // Status section
+      const statusList = document.getElementById('list-status');
+      const modeLabel = data.mode || 'observe';
+      const estop = data.emergency_stop;
+      statusList.innerHTML = '<div class="list-item"><span>Mode</span><span class="status-tag '+(estop?'status-danger':modeLabel==='protect'?'status-warning':'status-ok')+'" style="font-size:10px;padding:1px 6px;border-radius:3px">'+(estop?'STOPPED':modeLabel)+'</span></div>'+
+        '<div class="list-item"><span>Emergency Stop</span><span>'+(estop?'Active ⛔':'Inactive')+'</span></div>'+
+        '<div class="list-item"><span>Token Limit</span><span>'+(data.daily_token_limit?data.daily_token_limit.toLocaleString():'∞')+'</span></div>'+
+        '<div class="list-item"><span>Today</span><span>'+(data.today_tokens??0).toLocaleString()+' tokens | '+(data.today_blocked??0)+' blocked</span></div>';
+
       const coolingSources = data.cooling_sources ?? [];
       const coolingList = document.getElementById('list-cooling');
       if (coolingSources.length > 0) {
         coolingList.innerHTML = coolingSources.map(s => \`
           <div class="list-item">
-            <span>\${escapeHtml(s.source ?? s)}</span>
-            <button class="btn btn-sm btn-secondary" onclick="resetSource('\${escapeHtml(s.source ?? s)}')">Reset</button>
+            <span class="list-item-label">\${escapeHtml(s.source ?? '')}</span>
+            <span class="list-item-detail" style="color:var(--red);font-size:11px">\${escapeHtml(s.reason ?? '')}</span>
+            \${s.remainingSec > 0 ? '<span style="font-size:11px;color:var(--dim)">'+s.remainingSec+'s</span>' : ''}
+            <button class="btn btn-sm btn-secondary" onclick="resetSource('\${escapeHtml(s.source ?? '')}')">Reset</button>
           </div>
         \`).join('');
       } else {
@@ -526,7 +537,11 @@ export function renderDashboardHtml(_stats) {
       if (activeRuns.length > 0) {
         runsList.innerHTML = activeRuns.map(r => \`
           <div class="list-item">
-            <span>\${escapeHtml(r.id ?? r)}</span>
+            <span class="list-item-label">\${escapeHtml((r.runId || '').slice(0,8))}</span>
+            <span style="font-size:11px;color:var(--dim)">\${escapeHtml(r.source || '')}</span>
+            <span style="font-size:11px;color:var(--dim)">\${r.calls || 0} calls</span>
+            <span style="font-size:11px;color:var(--dim)">\${(r.tokens || 0).toLocaleString()} t</span>
+            <span class="status-tag \${r.status === 'danger' ? 'status-danger' : r.status === 'warning' ? 'status-warning' : 'status-ok'}" style="font-size:10px;padding:1px 6px;border-radius:3px">\${escapeHtml(r.status || 'healthy')}</span>
           </div>
         \`).join('');
       } else {

@@ -152,11 +152,42 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
 export async function getStatus(state: FirewallState, store?: EventStore): Promise<object> {
   let spent = state.globalStats.todayTokens;
   let blocked = state.globalStats.todayBlocked;
+  let coolingSources = state.breaker.getCoolingSources();
+  let activeRuns = state.getActiveRuns();
+
   if (store) {
     const agg = await aggregateFromJsonl(store, spent, blocked);
     spent = agg.today_tokens;
     blocked = agg.today_blocked;
+
+    // 从 events 聚合 cooling sources（最近 blocked 事件的 source+reason）
+    const recentBlocks = agg.events
+      .filter((e: any) => e.type === "blocked")
+      .slice(-10);
+    if (recentBlocks.length > 0 && coolingSources.length === 0) {
+      coolingSources = recentBlocks.map((e: any) => ({
+        source: e.source || "unknown",
+        reason: e.reason || "unknown",
+        remainingSec: 0,
+      }));
+    }
+
+    // 从 events 聚合 active runs（没有对应 agent_end 的 run）
+    const runEnded = new Set(agg.events.filter((e: any) => e.type === "agent_end").map((e: any) => e.runId));
+    const activeRunMap = new Map<string, any>();
+    for (const e of agg.events) {
+      if (e.runId && !runEnded.has(e.runId) && (e.type === "model_call_ended" || e.type === "run_status_change")) {
+        const r = activeRunMap.get(e.runId) || { runId: e.runId, source: e.source || "", calls: 0, tokens: 0, status: "healthy" };
+        if (e.type === "model_call_ended") { r.calls++; r.tokens += (e.estimatedCost || 0); }
+        if (e.type === "run_status_change" && e.status) { r.status = e.status; if (e.reason) r.reason = e.reason; }
+        activeRunMap.set(e.runId, r);
+      }
+    }
+    if (activeRunMap.size > 0 && activeRuns.length === 0) {
+      activeRuns = Array.from(activeRunMap.values());
+    }
   }
+
   return {
     mode: state.globalStats.mode,
     emergency_stop: state.globalStats.emergencyStop,
@@ -172,8 +203,8 @@ export async function getStatus(state: FirewallState, store?: EventStore): Promi
       call_frequency_threshold: state.config.breaker?.callFrequencyThreshold,
       call_frequency_window_sec: state.config.breaker?.callFrequencyWindowSec,
     },
-    cooling_sources: state.breaker.getCoolingSources(),
-    active_runs: state.getActiveRuns(),
+    cooling_sources: coolingSources,
+    active_runs: activeRuns,
   };
 }
 
