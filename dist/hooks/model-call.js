@@ -8,9 +8,18 @@
  * - Write event log
  */
 import { sourceFromModelCall } from "../source.js";
+import { testBlockRequested, clearTestBlock } from "./before-agent-reply.js";
 export function createModelCallStartedHandler(state, store) {
     return function handleModelCallStarted(event, ctx) {
         const source = sourceFromModelCall(event, ctx);
+        // Test block detection: user typed "block test" → activate emergency stop now
+        if (testBlockRequested) {
+            const src = testBlockRequested.source || source;
+            clearTestBlock();
+            store.append({ type: "blocked", source: src, reason: "test_block", layer: "hook" });
+            state.globalStats.todayBlocked++;
+            state.setEmergencyStop(true);
+        }
         const run = state.getOrCreateRun(event.runId, source, event.sessionId, event.sessionKey);
         state.addCallToRun(event.runId, event.callId, {
             callId: event.callId,
