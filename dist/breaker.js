@@ -42,7 +42,7 @@ export class Breaker {
     recordFailure(source) {
         const state = this.getState(source);
         state.consecutiveFailures++;
-        if (state.consecutiveFailures >= this.config.consecutiveFailures) {
+        if (state.consecutiveFailures >= this.config.consecutiveFailures && this.config.consecutiveFailures > 0) {
             state.brokenUntil = Date.now() + this.config.cooldownSec * 1000;
             state.reason = "consecutive_failures";
         }
