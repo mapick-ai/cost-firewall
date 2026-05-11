@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { estimateCost, getProviderModelKey } from "../../src/pricing.js";
+import { estimateTokens, getProviderModelKey } from "../../src/pricing.js";
 
-describe("estimateCost", () => {
+describe("estimateTokens", () => {
   it("估算 OpenAI GPT-4o 费用", () => {
-    const cost = estimateCost(
+    const cost = estimateTokens(
       { prompt_tokens: 1000, completion_tokens: 500 },
       "openai",
       "gpt-4o"
@@ -13,7 +13,7 @@ describe("estimateCost", () => {
   });
 
   it("估算 Anthropic Claude 费用", () => {
-    const cost = estimateCost(
+    const cost = estimateTokens(
       { prompt_tokens: 2000, completion_tokens: 1000 },
       "anthropic",
       "claude-sonnet-4-6"
@@ -23,7 +23,7 @@ describe("estimateCost", () => {
   });
 
   it("未知模型返回基于 bytes 的估算", () => {
-    const cost = estimateCost(
+    const cost = estimateTokens(
       { prompt_tokens: 0, completion_tokens: 0 },
       "unknown",
       "unknown-model",
@@ -33,7 +33,7 @@ describe("estimateCost", () => {
   });
 
   it("无 usage 信息时返回 0", () => {
-    const cost = estimateCost(null, "openai", "gpt-4o");
+    const cost = estimateTokens(null, "openai", "gpt-4o");
     expect(cost).toBe(0);
   });
 });

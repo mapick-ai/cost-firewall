@@ -22,7 +22,7 @@ import { resolveUpstreamAuth } from "./auth.js";
 import { createBlockedStream } from "./synthetic.js";
 import { streamOpenAi, getOpenAiBaseUrl } from "./upstream/openai.js";
 import { streamAnthropic } from "./upstream/anthropic.js";
-import { estimateCost } from "../pricing.js";
+import { estimateTokens } from "../pricing.js";
 
 function categorizeError(err: Error): string {
   const m = err?.message ?? String(err);
@@ -130,7 +130,7 @@ export function registerProvider(
             yield chunk;
           }
 
-          const cost = estimateCost({ prompt_tokens: inputTokens, completion_tokens: outputTokens }, route.upstream, route.model, responseStreamBytes);
+          const cost = estimateTokens({ prompt_tokens: inputTokens, completion_tokens: outputTokens }, route.upstream, route.model, responseStreamBytes);
           state.updateSourceStats(src, cost);
           state.breaker.recordSuccess(src);
         } catch (err: any) {

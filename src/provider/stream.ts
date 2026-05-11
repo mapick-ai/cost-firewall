@@ -13,7 +13,7 @@ import { createBlockedStream } from "./synthetic.js";
 import { streamOpenAi, getOpenAiBaseUrl } from "./upstream/openai.js";
 import { streamAnthropic } from "./upstream/anthropic.js";
 import { sourceFromProviderContext } from "../source.js";
-import { estimateCost } from "../pricing.js";
+import { estimateTokens } from "../pricing.js";
 
 export function createStreamFn(
   state: FirewallState,
@@ -44,7 +44,7 @@ export function createStreamFn(
           layer: result.layer,
         });
         state.globalStats.todayBlocked++;
-        state.globalStats.todaySavedEstimate += estimateCost(null, route.upstream, route.model);
+        state.globalStats.todaySavedEstimate += estimateTokens(null, route.upstream, route.model);
 
         yield* createBlockedStream({
           provider: route.upstream,
@@ -94,7 +94,7 @@ export function createStreamFn(
           yield chunk;
         }
 
-        const cost = estimateCost(
+        const cost = estimateTokens(
           { prompt_tokens: inputTokens, completion_tokens: outputTokens },
           route.upstream,
           route.model,

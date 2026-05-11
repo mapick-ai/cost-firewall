@@ -10,7 +10,7 @@
 
 import type { FirewallState } from "../state.js";
 import type { EventStore } from "../store.js";
-import { estimateCost } from "../pricing.js";
+import { estimateTokens } from "../pricing.js";
 import { sourceFromModelCall } from "../source.js";
 import { testBlockRequested, clearTestBlock } from "./before-agent-reply.js";
 

@@ -4,7 +4,7 @@ import { createBlockedStream } from "./synthetic.js";
 import { streamOpenAi, getOpenAiBaseUrl } from "./upstream/openai.js";
 import { streamAnthropic } from "./upstream/anthropic.js";
 import { sourceFromProviderContext } from "../source.js";
-import { estimateCost } from "../pricing.js";
+import { estimateTokens } from "../pricing.js";
 export function createStreamFn(state, store, api) {
     // Return createStreamFn matching SDK signature
     // OpenClaw calls createStreamFn(ctx), returns async generator function
@@ -27,7 +27,7 @@ export function createStreamFn(state, store, api) {
                     layer: result.layer,
                 });
                 state.globalStats.todayBlocked++;
-                state.globalStats.todaySavedEstimate += estimateCost(null, route.upstream, route.model);
+                state.globalStats.todaySavedEstimate += estimateTokens(null, route.upstream, route.model);
                 yield* createBlockedStream({
                     provider: route.upstream,
                     model: route.model,
@@ -69,7 +69,7 @@ export function createStreamFn(state, store, api) {
                     }
                     yield chunk;
                 }
-                const cost = estimateCost({ prompt_tokens: inputTokens, completion_tokens: outputTokens }, route.upstream, route.model, responseStreamBytes);
+                const cost = estimateTokens({ prompt_tokens: inputTokens, completion_tokens: outputTokens }, route.upstream, route.model, responseStreamBytes);
                 store.append({
                     type: "model_call_ended",
                     source,
