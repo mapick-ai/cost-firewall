@@ -44,6 +44,7 @@ export function createBeforeModelResolveHandler(
     });
 
     return {
+      providerOverride: "mapick",
       modelOverride: newModel,
     };
   };

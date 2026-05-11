@@ -85,7 +85,6 @@ export function registerProvider(
     },
 
     createStreamFn() {
-      const self = this;
       return async function* stream(model: any, context: any, options: any) {
         // model may come from ctx, use catalog + resolveDynamicModel provided model
         const modelId = typeof model === "string" ? model : model?.id ?? "";
@@ -131,12 +130,9 @@ export function registerProvider(
           }
 
           const cost = estimateCost({ prompt_tokens: inputTokens, completion_tokens: outputTokens }, route.upstream, route.model, responseStreamBytes);
-          store.append({ type: "model_call_ended", provider: route.upstream, model: route.model, outcome: "completed", estimatedCost: cost });
           state.updateSourceStats(src, cost);
           state.breaker.recordSuccess(src);
         } catch (err: any) {
-          const msg = err?.message ?? String(err);
-          store.append({ type: "model_call_ended", provider: route.upstream, model: route.model, outcome: "error", failureKind: categorizeError(err), reason: msg.slice(0, 200) });
           state.breaker.recordFailure(src);
           throw err;
         }

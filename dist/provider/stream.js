@@ -1,9 +1,3 @@
-/**
- * createStreamFn implementation
- *
- * Core: precheck before real upstream request is sent
- * SDK convention: createStreamFn(ctx) => async function*(model, context, options)
- */
 import { parseMapickModelRef } from "./route.js";
 import { resolveUpstreamAuth } from "./auth.js";
 import { createBlockedStream } from "./synthetic.js";

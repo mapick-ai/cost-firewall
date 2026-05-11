@@ -43,9 +43,17 @@ export async function* streamAnthropic(options) {
             buffer = lines.pop() ?? "";
             for (const line of lines) {
                 const trimmed = line.trim();
-                if (!trimmed || !trimmed.startsWith("data: "))
+                if (!trimmed)
                     continue;
-                const data = trimmed.slice("data: ".length);
+                // Anthropic SSE: "event: xxx" then "data: {...}"
+                // Parse data lines only (event type is inside the JSON payload)
+                let data = trimmed;
+                if (trimmed.startsWith("data: ")) {
+                    data = trimmed.slice("data: ".length);
+                }
+                else if (trimmed.startsWith("event: ")) {
+                    continue; // skip event type lines
+                }
                 try {
                     yield JSON.parse(data);
                 }

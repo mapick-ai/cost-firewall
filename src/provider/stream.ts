@@ -1,9 +1,9 @@
 /**
- * createStreamFn implementation
- *
- * Core: precheck before real upstream request is sent
- * SDK convention: createStreamFn(ctx) => async function*(model, context, options)
+ * stream.ts — removed. Provider Layer uses inline createStreamFn in provider/index.ts.
+ * This file was dead code with no imports.
  */
+export {};
+
 
 import type { FirewallState } from "../state.js";
 import type { EventStore } from "../store.js";
