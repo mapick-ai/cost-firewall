@@ -41,7 +41,7 @@ export class FirewallState {
     this.breaker = new Breaker(this.config);
     this.globalStats = {
       emergencyStop: false,
-      mode: "observe",
+      mode: "protect",
       todayTokens: 0,
       todayBlocked: 0,
       todaySavedEstimate: 0,

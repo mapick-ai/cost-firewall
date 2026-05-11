@@ -32,10 +32,9 @@ export function createBeforeModelResolveHandler(
     // Already using mapick/* — no rewrite needed
     if (isMapickModelRef(event.model)) return undefined;
 
-    // Only rewrite if in protect mode (observe = just watch)
-    if (state.globalStats.mode !== "protect") return undefined;
-
-    // Rewrite to mapick/<provider>/<model>
+    // Rewrite ALL calls to mapick/<provider>/<model>
+    // observe mode: routes through Provider Layer for tracking (no blocking)
+    // protect mode: routes through Provider Layer for tracking + blocking
     const newModel = `mapick/${event.provider}/${event.model}`;
     store.append({
       type: "model_rewrite",
