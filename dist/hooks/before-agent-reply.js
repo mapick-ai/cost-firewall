@@ -8,6 +8,8 @@
  */
 // Test block flag — set by llm_input hook when user types 'block test'
 export let testBlockRequested = null;
+// Prevent re-triggering from conversation history containing "block test"
+let testBlockProcessed = false;
 export function clearTestBlock() {
     testBlockRequested = null;
 }
@@ -64,6 +66,10 @@ export function createTestBlockDetector(store) {
     return function detectTestBlock(event, _ctx) {
         const prompt = event.prompt ?? "";
         if (prompt.includes("阻断测试") || prompt.includes("block test") || prompt.includes("test block")) {
+            // Only trigger once per gateway process to avoid re-triggering from history
+            if (testBlockProcessed)
+                return;
+            testBlockProcessed = true;
             testBlockRequested = { source: event.provider ?? "chat" };
             store.append({ type: "test_block_triggered", reason: "user requested block test" });
         }

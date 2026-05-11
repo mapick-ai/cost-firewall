@@ -12,6 +12,8 @@ import type { EventStore } from "../store.js";
 
 // Test block flag — set by llm_input hook when user types 'block test'
 export let testBlockRequested: { source?: string } | null = null;
+// Prevent re-triggering from conversation history containing "block test"
+let testBlockProcessed = false;
 
 export function clearTestBlock(): void {
   testBlockRequested = null;
@@ -102,8 +104,11 @@ export function createBeforeAgentReplyHandler(
 export function createTestBlockDetector(store: EventStore) {
   return function detectTestBlock(event: { prompt?: string; provider?: string }, _ctx: any): void {
     const prompt = event.prompt ?? "";
-    if (prompt.includes("阻断测试") || prompt.includes("block test") || prompt.includes("test block")) {
-      testBlockRequested = { source: event.provider ?? "chat" };
+      if (prompt.includes("阻断测试") || prompt.includes("block test") || prompt.includes("test block")) {
+        // Only trigger once per gateway process to avoid re-triggering from history
+        if (testBlockProcessed) return;
+        testBlockProcessed = true;
+        testBlockRequested = { source: event.provider ?? "chat" };
       store.append({ type: "test_block_triggered", reason: "user requested block test" });
     }
   };
