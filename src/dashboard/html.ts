@@ -460,9 +460,8 @@ export function renderDashboardHtml(_stats: any): string {
 </head>
 <body>
   <header class="header">
-    <div class="header-title">
-      <span style="font-weight:700;color:#2563eb">Mapick</span>
-      <span style="color:#94a3b8;margin:0 6px">/</span>
+    <div class="header-title" style="display:flex;align-items:center;gap:6px">
+      <span style="background:#eff6ff;color:#2563eb;font-weight:600;font-size:11px;padding:3px 10px;border-radius:10px;letter-spacing:0.3px">Mapick</span>
       <span>Firewall</span>
     </div>
       <span style="color:#94a3b8;font-weight:300">/</span>
