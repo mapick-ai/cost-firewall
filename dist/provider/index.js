@@ -5,6 +5,14 @@
  * - catalog: declare model catalog
  * - resolveDynamicModel: dynamically accept any upstream model ID
  * - createStreamFn: precheck + upstream forwarding
+ *
+ * @known-limitations
+ * - Message format: passes context.messages directly to upstream API.
+ *   Works for plain text but tool calls, system prompts, cache headers,
+ *   and reasoning payloads may need format conversion for Anthropic/OpenAI.
+ * - Provider contract: not yet validated against real OpenClaw gateway
+ *   contract (createStreamFn invocation, synthetic stream handling, fallback
+ *   routing). Works via runtime registration; end-to-end gateway test pending.
  */
 import { parseMapickModelRef } from "./route.js";
 import { resolveUpstreamAuth } from "./auth.js";

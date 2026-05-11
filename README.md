@@ -129,6 +129,13 @@ After installation, verify:
 
 ---
 
+## Known Limitations
+
+- **Provider Layer**: `mapick/*` model routing is registered and unit-tested, but end-to-end gateway contract validation (createStreamFn invocation, synthetic stream delivery, fallback routing) is pending.
+- **Message format**: Plain text calls work; tool calls, system prompts, and reasoning payloads may need format conversion for upstream APIs.
+
+---
+
 ## Dev
 
 ```bash
