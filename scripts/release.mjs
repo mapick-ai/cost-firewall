@@ -19,7 +19,6 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const PKG_PATH = resolve(ROOT, "package.json");
-const README_PATH = resolve(ROOT, "README.md");
 
 // ── Parse bump type ──────────────────────────────────────
 const bumpArg = process.argv[2] || "dry-run";
@@ -88,28 +87,17 @@ steps.push(() => {
   writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + "\n");
 });
 
-// 4. Update README version badge (static badge with explicit version)
+// 4. README version badge is dynamic (shields.io + GitHub tag API)
+//    No update needed — just ensure tag gets pushed in step 8.
 steps.push(() => {
-  console.log(`  📖 Updating README version badge to ${nextVersion}...`);
-  let readme = readFileSync(README_PATH, "utf-8");
-  const newBadge = `![Version](https://img.shields.io/badge/version-${nextVersion}-2563eb)`;
-  readme = readme.replace(
-    /!\[Version\]\(https:\/\/img\.shields\.io\/badge\/version-[^)]+\)/,
-    newBadge
-  );
-  writeFileSync(README_PATH, readme);
-  console.log(`     ${newBadge}`);
+  console.log(`  📖 README badge auto-resolves to ${tag} via shields.io`);
 });
 
 // 5. Git commit + tag
 steps.push(() => {
   console.log(`  🏷️  Committing and tagging ${tag}...`);
-  run(`git add package.json README.md`);
-  // Only commit if there are staged changes
-  const staged = runCapture("git diff --cached --stat");
-  if (staged) {
-    run(`git commit -m "release: ${tag}"`);
-  }
+  run(`git add package.json`);
+  run(`git commit -m "release: ${tag}"`);
   run(`git tag -f ${tag}`);
 });
 
