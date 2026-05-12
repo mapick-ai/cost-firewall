@@ -70,7 +70,7 @@ c.setdefault('plugins', {}).setdefault('entries', {})[plugin_id] = {
 with open(config_path, 'w') as f:
     json.dump(c, f, indent=2)
 print('Configured.')
-'
+PY
 fi
 
 # 4. Verify installed version matches expected
