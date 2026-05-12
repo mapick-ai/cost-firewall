@@ -1,6 +1,6 @@
 {
   "name": "@mapick/cost-firewall",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "license": "MIT",
   "description": "Mapick Cost Firewall — OpenClaw Plugs",
   "type": "module",
@@ -25,7 +25,6 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src test",
-    "release": "../.shell/release-firewall.sh",
     "release": "node scripts/release.mjs"
   },
   "openclaw": {
