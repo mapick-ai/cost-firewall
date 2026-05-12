@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.11 - 2026-05-12
+
+- feat: auto-update all README version refs
+
 ## v0.2.10 - 2026-05-12
 
 - release v0.2.10
