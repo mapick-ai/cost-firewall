@@ -21,9 +21,10 @@ if [ -n "$OC_VERSION" ]; then
   if [ "$OC_VER_NUM" -lt "$MIN_VER_NUM" ]; then
     echo ""
     echo "⚠  OpenClaw $OC_VERSION is below the required minimum ($MIN_VERSION)."
-    echo "   Please upgrade and re-run:"
     echo ""
-    echo "     openclaw update"
+    echo "   1. Upgrade OpenClaw:"
+    echo "        openclaw update"
+    echo "   2. Exit"
     echo ""
     exit 1
   fi
