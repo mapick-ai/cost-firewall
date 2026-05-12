@@ -11,6 +11,24 @@ echo "=================================="
 PLUGIN_ID="mapick-firewall"
 PLUGIN_PACKAGE="@mapick/cost-firewall"
 
+# Check OpenClaw version
+OC_VERSION=$(openclaw --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+MIN_VERSION="2026.5.7"
+
+if [ -n "$OC_VERSION" ]; then
+  OC_VER_NUM=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
+  MIN_VER_NUM=$(echo "$MIN_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
+  if [ "$OC_VER_NUM" -lt "$MIN_VER_NUM" ]; then
+    echo ""
+    echo "⚠  OpenClaw $OC_VERSION is below the required minimum ($MIN_VERSION)."
+    echo "   Please upgrade and re-run:"
+    echo ""
+    echo "     openclaw update"
+    echo ""
+    exit 1
+  fi
+fi
+
 # 1. Install or update plugin
 echo ""
 echo "→ Installing or updating plugin..."
