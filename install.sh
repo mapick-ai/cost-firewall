@@ -14,11 +14,25 @@ PLUGIN_PACKAGE="@mapick/cost-firewall"
 # 1. Install or update plugin
 echo ""
 echo "→ Installing or updating plugin..."
-if openclaw plugins update "$PLUGIN_ID"; then
-  echo "   Existing installation updated."
-else
-  echo "   Update skipped or failed. Installing package..."
+
+# Try update first (fast path for existing installations)
+openclaw plugins update "$PLUGIN_ID" || true
+
+# Verify plugin is actually installed on disk; if not, install from npm
+PLUGIN_INSTALLED=0
+for dir in \
+  "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/extensions/$PLUGIN_ID" \
+  "$HOME/.openclaw/extensions/$PLUGIN_ID" \
+  "/Volumes/ACASIS/openclaw/state/extensions/$PLUGIN_ID" \
+  "/Volumes/ACASIS/openclaw/state/npm/node_modules/@mapick/cost-firewall"; do
+  if [ -d "$dir" ]; then PLUGIN_INSTALLED=1; break; fi
+done
+
+if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
+  echo "   Plugin not found on disk. Installing from npm..."
   openclaw plugins install "$PLUGIN_PACKAGE" --force --pin
+else
+  echo "   Plugin found on disk."
 fi
 
 # 2. Enable it
