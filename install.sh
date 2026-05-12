@@ -70,10 +70,37 @@ c.setdefault('plugins', {}).setdefault('entries', {})[plugin_id] = {
 with open(config_path, 'w') as f:
     json.dump(c, f, indent=2)
 print('Configured.')
-PY
+'
 fi
 
-# 4. Restart gateway
+# 4. Verify installed version matches expected
+echo ""
+echo "→ Verifying installed version..."
+EXPECTED_VERSION=$(curl -fsSL https://registry.npmjs.org/@mapick%2Fcost-firewall/latest 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["version"])' 2>/dev/null || echo "unknown")
+
+INSTALLED_VERSION=""
+for dir in \
+  "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/extensions/mapick-firewall" \
+  "$HOME/.openclaw/extensions/mapick-firewall" \
+  "/Volumes/ACASIS/openclaw/state/extensions/mapick-firewall"; do
+  if [ -f "$dir/package.json" ]; then
+    INSTALLED_VERSION=$(node -e "try{console.log(require('$dir/package.json').version)}catch(e){}" 2>/dev/null)
+    [ -n "$INSTALLED_VERSION" ] && break
+  fi
+done
+
+if [ -z "$INSTALLED_VERSION" ]; then
+  echo "  ⚠ Could not determine installed version"
+elif [ "$INSTALLED_VERSION" != "$EXPECTED_VERSION" ] && [ "$EXPECTED_VERSION" != "unknown" ]; then
+  echo "  ✗ Version mismatch: expected $EXPECTED_VERSION, installed $INSTALLED_VERSION"
+  echo "  Possible cause: OpenClaw security scan blocked the new package."
+  echo "  Run: openclaw plugins install @mapick/cost-firewall --force --dangerously-force-unsafe-install"
+  exit 1
+else
+  echo "  ✓ Version $INSTALLED_VERSION matches expected $EXPECTED_VERSION"
+fi
+
+# 5. Restart gateway
 echo ""
 echo "→ Restarting gateway..."
 openclaw gateway restart
