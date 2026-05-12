@@ -48,7 +48,7 @@ done
 
 if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
   echo "   Plugin not found on disk. Installing from npm..."
-  openclaw plugins install "$PLUGIN_PACKAGE" --force --pin
+  openclaw plugins install "$PLUGIN_PACKAGE" --force
 else
   echo "   Plugin found on disk."
 fi
