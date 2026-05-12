@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.9 - 2026-05-12
+
+- feat: tagged version install URL in README
+
 ## v0.2.8 - 2026-05-12
 
 - fix: remove env var, install.sh version check

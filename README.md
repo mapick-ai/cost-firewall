@@ -14,7 +14,7 @@ AI Call Firewall — real-time monitoring, budget control, automatic circuit bre
 **Install script:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.8/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.9/install.sh | bash
 ```
 
 **Manual:**
