@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
+
 # Mapick Cost Firewall installer
 # Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/main/install.sh | bash
 
@@ -144,7 +145,7 @@ echo ""
 echo "→ Verifying plugin loaded..."
 PLUGIN_LOADED=0
 for i in 1 2 3 4 5 6 7 8 9 10; do
-  openclaw plugins list 2>&1 | grep -q "$PLUGIN_ID" && { PLUGIN_LOADED=1; break; }
+  perl -e 'alarm 8; exec @ARGV' -- openclaw plugins list 2>&1 | grep -q "$PLUGIN_ID" && { PLUGIN_LOADED=1; break; }
   sleep 3
 done
 if [ "$PLUGIN_LOADED" -eq 1 ]; then
