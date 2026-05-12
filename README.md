@@ -1,6 +1,6 @@
 # @mapick/cost-firewall
 
-![Version](https://img.shields.io/github/v/tag/mapick-ai/cost-firewall?label=version&color=2563eb)
+![Version](https://img.shields.io/badge/version-0.2.2-2563eb)
 ![License](https://img.shields.io/github/license/mapick-ai/cost-firewall?color=16a34a)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)
 ![OpenClaw Plugin](https://img.shields.io/badge/OpenClaw-Plugin-8B5CF6)

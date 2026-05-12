@@ -88,24 +88,17 @@ steps.push(() => {
   writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + "\n");
 });
 
-// 4. Update README version badge (replace the shields.io tag URL to ensure cache busting)
-//    The badge uses github/v/tag which auto-resolves, but we add a timestamp suffix
-//    to the theme param to force shields.io cache refresh.
+// 4. Update README version badge (static badge with explicit version)
 steps.push(() => {
-  console.log("  📖 Updating README version badge...");
+  console.log(`  📖 Updating README version badge to ${nextVersion}...`);
   let readme = readFileSync(README_PATH, "utf-8");
-  // The badge is dynamic via github/v/tag — no hardcoded version to update.
-  // Just ensure it references the latest tag.
-  const badgeLine = "![Version](https://img.shields.io/github/v/tag/mapick-ai/cost-firewall?label=version&color=2563eb)";
-  if (!readme.includes(badgeLine)) {
-    // Fallback: replace any version badge line with the correct one
-    readme = readme.replace(
-      /!\[Version\].*/,
-      badgeLine
-    );
-    writeFileSync(README_PATH, readme);
-  }
-  // Update install.sh URL reference if needed (it uses `main` branch, which is fine)
+  const newBadge = `![Version](https://img.shields.io/badge/version-${nextVersion}-2563eb)`;
+  readme = readme.replace(
+    /!\[Version\]\(https:\/\/img\.shields\.io\/badge\/version-[^)]+\)/,
+    newBadge
+  );
+  writeFileSync(README_PATH, readme);
+  console.log(`     ${newBadge}`);
 });
 
 // 5. Git commit + tag
