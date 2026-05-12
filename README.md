@@ -12,11 +12,13 @@ AI Call Firewall — real-time monitoring, budget control, automatic circuit bre
 ## Install
 
 **Install script:**
+
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.8/install.sh | bash
 ```
 
 **Manual:**
+
 ```bash
 openclaw plugins update mapick-firewall || openclaw plugins install @mapick/cost-firewall --force --pin
 openclaw plugins enable mapick-firewall
@@ -30,17 +32,17 @@ Dashboard: **http://localhost:18789/mapick/dashboard**
 
 ## Commands
 
-| CLI | Action |
-|---|---|
-| `openclaw firewall status` | View status (mode, tokens, blocked, limit) |
-| `openclaw firewall stop` | 🛑 Emergency stop — block all AI calls |
-| `openclaw firewall resume` | ▶️ Resume after stop |
-| `openclaw firewall mode observe` | Observe mode — record only, no blocking |
-| `openclaw firewall mode protect` | Protect mode — enable all breaker rules |
-| `openclaw firewall budget set 50000` | Set daily token limit to 50K |
-| `openclaw firewall budget reset` | Remove daily token limit |
-| `openclaw firewall log --last 20` | Show last 20 events |
-| `openclaw firewall reset <source>` | Reset a source from cooldown |
+| CLI                                  | Action                                     |
+| ------------------------------------ | ------------------------------------------ |
+| `openclaw firewall status`           | View status (mode, tokens, blocked, limit) |
+| `openclaw firewall stop`             | 🛑 Emergency stop — block all AI calls     |
+| `openclaw firewall resume`           | ▶️ Resume after stop                       |
+| `openclaw firewall mode observe`     | Observe mode — record only, no blocking    |
+| `openclaw firewall mode protect`     | Protect mode — enable all breaker rules    |
+| `openclaw firewall budget set 50000` | Set daily token limit to 50K               |
+| `openclaw firewall budget reset`     | Remove daily token limit                   |
+| `openclaw firewall log --last 20`    | Show last 20 events                        |
+| `openclaw firewall reset <source>`   | Reset a source from cooldown               |
 
 In OpenClaw chat: `/firewall status`, `/firewall stop`, `/firewall resume`, `/firewall log`
 
@@ -62,12 +64,12 @@ In OpenClaw chat: `/firewall status`, `/firewall stop`, `/firewall resume`, `/fi
             "tokenVelocityThreshold": 100000,
             "tokenVelocityWindowSec": 60,
             "callFrequencyThreshold": 30,
-            "callFrequencyWindowSec": 60
-          }
-        }
-      }
-    }
-  }
+            "callFrequencyWindowSec": 60,
+          },
+        },
+      },
+    },
+  },
 }
 ```
 
@@ -77,22 +79,22 @@ In OpenClaw chat: `/firewall status`, `/firewall stop`, `/firewall resume`, `/fi
 
 Firewall has two modes: **Observe** (record, don't block) and **Protect** (active blocking).
 
-| Rule | Trigger | Effect |
-|---|---|---|
-| Emergency Stop | `openclaw firewall stop` | Block all calls |
-| Daily Token Limit | Today's tokens ≥ limit | Block all calls |
-| Consecutive Failures | N failures in a row | Block source for cooldown |
-| Token Velocity | N tokens in W seconds | Block source for cooldown |
-| Call Frequency | N calls in W seconds | Block source for cooldown |
+| Rule                 | Trigger                  | Effect                    |
+| -------------------- | ------------------------ | ------------------------- |
+| Emergency Stop       | `openclaw firewall stop` | Block all calls           |
+| Daily Token Limit    | Today's tokens ≥ limit   | Block all calls           |
+| Consecutive Failures | N failures in a row      | Block source for cooldown |
+| Token Velocity       | N tokens in W seconds    | Block source for cooldown |
+| Call Frequency       | N calls in W seconds     | Block source for cooldown |
 
 ### Defaults
 
-| Rule | Threshold | Window | Cooldown |
-|---|---|---|---|
-| Consecutive Failures | 3 | — | 30s |
-| Token Velocity | 100K tokens | 60s | 30s |
-| Call Frequency | 30 calls | 60s | 30s |
-| Daily Token Limit | None (unlimited) | — | — |
+| Rule                 | Threshold        | Window | Cooldown |
+| -------------------- | ---------------- | ------ | -------- |
+| Consecutive Failures | 3                | —      | 30s      |
+| Token Velocity       | 100K tokens      | 60s    | 30s      |
+| Call Frequency       | 30 calls         | 60s    | 30s      |
+| Daily Token Limit    | None (unlimited) | —      | —        |
 
 ---
 
@@ -116,11 +118,10 @@ openclaw gateway restart
 # 5. Verify it works
 openclaw firewall status
 
-# 6. Optional: set a daily token budget
-openclaw firewall budget set 500000
 ```
 
 After installation, verify:
+
 - [ ] `openclaw plugins list` shows `mapick-firewall` (enabled)
 - [ ] `openclaw firewall status` returns valid JSON
 - [ ] Dashboard accessible at http://localhost:18789/mapick/dashboard
@@ -168,4 +169,4 @@ MIT
 
 ---
 
-*Made by [Mapick AI](https://github.com/mapick-ai) — because AI agents shouldn't break the bank.*
+_Made by [Mapick AI](https://github.com/mapick-ai) — because AI agents shouldn't break the bank._
