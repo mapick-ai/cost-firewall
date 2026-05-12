@@ -463,7 +463,9 @@ export function renderDashboardHtml(_stats: any): string {
     <div class="header-title" style="display:flex;align-items:center;gap:6px">
       <span style="background:#eff6ff;color:#2563eb;font-weight:600;font-size:11px;padding:3px 10px;border-radius:10px;letter-spacing:0.3px">Mapick</span>
       <span>Firewall</span>
+      <span style="font-size:10px;color:#94a3b8;margin-left:2px">v0.2.0</span>
     </div>
+    <div class="header-right" style="font-size:10px;color:#94a3b8" id="openclaw-ver"></div>
     <div class="header-center">
       <div class="mode-toggle">
         <button class="mode-btn active" id="mode-observe">Observe</button>
