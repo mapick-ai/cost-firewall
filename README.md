@@ -144,6 +144,28 @@ pnpm build
 pnpm test
 ```
 
+## Roadmap
+
+- **@mapick/cli** — standalone CLI for skill recommendation, search, scan (works with any Agent via SKILL.md files)
+- **@mapick/firewall** — standalone daemon proxy: intercept ALL model calls from ANY AI CLI
+
+```bash
+# Claude Code
+export ANTHROPIC_BASE_URL=http://localhost:9199
+
+# Aider / Codex
+export OPENAI_BASE_URL=http://localhost:9199/v1
+
+# Cursor
+# Settings → Model → Override Base URL → http://localhost:9199
+```
+
+No plugin needed. Just set a base URL.
+
 ## License
 
 MIT
+
+---
+
+*Made by [Mapick AI](https://github.com/mapick-ai) — because AI agents shouldn't break the bank.*
