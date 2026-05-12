@@ -19,12 +19,15 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const PKG_PATH = resolve(ROOT, "package.json");
+const PLUGIN_MANIFEST_PATH = resolve(ROOT, "openclaw.plugin.json");
+const INDEX_PATH = resolve(ROOT, "src/index.ts");
 
 // ── Parse bump type ──────────────────────────────────────
 const bumpArg = process.argv[2] || "dry-run";
 const VALID = new Set(["patch", "minor", "major", "dry-run"]);
 
 const pkg = JSON.parse(readFileSync(PKG_PATH, "utf-8"));
+const pluginManifest = JSON.parse(readFileSync(PLUGIN_MANIFEST_PATH, "utf-8"));
 const currentVersion = pkg.version;
 
 let nextVersion;
@@ -80,11 +83,22 @@ steps.push(() => {
   run("npm test");
 });
 
-// 3. Bump version in package.json
+// 3. Bump version metadata
 steps.push(() => {
-  console.log("  📝 Bumping version...");
+  console.log("  📝 Bumping version metadata...");
   pkg.version = nextVersion;
   writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + "\n");
+
+  pluginManifest.version = nextVersion;
+  writeFileSync(PLUGIN_MANIFEST_PATH, JSON.stringify(pluginManifest, null, 2) + "\n");
+
+  const indexSource = readFileSync(INDEX_PATH, "utf-8");
+  const nextIndexSource = indexSource.replace(/version:\s*"[^"]+"/, `version: "${nextVersion}"`);
+  if (nextIndexSource === indexSource) {
+    console.error("❌ Could not find plugin version field in src/index.ts");
+    process.exit(1);
+  }
+  writeFileSync(INDEX_PATH, nextIndexSource);
 });
 
 // 4. README version badge is dynamic (shields.io + GitHub tag API)
@@ -96,7 +110,7 @@ steps.push(() => {
 // 5. Git commit + tag
 steps.push(() => {
   console.log(`  🏷️  Committing and tagging ${tag}...`);
-  run(`git add package.json`);
+  run(`git add package.json openclaw.plugin.json src/index.ts`);
   run(`git commit -m "release: ${tag}"`);
   run(`git tag -f ${tag}`);
 });

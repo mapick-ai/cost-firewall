@@ -11,14 +11,14 @@ AI Call Firewall — real-time monitoring, budget control, automatic circuit bre
 
 ## Install
 
-**One-click:**
+**Install script:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/main/install.sh | bash
 ```
 
 **Manual:**
 ```bash
-openclaw plugins install @mapick/cost-firewall
+openclaw plugins update mapick-firewall || openclaw plugins install @mapick/cost-firewall --force --pin
 openclaw plugins enable mapick-firewall
 openclaw gateway restart
 openclaw firewall status
@@ -101,8 +101,8 @@ Firewall has two modes: **Observe** (record, don't block) and **Protect** (activ
 Copy the entire block below and execute:
 
 ```bash
-# 1. Install the plugin
-openclaw plugins install @mapick/cost-firewall
+# 1. Install or update the plugin
+openclaw plugins update mapick-firewall || openclaw plugins install @mapick/cost-firewall --force --pin
 
 # 2. Enable it
 openclaw plugins enable mapick-firewall
