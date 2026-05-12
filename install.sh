@@ -7,10 +7,19 @@ set -e
 echo "🛡️  Mapick Cost Firewall Installer"
 echo "=================================="
 
-# 1. Install the plugin
+# 1. Install or update plugin
 echo ""
-echo "→ Installing plugin..."
-openclaw plugins install @mapick/cost-firewall
+echo "→ Installing or updating plugin..."
+PLUGIN_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/extensions/mapick-firewall"
+if [ -d "$PLUGIN_DIR" ]; then
+  echo "   Existing installation detected. Updating..."
+  if ! openclaw plugins update mapick-firewall 2>/dev/null; then
+    echo "   Update failed. Force reinstalling..."
+    openclaw plugins install @mapick/cost-firewall --force
+  fi
+else
+  openclaw plugins install @mapick/cost-firewall
+fi
 
 # 2. Enable it
 echo ""
@@ -73,8 +82,34 @@ echo "→ Waiting for gateway..."
 sleep 5
 
 echo ""
-echo "→ Verifying..."
-openclaw firewall status
+echo "→ Verifying gateway..."
+openclaw gateway status >/dev/null || echo "  ⚠ Gateway not responding"
+
+echo ""
+echo "→ Verifying plugin loaded..."
+openclaw plugins list 2>&1 | grep -q mapick-firewall && echo "  ✓ Plugin loaded" || echo "  ⚠ Plugin not found"
+
+echo ""
+echo "→ Verifying firewall CLI..."
+if openclaw firewall status >/dev/null 2>&1; then
+  echo "  ✓ Firewall CLI working"
+else
+  echo "  ⚠ Firewall CLI may need gateway restart or API is not mounted"
+fi
+
+echo ""
+echo "→ Verifying plugin API..."
+if curl -fsS -m 5 -H "Accept: application/json" http://127.0.0.1:18789/mapick/api/stats >/tmp/mapick-firewall-stats.json 2>/dev/null; then
+  python3 -c "
+import json
+with open('/tmp/mapick-firewall-stats.json') as f:
+    data = json.load(f)
+assert 'emergency_stop' in data, f'Missing emergency_stop in {data}'
+print('  ✓ Plugin API verified')
+" 2>/dev/null || echo "  ⚠ Plugin API returned unexpected response (may need gateway restart)"
+else
+  echo "  ⚠ Plugin API not reachable (OpenClaw may block plugin routes — try gateway restart)"
+fi
 
 echo ""
 echo "=================================="

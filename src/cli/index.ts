@@ -14,54 +14,54 @@ import type { FirewallEvent } from "../types.js";
 
 const API_BASE = "http://127.0.0.1:18789";
 
-function apiGet(path: string): Promise<{ ok: boolean; error?: string }> {
-  return new Promise((resolve) => {
-    http.get(`${API_BASE}${path}`, (res: any) => {
-      let body = "";
-      res.on("data", (c: string) => body += c);
-      res.on("end", () => {
-        // Validate we got JSON, not SPA HTML
-        if (res.headers["content-type"]?.includes("text/html")) {
-          console.error("Error: Gateway returned HTML — plugin API not mounted.");
-          resolve({ ok: false, error: "plugin_api_not_mounted" });
-          return;
-        }
-        try {
-          const d = JSON.parse(body);
-          resolve(d.ok !== false ? { ok: true } : { ok: false, error: d.error });
-        } catch {
-          resolve({ ok: false, error: "invalid_response" });
-        }
-      });
-    }).on("error", () => resolve({ ok: false, error: "network_error" }));
-  });
-}
+type ApiResult<T = any> =
+  | { ok: true; data: T }
+  | { ok: false; error: string; statusCode?: number; contentType?: string };
 
-function apiPost(body: object): Promise<{ ok: boolean; error?: string }> {
+function apiRequestJson<T = any>(
+  method: "GET" | "POST",
+  path: string,
+  body?: object
+): Promise<ApiResult<T>> {
   return new Promise((resolve) => {
-    const data = JSON.stringify(body);
-    const url = new URL(`${API_BASE}/mapick/api/config`);
-    const req = http.request(url, { method: "POST", headers: { "Content-Type": "application/json" } }, (res: any) => {
-      let body2 = "";
-      res.on("data", (c: string) => body2 += c);
+    const data = body === undefined ? undefined : JSON.stringify(body);
+    const url = new URL(`${API_BASE}${path}`);
+    const req = http.request(url, {
+      method,
+      headers: data ? { "Content-Type": "application/json" } : undefined,
+    }, (res: any) => {
+      let raw = "";
+      res.on("data", (c: string) => raw += c);
       res.on("end", () => {
-        if (res.headers["content-type"]?.includes("text/html")) {
-          console.error("Error: Gateway returned HTML — plugin API not mounted.");
-          resolve({ ok: false, error: "plugin_api_not_mounted" });
+        const contentType = String(res.headers["content-type"] ?? "");
+        if (!contentType.includes("application/json")) {
+          resolve({ ok: false, error: "plugin_api_not_mounted", statusCode: res.statusCode, contentType });
           return;
         }
         try {
-          const d = JSON.parse(body2);
-          resolve(d.ok !== false ? { ok: true } : { ok: false, error: d.error });
+          const parsed = JSON.parse(raw);
+          if (res.statusCode >= 400 || parsed.ok === false) {
+            resolve({ ok: false, error: parsed.error || `http_${res.statusCode}`, statusCode: res.statusCode, contentType });
+            return;
+          }
+          resolve({ ok: true, data: parsed as T });
         } catch {
-          resolve({ ok: false, error: "invalid_response" });
+          resolve({ ok: false, error: "invalid_json_response", statusCode: res.statusCode, contentType });
         }
       });
     });
     req.on("error", () => resolve({ ok: false, error: "network_error" }));
-    req.write(data);
+    if (data) req.write(data);
     req.end();
   });
+}
+
+const apiGetJson = <T = any>(path: string) => apiRequestJson<T>("GET", path);
+const apiPostJson = <T = any>(path: string, body: object) => apiRequestJson<T>("POST", path, body);
+
+function failCli(message: string): void {
+  console.error(message);
+  process.exitCode = 1;
 }
 
 /** Aggregate today's stats from JSONL */
@@ -98,30 +98,16 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
       firewall.command("status")
         .description("Show firewall status")
         .action(async () => {
-          // Read from gateway to get the real runtime state
-          const data = await new Promise<string>((resolve) => {
-            http.get(`${API_BASE}/mapick/api/stats`, (res: any) => {
-              let body = "";
-              res.on("data", (c: string) => body += c);
-              res.on("end", () => resolve(body));
-            }).on("error", () => resolve(""));
-          });
-          if (data) {
-            console.log(JSON.stringify(JSON.parse(data), null, 2));
-          } else {
-            // Fallback to local state
-            const agg = await aggregateFromJsonl(store, state.globalStats.todayTokens, state.globalStats.todayBlocked);
-            const cooling = state.breaker.getCoolingSources();
-            console.log(JSON.stringify({
-              mode: state.globalStats.mode,
-              emergency_stop: state.globalStats.emergencyStop,
-              today_tokens: agg.today_tokens,
-              today_blocked: agg.today_blocked,
-              daily_token_limit: state.config.dailyTokenLimit,
-              cooldown_sec: state.config.breaker?.cooldownSec,
-              cooling_sources: cooling,
-            }, null, 2));
+          const r = await apiGetJson("/mapick/api/stats");
+          if (r.ok) {
+            console.log(JSON.stringify(r.data, null, 2));
+            return;
           }
+          if (r.error === "plugin_api_not_mounted") {
+            failCli(`Error: Plugin API not mounted at /mapick/api/stats (got ${r.contentType || "unknown"}).`);
+            return;
+          }
+          failCli(`Error: ${r.error || "unknown"}`);
         });
 
       firewall.command("reset")
@@ -140,44 +126,27 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
             console.error("Invalid mode. Use 'observe' or 'protect'.");
             return;
           }
+          const r = await apiPostJson("/mapick/api/config", { mode });
+          if (!r.ok) { failCli(`Failed: ${r.error}`); return; }
           state.setMode(mode);
-          const r = await apiPost({ mode });
-          if (r.ok) console.log(`Mode set to ${mode}`);
-          else console.error(`Failed: ${r.error || "unknown error"}`);
+          console.log(`Mode set to ${mode}.`);
         });
 
       firewall.command("stop")
         .description("Emergency stop all AI calls")
         .action(async () => {
-          state.setEmergencyStop(true);
-          const r = await apiGet("/mapick/api/stop");
-          if (r.ok) console.log("Emergency stop activated.");
-          else console.error(`Failed: ${r.error || "unknown error"}`);
-        });
-
-      firewall.command("resume")
-        .description("Resume AI calls after emergency stop")
-        .action(async () => {
-          state.setEmergencyStop(false);
-          const r = await apiGet("/mapick/api/resume");
-          if (r.ok) console.log("Resumed.");
-          else console.error(`Failed: ${r.error || "unknown error"}`);
-        });
-
-      firewall.command("stop")
-        .description("Emergency stop all AI calls")
-        .action(async () => {
-          state.setEmergencyStop(true);
-          await apiPost({});
-          await apiGet("/mapick/api/stop");
+          const r = await apiGetJson<{ ok?: boolean; emergency_stop?: boolean }>("/mapick/api/stop");
+          if (!r.ok) { failCli(`Failed: ${r.error}`); return; }
+          if (r.data.emergency_stop !== true) { failCli("Failed: gateway did not confirm emergency_stop=true"); return; }
           console.log("Emergency stop activated.");
         });
 
       firewall.command("resume")
         .description("Resume AI calls after emergency stop")
         .action(async () => {
-          state.setEmergencyStop(false);
-          await apiGet("/mapick/api/resume");
+          const r = await apiGetJson<{ ok?: boolean; emergency_stop?: boolean }>("/mapick/api/resume");
+          if (!r.ok) { failCli(`Failed: ${r.error}`); return; }
+          if (r.data.emergency_stop !== false) { failCli("Failed: gateway did not confirm emergency_stop=false"); return; }
           console.log("Resumed.");
         });
 
@@ -186,33 +155,20 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
         .argument("<action>", "set <amount> or reset")
         .argument("[amount]", "Token count")
         .action(async (action: string, amount?: string) => {
-          // Update via gateway's /config API (don't write file directly to avoid breaking format)
-          const http = await import("node:http");
-          let body: string;
+          let body: object;
           if (action === "set" && amount) {
-            body = JSON.stringify({ dailyTokenLimit: parseInt(amount, 10) });
+            body = { dailyTokenLimit: parseInt(amount, 10) };
             (state.config as any).dailyTokenLimit = parseInt(amount, 10);
           } else if (action === "reset") {
-            body = JSON.stringify({ dailyTokenLimit: null });
+            body = { dailyTokenLimit: null };
             (state.config as any).dailyTokenLimit = null;
           } else {
             console.error("Usage: firewall budget set <amount> | firewall budget reset");
             return;
           }
-          // Write to memory + notify gateway (fire-and-forget)
-          const url = new URL("http://127.0.0.1:18789/mapick/api/config");
-          const req = http.request(url, { method: "POST", headers: { "Content-Type": "application/json" } }, (res) => {
-            let data = ""; res.on("data", (c: string) => data += c);
-            res.on("end", () => {
-              try {
-                const d = JSON.parse(data);
-                console.log(d.ok ? "Saved." : "Error: " + (d.error || "unknown"));
-              } catch { console.log("Config updated."); }
-            });
-          });
-          req.on("error", () => console.log("Config updated (gateway unreachable, memory only)."));
-          req.write(body);
-          req.end();
+          const r = await apiPostJson("/mapick/api/config", body);
+          if (!r.ok) { failCli(`Failed: ${r.error}`); return; }
+          console.log("Saved.");
         });
 
       firewall.command("log")
