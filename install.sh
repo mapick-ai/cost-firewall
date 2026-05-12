@@ -82,7 +82,9 @@ INSTALLED_VERSION=""
 for dir in \
   "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/extensions/mapick-firewall" \
   "$HOME/.openclaw/extensions/mapick-firewall" \
-  "/Volumes/ACASIS/openclaw/state/extensions/mapick-firewall"; do
+  "/Volumes/ACASIS/openclaw/state/extensions/mapick-firewall" \
+  "/Volumes/ACASIS/openclaw/state/npm/node_modules/@mapick/cost-firewall" ; do
+
   if [ -f "$dir/package.json" ]; then
     INSTALLED_VERSION=$(node -e "try{console.log(require('$dir/package.json').version)}catch(e){}" 2>/dev/null)
     [ -n "$INSTALLED_VERSION" ] && break
@@ -140,7 +142,12 @@ fi
 
 echo ""
 echo "→ Verifying plugin loaded..."
-if openclaw plugins list 2>&1 | grep -q "$PLUGIN_ID"; then
+PLUGIN_LOADED=0
+for i in 1 2 3 4 5 6 7 8 9 10; do
+  openclaw plugins list 2>&1 | grep -q "$PLUGIN_ID" && { PLUGIN_LOADED=1; break; }
+  sleep 3
+done
+if [ "$PLUGIN_LOADED" -eq 1 ]; then
   pass_check "Plugin loaded"
 else
   fail_check "Plugin not found in openclaw plugins list"
