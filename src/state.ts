@@ -2,6 +2,7 @@
  * Global state management (in-memory)
  */
 
+import { readFileSync, existsSync } from "node:fs";
 import type {
   RunState,
   CallState,
@@ -47,6 +48,29 @@ export class FirewallState {
       todaySavedEstimate: 0,
     };
     this.startCleanupTimer();
+  }
+
+  /** Restore todayTokens and todayBlocked from JSONL after restart */
+  restoreFromJsonl(eventsFilePath: string): void {
+    if (!existsSync(eventsFilePath)) return;
+    try {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayTs = todayStart.getTime();
+      const raw = readFileSync(eventsFilePath, "utf-8");
+      let tokens = 0, blocked = 0;
+      for (const line of raw.trim().split("\n")) {
+        try {
+          const e = JSON.parse(line);
+          if (e.timestamp >= todayTs) {
+            if (e.type === "model_call_ended") tokens += (e.estimatedCost ?? 0);
+            if (e.type === "blocked") blocked++;
+          }
+        } catch { /* skip malformed */ }
+      }
+      this.globalStats.todayTokens = tokens;
+      this.globalStats.todayBlocked = blocked;
+    } catch { /* file not found or unreadable — keep defaults */ }
   }
 
   private startCleanupTimer(): void {

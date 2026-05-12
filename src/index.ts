@@ -21,6 +21,7 @@ export default {
     const config = api.config?.plugins?.entries?.[PLUGIN_ID]?.config ?? {};
     const state = new FirewallState(config);
     const store = new EventStore();
+    state.restoreFromJsonl(store.getEventsFilePath());
 
     // Register Hook Layer
     registerHooks(api, state, store);

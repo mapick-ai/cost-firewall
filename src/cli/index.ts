@@ -20,7 +20,7 @@ const PLUGIN_VERSION = (() => {
   } catch { return "0.0.0"; }
 })();
 
-const API_BASE = "http://127.0.0.1:18789";
+const API_BASE = process.env.MAPICK_API_BASE || "http://127.0.0.1:18789";
 
 type ApiResult<T = any> =
   | { ok: true; data: T }

@@ -24,18 +24,6 @@ import { streamOpenAi, getOpenAiBaseUrl } from "./upstream/openai.js";
 import { streamAnthropic } from "./upstream/anthropic.js";
 import { estimateTokens } from "../pricing.js";
 
-function categorizeError(err: Error): string {
-  const m = err?.message ?? String(err);
-  if (m.includes("timeout") || m.includes("ETIMEDOUT")) return "timeout";
-  if (m.includes("401") || m.includes("Unauthorized")) return "auth_error";
-  if (m.includes("429") || m.includes("rate")) return "rate_limit";
-  if (m.includes("403") || m.includes("Forbidden")) return "access_denied";
-  if (/^5\d\d/.test(m) || m.includes("server")) return "server_error";
-  if (m.includes("ECONNREFUSED") || m.includes("ECONNRESET")) return "connection_closed";
-  if (m.includes("fetch")) return "network_error";
-  return "unknown";
-}
-
 export function registerProvider(
   api: any,
   state: FirewallState,

@@ -40,7 +40,9 @@ export function registerTools(api: any, state: FirewallState, store: EventStore)
           case "resume": state.setEmergencyStop(false); return { content: [{ type: "text", text: "Resumed." }] };
           case "log": return { content: [{ type: "text", text: JSON.stringify(await getLog(store, 10), null, 2) }] };
           case "budget": return { content: [{ type: "text", text: `Daily token limit: ${(state.config as any).dailyTokenLimit?.toLocaleString() ?? "unlimited"} tokens` }] };
-          case "mode": return { content: [{ type: "text", text: `Mode: ${state.globalStats.mode}` }] };
+          case "mode": return params.sub === "observe" || params.sub === "protect"
+            ? (state.setMode(params.sub), { content: [{ type: "text", text: `Mode set to ${params.sub}.` }] })
+            : { content: [{ type: "text", text: `Mode: ${state.globalStats.mode}. Use "mode observe" or "mode protect" to change.` }] };
           default: return { content: [{ type: "text", text: `Unknown action: ${params.action}` }] };
         }
       },

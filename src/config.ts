@@ -15,6 +15,7 @@ export const DEFAULT_CONFIG: Required<FirewallConfig> = {
   },
   dailyTokenLimit: null,
   upstreamTimeoutMs: 30_000,
+  skipRewrite: false,
   privacy: {
     storePromptText: false,
     enableRawConversationHooks: false,
@@ -29,6 +30,7 @@ export function resolveConfig(input: Partial<FirewallConfig>): FirewallConfig {
     },
     dailyTokenLimit: input.dailyTokenLimit ?? DEFAULT_CONFIG.dailyTokenLimit,
     upstreamTimeoutMs: input.upstreamTimeoutMs ?? DEFAULT_CONFIG.upstreamTimeoutMs,
+    skipRewrite: input.skipRewrite ?? DEFAULT_CONFIG.skipRewrite,
     privacy: {
       ...DEFAULT_CONFIG.privacy,
       ...input.privacy,

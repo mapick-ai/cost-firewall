@@ -18,12 +18,6 @@ const EVENTS_FILE = join(STATE_DIR, "events.jsonl");
 export class EventStore {
   private buffer: FirewallEvent[] = [];
   private flushTimer: ReturnType<typeof setInterval> | null = null;
-  private dirReady = false;
-
-  constructor() {
-    this.startFlushTimer();
-  }
-
   append(event: Omit<FirewallEvent, "timestamp">): void {
     const fullEvent: FirewallEvent = {
       ...event,

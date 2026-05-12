@@ -35,6 +35,9 @@ export function createBeforeModelResolveHandler(
     // Already using mapick/* — no rewrite needed
     if (isMapickModelRef(event.model)) return undefined;
 
+    // Opt-out: allow skipping rewrite for specific models
+    if (state.config.skipRewrite) return undefined;
+
     // Rewrite ALL calls to mapick/<provider>/<model>
     // observe mode: routes through Provider Layer for tracking (no blocking)
     // protect mode: routes through Provider Layer for tracking + blocking
