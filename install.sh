@@ -127,7 +127,11 @@ import json
 import os
 
 with open(os.environ["CLI_STATUS_FILE"]) as f:
-    data = json.load(f)
+    raw = f.read()
+start = raw.find("{")
+if start == -1:
+    raise SystemExit(f"No JSON object found in CLI output: {raw[:200]!r}")
+data = json.loads(raw[start:])
 if "emergency_stop" not in data:
     raise SystemExit(f"Missing emergency_stop in {data}")
 PY
