@@ -463,7 +463,7 @@ export function renderDashboardHtml(_stats: any): string {
     <div class="header-title" style="display:flex;align-items:center;gap:6px">
       <span style="background:#eff6ff;color:#2563eb;font-weight:600;font-size:11px;padding:3px 10px;border-radius:10px;letter-spacing:0.3px">Mapick</span>
       <span>Firewall</span>
-      <span style="font-size:10px;color:#94a3b8;margin-left:2px">v0.2.3</span>
+      <span id="firewall-ver" style="font-size:10px;color:#94a3b8;margin-left:2px"></span>
     </div>
     <div class="header-right" style="font-size:10px;color:#94a3b8" id="openclaw-ver"></div>
     <div class="header-center">
@@ -725,6 +725,8 @@ export function renderDashboardHtml(_stats: any): string {
 
     function updateUI(data) {
       document.getElementById('stat-tokens').textContent = (data.today_tokens ?? 0).toLocaleString();
+      const verEl = document.getElementById('firewall-ver');
+      if (verEl && data.version) verEl.textContent = 'v' + data.version;
       document.getElementById('stat-blocked').textContent = data.today_blocked ?? 0;
       document.getElementById('stat-limit').textContent = data.daily_token_limit ? data.daily_token_limit.toLocaleString() : '∞';
       document.getElementById('stat-calls').textContent = (data.active_runs ?? []).length;

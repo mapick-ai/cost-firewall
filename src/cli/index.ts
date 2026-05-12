@@ -5,12 +5,20 @@
  */
 
 import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { homedir } from "node:os";
 import http from "node:http";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { FirewallState } from "../state.js";
 import { EventStore } from "../store.js";
 import type { FirewallEvent } from "../types.js";
+
+const PLUGIN_VERSION = (() => {
+  try {
+    return JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "package.json"), "utf-8")).version;
+  } catch { return "0.0.0"; }
+})();
 
 const API_BASE = "http://127.0.0.1:18789";
 
@@ -256,6 +264,7 @@ export async function getStatus(state: FirewallState, store?: EventStore): Promi
     },
     cooling_sources: coolingSources,
     active_runs: activeRuns,
+    version: PLUGIN_VERSION,
   };
 }
 
