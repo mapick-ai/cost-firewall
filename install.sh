@@ -3,15 +3,16 @@ set -e
 
 
 # Mapick Cost Firewall installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.11/install.sh | bash
 
 echo "🛡️  Mapick Cost Firewall Installer"
 echo "=================================="
 
 PLUGIN_ID="mapick-firewall"
 PLUGIN_PACKAGE="@mapick/cost-firewall"
+INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.11/install.sh | bash"
 
-# Check OpenClaw version
+# Check OpenClaw version.
 OC_VERSION=$(openclaw --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 MIN_VERSION="2026.5.7"
 
@@ -22,8 +23,86 @@ if [ -n "$OC_VERSION" ]; then
     echo ""
     echo "⚠  OpenClaw $OC_VERSION is below the required minimum ($MIN_VERSION)."
     echo ""
-    echo "   1. Upgrade OpenClaw:"
-    echo "        openclaw update"
+
+    if [ -t 1 ] && exec 3<> /dev/tty 2>/dev/null; then
+      cleanup_version_menu() {
+        tput cnorm 2>/dev/null || true
+        exec 3>&-
+      }
+
+      draw_version_menu() {
+        local selected="$1"
+        local upgrade_marker=" "
+        local exit_marker=" "
+        [ "$selected" -eq 1 ] && upgrade_marker=">"
+        [ "$selected" -eq 2 ] && exit_marker=">"
+        tput rc 2>/dev/null || true
+        tput ed 2>/dev/null || true
+        printf "──────────────────────────────────────────────────\n"
+        printf "  %s\n" "OpenClaw upgrade required"
+        printf "  %s\n" "Current version:  $OC_VERSION"
+        printf "  %s\n" "Required version: $MIN_VERSION"
+        printf "──────────────────────────────────────────────────\n"
+        printf "  %s\n" "$upgrade_marker 1 Upgrade OpenClaw"
+        printf "  %s\n" "$exit_marker 2 Exit"
+        printf "──────────────────────────────────────────────────\n"
+        printf "  %s\n" "Use ↑/↓, Press Enter to confirm."
+      }
+
+      trap cleanup_version_menu EXIT
+      tput sc 2>/dev/null || true
+      tput civis 2>/dev/null || true
+
+      selected=1
+      while true; do
+        draw_version_menu "$selected"
+        IFS= read -rsn1 key <&3
+        case "$key" in
+          $'\x1b')
+            seq1=""
+            seq2=""
+            IFS= read -rsn1 -t 1 seq1 <&3 || seq1=""
+            if [ "$seq1" = "[" ] || [ "$seq1" = "O" ]; then
+              IFS= read -rsn1 -t 1 seq2 <&3 || seq2=""
+            fi
+            case "$seq1$seq2" in
+              '[A'|'OA') [ "$selected" -gt 1 ] && selected=$((selected - 1)) ;;
+              '[B'|'OB') [ "$selected" -lt 2 ] && selected=$((selected + 1)) ;;
+            esac
+            ;;
+          [kK1])
+            selected=1
+            ;;
+          [jJ2])
+            selected=2
+            ;;
+          "")
+            break
+            ;;
+        esac
+      done
+
+      cleanup_version_menu
+      trap - EXIT
+      echo ""
+      if [ "$selected" -eq 1 ]; then
+        echo "→ Running: openclaw update"
+        openclaw update < /dev/tty
+        echo ""
+        echo "Upgrade complete."
+        echo "Continue installation with:"
+        echo "  $INSTALL_COMMAND"
+        exit 0
+      fi
+
+      echo "Exiting without changes."
+      exit 1
+    fi
+
+    echo "   1. Upgrade OpenClaw"
+    echo "      Run: openclaw update"
+    echo "      Then continue installation with:"
+    echo "        $INSTALL_COMMAND"
     echo "   2. Exit"
     echo ""
     exit 1
