@@ -54,7 +54,7 @@ One command. Every AI call paused. Breathe first, debug second.
 Verified on a real OpenClaw instance with `v0.2.9`.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.9/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.10/install.sh | bash
 openclaw firewall status
 ```
 
