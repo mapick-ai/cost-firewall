@@ -25,6 +25,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src test",
+    "release": "../.shell/release-firewall.sh",
     "release": "node scripts/release.mjs"
   },
   "openclaw": {
