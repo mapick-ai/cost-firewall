@@ -15,7 +15,7 @@ import { detectConfigRisks } from "./config-warn.js";
 export default {
   id: PLUGIN_ID,
   name: PLUGIN_NAME,
-  version: "0.2.11",
+  version: "0.2.12",
 
   register(api: any) {
     const config = api.config?.plugins?.entries?.[PLUGIN_ID]?.config ?? {};
