@@ -159,7 +159,7 @@ fi
 if [ ! -f "$CONFIG" ]; then
   echo "⚠  Could not find OpenClaw config. Skipping auto-config."
   echo "   Add this to your OpenClaw config manually:"
-  echo '   "plugins": {"entries": {"mapick-firewall": {"enabled": true, "hooks": {"allowConversationAccess": true}}}}'
+  echo '   "plugins": {"entries": {"mapick-firewall": {"enabled": true, "config": {}}}}'
 else
   echo "   Config found: $CONFIG"
   CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" python3 - <<'PY'
@@ -172,7 +172,6 @@ with open(config_path) as f:
     c = json.load(f)
 c.setdefault('plugins', {}).setdefault('entries', {})[plugin_id] = {
     'enabled': True,
-    'hooks': {'allowConversationAccess': True},
     'config': {
         'dailyTokenLimit': None,
         'breaker': {
