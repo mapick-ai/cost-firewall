@@ -23,6 +23,18 @@ function norm(v: string): string {
   return (v || "").replace(/^v/, "").trim();
 }
 
+export function isNewerVersion(latest: string, current: string): boolean {
+  const latestParts = norm(latest).split(".").map((part) => Number.parseInt(part, 10));
+  const currentParts = norm(current).split(".").map((part) => Number.parseInt(part, 10));
+  for (let i = 0; i < Math.max(latestParts.length, currentParts.length, 3); i++) {
+    const l = Number.isFinite(latestParts[i]) ? latestParts[i] : 0;
+    const c = Number.isFinite(currentParts[i]) ? currentParts[i] : 0;
+    if (l > c) return true;
+    if (l < c) return false;
+  }
+  return false;
+}
+
 const STATE_DIR = getPluginStateDir();
 const CHECK_FILE = join(STATE_DIR, "version-check.json");
 
@@ -67,7 +79,7 @@ export async function checkForUpdate(currentVersion: string): Promise<UpdateResu
   // Throttle: only check twice per day
   if (existing && isSameHalfDay(existing.lastCheck, now)) {
     return {
-      updateAvailable: norm(existing.latestVersion) !== norm(currentVersion),
+      updateAvailable: isNewerVersion(existing.latestVersion, currentVersion),
       current: currentVersion,
       latest: existing.latestVersion,
       checked: false,
@@ -93,7 +105,7 @@ export async function checkForUpdate(currentVersion: string): Promise<UpdateResu
     const state: CheckState = { lastCheck: now, latestVersion: latest, currentVersion };
     writeState(state);
 
-    return { updateAvailable: latest !== currentVersion, current: currentVersion, latest, checked: true };
+    return { updateAvailable: isNewerVersion(latest, currentVersion), current: currentVersion, latest, checked: true };
   } catch {
     return { updateAvailable: false, current: currentVersion, latest: currentVersion, checked: false };
   }

@@ -3,14 +3,14 @@ set -e
 
 
 # Mapick Cost Firewall installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.21/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.22/install.sh | bash
 
 echo "🛡️  Mapick Cost Firewall Installer"
 echo "=================================="
 
 PLUGIN_ID="mapick-firewall"
 PLUGIN_PACKAGE="@mapick/cost-firewall"
-INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.21/install.sh | bash"
+INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.22/install.sh | bash"
 STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
 CONFIG="${OPENCLAW_CONFIG_PATH:-}"
 MIN_VERSION="2026.4.1"
@@ -141,13 +141,8 @@ for dir in \
   "$STATE_DIR/extensions/$PLUGIN_ID" \
   "$HOME/.openclaw/extensions/$PLUGIN_ID"; do
   if [ -d "$dir" ]; then
-    if [ -f "$dir/openclaw.plugin.json" ]; then
-      PLUGIN_INSTALLED=1
-      break
-    else
-      BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
+    BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
 "
-    fi
   fi
 done
 for dir in \
@@ -158,25 +153,18 @@ for dir in \
 "
   fi
 done
-if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
-  for dir in \
-    "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
-    "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
-    if [ -d "$dir" ]; then
-      if [ -f "$dir/package.json" ]; then
-        PLUGIN_INSTALLED=1
-        break
-      else
-        BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
+for dir in \
+  "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
+  "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
+  if [ -d "$dir" ] && [ ! -f "$dir/package.json" ]; then
+    BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
 "
-      fi
-    fi
-  done
-fi
+  fi
+done
 
 if [ -n "$BROKEN_PLUGIN_DIRS" ]; then
   echo ""
-  echo "→ Cleaning broken plugin directories..."
+  echo "→ Cleaning unmanaged plugin directories..."
   printf "%s" "$BROKEN_PLUGIN_DIRS" | while IFS= read -r dir; do
     [ -z "$dir" ] && continue
     backup_root="$STATE_DIR/plugin-backups"
@@ -192,21 +180,11 @@ if [ -n "$BROKEN_PLUGIN_DIRS" ]; then
   PLUGIN_INSTALLED=0
 fi
 
-# Re-check after cleanup in case another valid install path remains.
-if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
-  for dir in \
-    "$STATE_DIR/extensions/$PLUGIN_ID" \
-    "$HOME/.openclaw/extensions/$PLUGIN_ID"; do
-    if [ -f "$dir/openclaw.plugin.json" ]; then PLUGIN_INSTALLED=1; break; fi
-  done
-fi
-if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
-  for dir in \
-    "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
-    "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
-    if [ -f "$dir/package.json" ]; then PLUGIN_INSTALLED=1; break; fi
-  done
-fi
+for dir in \
+  "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
+  "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
+  if [ -f "$dir/package.json" ]; then PLUGIN_INSTALLED=1; break; fi
+done
 
 echo ""
 echo "→ Checking OpenClaw config..."
@@ -235,6 +213,7 @@ entry = entries.get(plugin_id) if isinstance(entries, dict) else None
 changed = False
 removed_stale = False
 removed_unsupported_hook = False
+added_allow = False
 if isinstance(entry, dict) and not plugin_installed:
     entries.pop(plugin_id, None)
     changed = True
@@ -248,14 +227,33 @@ elif isinstance(entry, dict):
         changed = True
         removed_unsupported_hook = True
 
+plugins = c.setdefault("plugins", {})
+allow = plugins.get("allow")
+if isinstance(allow, list):
+    if plugin_id not in allow:
+        allow.append(plugin_id)
+        changed = True
+        added_allow = True
+else:
+    plugins["allow"] = [plugin_id]
+    changed = True
+    added_allow = True
+
 if changed:
     with open(config_path, "w") as f:
         json.dump(c, f, indent=2)
         f.write("\n")
-    if removed_stale:
+    if removed_stale and added_allow:
+        print("  ✓ Removed stale plugin config entry and pinned plugins.allow")
+    elif removed_stale:
         print("  ✓ Removed stale plugin config entry")
     elif removed_unsupported_hook:
-        print("  ✓ Removed unsupported allowConversationAccess hook")
+        if added_allow:
+            print("  ✓ Removed unsupported allowConversationAccess hook and pinned plugins.allow")
+        else:
+            print("  ✓ Removed unsupported allowConversationAccess hook")
+    elif added_allow:
+        print("  ✓ Pinned plugins.allow")
     else:
         print("  ✓ Repaired plugin config")
 else:
@@ -326,7 +324,7 @@ echo "→ Configuring..."
 if [ ! -f "$CONFIG" ]; then
   echo "⚠  Could not find OpenClaw config. Skipping auto-config."
   echo "   Add this to your OpenClaw config manually:"
-  echo '   "plugins": {"entries": {"mapick-firewall": {"enabled": true, "config": {}}}}'
+  echo '   "plugins": {"allow": ["mapick-firewall"], "entries": {"mapick-firewall": {"enabled": true, "config": {}}}}'
 else
   echo "   Config found: $CONFIG"
   CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" python3 - <<'PY'
@@ -350,7 +348,14 @@ entry['config'] = {
             'callFrequencyWindowSec': 60
         }
     }
-c.setdefault('plugins', {}).setdefault('entries', {})[plugin_id] = entry
+plugins = c.setdefault('plugins', {})
+allow = plugins.get('allow')
+if isinstance(allow, list):
+    if plugin_id not in allow:
+        allow.append(plugin_id)
+else:
+    plugins['allow'] = [plugin_id]
+plugins.setdefault('entries', {})[plugin_id] = entry
 with open(config_path, 'w') as f:
     json.dump(c, f, indent=2)
 print('Configured.')
@@ -364,9 +369,7 @@ EXPECTED_VERSION=$(curl -fsSL https://registry.npmjs.org/@mapick%2Fcost-firewall
 
 INSTALLED_VERSION=""
 for dir in \
-  "$STATE_DIR/extensions/mapick-firewall" \
   "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
-  "$HOME/.openclaw/extensions/mapick-firewall" \
   "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall" ; do
 
   if [ -f "$dir/package.json" ]; then
