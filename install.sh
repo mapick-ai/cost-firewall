@@ -11,6 +11,8 @@ echo "=================================="
 PLUGIN_ID="mapick-firewall"
 PLUGIN_PACKAGE="@mapick/cost-firewall"
 INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.16/install.sh | bash"
+STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
+CONFIG="${OPENCLAW_CONFIG_PATH:-}"
 
 # Check OpenClaw version.
 OC_VERSION=$(openclaw --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
@@ -109,30 +111,98 @@ if [ -n "$OC_VERSION" ]; then
   fi
 fi
 
+# Find and repair OpenClaw config before plugin commands. OpenClaw validates
+# config on every CLI invocation, so stale plugin keys can block install/update.
+if [ -z "$CONFIG" ] || [ ! -f "$CONFIG" ]; then
+  CONFIG="$STATE_DIR/openclaw.json"
+fi
+if [ ! -f "$CONFIG" ]; then
+  CONFIG=$(find "$HOME" /Volumes /opt -maxdepth 4 -name "openclaw.json" -path "*/state/*" 2>/dev/null | head -1)
+fi
+
+echo ""
+echo "→ Checking OpenClaw config..."
+if [ ! -f "$CONFIG" ]; then
+  echo "  ⚠ Could not find OpenClaw config. Will skip auto-config."
+else
+  OC_HOOK_VERSION="0"
+  if [ -n "$OC_VERSION" ]; then
+    OC_HOOK_VER=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
+    if [ "$OC_HOOK_VER" -ge 20260400 ]; then OC_HOOK_VERSION="1"; fi
+  fi
+  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" OC_HOOK_VERSION="$OC_HOOK_VERSION" python3 - <<'PY'
+import json
+import os
+import sys
+
+config_path = os.environ["CONFIG_PATH"]
+plugin_id = os.environ["PLUGIN_ID"]
+hook_support = os.environ.get("OC_HOOK_VERSION", "0") == "1"
+
+try:
+    with open(config_path) as f:
+        c = json.load(f)
+except Exception as exc:
+    print(f"  ✗ Could not read OpenClaw config: {exc}")
+    print("    Run: openclaw doctor --fix")
+    sys.exit(1)
+
+entry = c.get("plugins", {}).get("entries", {}).get(plugin_id)
+changed = False
+if isinstance(entry, dict) and not hook_support and "hooks" in entry:
+    entry.pop("hooks", None)
+    changed = True
+
+if changed:
+    with open(config_path, "w") as f:
+        json.dump(c, f, indent=2)
+        f.write("\n")
+    print("  ✓ Removed config keys unsupported by this OpenClaw version")
+else:
+    print("  ✓ Config looks compatible")
+PY
+fi
+
 # 1. Install or update plugin
 echo ""
 echo "→ Installing or updating plugin..."
 
 # Try update first (fast path for existing installations)
-openclaw plugins update "$PLUGIN_ID" || true
+if update_output=$(openclaw plugins update "$PLUGIN_ID" 2>&1); then
+  [ -n "$update_output" ] && echo "$update_output"
+else
+  update_status=$?
+  [ -n "$update_output" ] && echo "$update_output"
+  echo "   Update skipped or failed (exit $update_status). Will verify/install package."
+fi
 
 # Verify plugin is actually installed on disk; if not, install from npm
 PLUGIN_INSTALLED=0
 for dir in \
-  "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/extensions/$PLUGIN_ID" \
+  "$STATE_DIR/extensions/$PLUGIN_ID" \
+  "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
   "$HOME/.openclaw/extensions/$PLUGIN_ID" \
-  "/Volumes/ACASIS/openclaw/state/extensions/$PLUGIN_ID" \
-  "/Volumes/ACASIS/openclaw/state/npm/node_modules/@mapick/cost-firewall"; do
+  "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
   if [ -d "$dir" ]; then PLUGIN_INSTALLED=1; break; fi
 done
 
 if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
   echo "   Plugin not found on disk. Installing from npm..."
-  if ! openclaw plugins install "$PLUGIN_PACKAGE" --force 2>&1 | tee /tmp/mapick-install.log; then
-    if grep -q "unknown option.*force" /tmp/mapick-install.log 2>/dev/null; then
-      echo "   --force not supported by this OpenClaw version, retrying without..."
-      openclaw plugins install "$PLUGIN_PACKAGE"
-    fi
+  if install_output=$(openclaw plugins install "$PLUGIN_PACKAGE" --force 2>&1); then
+    [ -n "$install_output" ] && echo "$install_output"
+  else
+    install_status=$?
+    [ -n "$install_output" ] && echo "$install_output"
+    case "$install_output" in
+      *"unknown option"*"force"*|*"unknown option '--force'"*)
+        echo "   --force not supported by this OpenClaw version, retrying without..."
+        openclaw plugins install "$PLUGIN_PACKAGE"
+        ;;
+      *)
+        echo "   Plugin install failed."
+        exit "$install_status"
+        ;;
+    esac
   fi
 else
   echo "   Plugin found on disk."
@@ -147,15 +217,6 @@ openclaw plugins enable "$PLUGIN_ID"
 echo ""
 echo "→ Configuring..."
 
-# Find OpenClaw config path
-CONFIG="${OPENCLAW_CONFIG_PATH:-}"
-if [ -z "$CONFIG" ] || [ ! -f "$CONFIG" ]; then
-  STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
-  CONFIG="$STATE_DIR/openclaw.json"
-fi
-if [ ! -f "$CONFIG" ]; then
-  CONFIG=$(find "$HOME" /Volumes /opt -maxdepth 4 -name "openclaw.json" -path "*/state/*" 2>/dev/null | head -1)
-fi
 if [ ! -f "$CONFIG" ]; then
   echo "⚠  Could not find OpenClaw config. Skipping auto-config."
   echo "   Add this to your OpenClaw config manually:"
@@ -193,7 +254,6 @@ entry['config'] = {
             'callFrequencyWindowSec': 60
         }
     }
-}
 c.setdefault('plugins', {}).setdefault('entries', {})[plugin_id] = entry
 with open(config_path, 'w') as f:
     json.dump(c, f, indent=2)
@@ -208,10 +268,10 @@ EXPECTED_VERSION=$(curl -fsSL https://registry.npmjs.org/@mapick%2Fcost-firewall
 
 INSTALLED_VERSION=""
 for dir in \
-  "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/extensions/mapick-firewall" \
+  "$STATE_DIR/extensions/mapick-firewall" \
+  "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
   "$HOME/.openclaw/extensions/mapick-firewall" \
-  "/Volumes/ACASIS/openclaw/state/extensions/mapick-firewall" \
-  "/Volumes/ACASIS/openclaw/state/npm/node_modules/@mapick/cost-firewall" ; do
+  "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall" ; do
 
   if [ -f "$dir/package.json" ]; then
     INSTALLED_VERSION=$(node -e "try{console.log(require('$dir/package.json').version)}catch(e){}" 2>/dev/null)
@@ -224,7 +284,8 @@ if [ -z "$INSTALLED_VERSION" ]; then
 elif [ "$INSTALLED_VERSION" != "$EXPECTED_VERSION" ] && [ "$EXPECTED_VERSION" != "unknown" ]; then
   echo "  ✗ Version mismatch: expected $EXPECTED_VERSION, installed $INSTALLED_VERSION"
   echo "  Possible cause: OpenClaw security scan blocked the new package."
-  echo "  Run: openclaw plugins install @mapick/cost-firewall --force --dangerously-force-unsafe-install"
+  echo "  Try: openclaw plugins update mapick-firewall"
+  echo "  Or:  openclaw plugins install @mapick/cost-firewall"
   exit 1
 else
   echo "  ✓ Version $INSTALLED_VERSION matches expected $EXPECTED_VERSION"
