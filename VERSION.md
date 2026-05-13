@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.18 - 2026-05-13
+
+- chore: release v0.2.18
+
 ## v0.2.17 - 2026-05-13
 
 - fix: install.sh version detection improvements
