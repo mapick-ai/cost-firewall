@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.22 - 2026-05-14
+
+- chore: release v0.2.22
+
 ## v0.2.22 - 2026-05-13
 
 - fix: pin plugins.allow, migrate unmanaged extension installs, and compare update versions semantically
