@@ -162,17 +162,27 @@ if [ ! -f "$CONFIG" ]; then
   echo '   "plugins": {"entries": {"mapick-firewall": {"enabled": true, "config": {}}}}'
 else
   echo "   Config found: $CONFIG"
-  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" python3 - <<'PY'
+  # Pass OpenClaw version for feature detection
+  OC_HOOK_VERSION="0"
+  if [ -n "$OC_VERSION" ]; then
+    OC_HOOK_VER=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
+    # allowConversationAccess was added in 2026.4.x (version >= 20260400)
+    if [ "$OC_HOOK_VER" -ge 20260400 ]; then OC_HOOK_VERSION="1"; fi
+  fi
+  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" OC_HOOK_VERSION="$OC_HOOK_VERSION" python3 - <<'PY'
 import json
 import os
 
 config_path = os.environ["CONFIG_PATH"]
 plugin_id = os.environ["PLUGIN_ID"]
+hook_support = os.environ.get("OC_HOOK_VERSION", "0") == "1"
+
 with open(config_path) as f:
     c = json.load(f)
-c.setdefault('plugins', {}).setdefault('entries', {})[plugin_id] = {
-    'enabled': True,
-    'config': {
+entry = {'enabled': True}
+if hook_support:
+    entry['hooks'] = {'allowConversationAccess': True}
+entry['config'] = {
         'dailyTokenLimit': None,
         'breaker': {
             'consecutiveFailures': 3,
@@ -184,6 +194,7 @@ c.setdefault('plugins', {}).setdefault('entries', {})[plugin_id] = {
         }
     }
 }
+c.setdefault('plugins', {}).setdefault('entries', {})[plugin_id] = entry
 with open(config_path, 'w') as f:
     json.dump(c, f, indent=2)
 print('Configured.')
