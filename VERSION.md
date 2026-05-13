@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.17 - 2026-05-13
+
+- fix: install.sh version detection improvements
+
 ## v0.2.16 - 2026-05-13
 
 - fix: conditional allowConversationAccess for OpenClaw version compat

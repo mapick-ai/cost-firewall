@@ -3,14 +3,14 @@ set -e
 
 
 # Mapick Cost Firewall installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.16/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.17/install.sh | bash
 
 echo "🛡️  Mapick Cost Firewall Installer"
 echo "=================================="
 
 PLUGIN_ID="mapick-firewall"
 PLUGIN_PACKAGE="@mapick/cost-firewall"
-INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.16/install.sh | bash"
+INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.17/install.sh | bash"
 STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
 CONFIG="${OPENCLAW_CONFIG_PATH:-}"
 
