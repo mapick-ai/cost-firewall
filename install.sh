@@ -9,7 +9,7 @@ echo "🛡️  Mapick Cost Firewall Installer"
 echo "=================================="
 
 PLUGIN_ID="mapick-firewall"
-PLUGIN_PACKAGE="npm:@mapick/cost-firewall"
+PLUGIN_PACKAGE="@mapick/cost-firewall"
 INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.19/install.sh | bash"
 STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
 CONFIG="${OPENCLAW_CONFIG_PATH:-}"
@@ -135,6 +135,79 @@ if [ ! -f "$CONFIG" ]; then
   CONFIG=$(find "$HOME" /Volumes /opt -maxdepth 4 -name "openclaw.json" -path "*/state/*" 2>/dev/null | head -1)
 fi
 
+PLUGIN_INSTALLED=0
+BROKEN_PLUGIN_DIRS=""
+for dir in \
+  "$STATE_DIR/extensions/$PLUGIN_ID" \
+  "$HOME/.openclaw/extensions/$PLUGIN_ID"; do
+  if [ -d "$dir" ]; then
+    if [ -f "$dir/openclaw.plugin.json" ]; then
+      PLUGIN_INSTALLED=1
+      break
+    else
+      BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
+"
+    fi
+  fi
+done
+for dir in \
+  "$STATE_DIR/extensions/$PLUGIN_ID".broken.* \
+  "$HOME/.openclaw/extensions/$PLUGIN_ID".broken.*; do
+  if [ -d "$dir" ]; then
+    BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
+"
+  fi
+done
+if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
+  for dir in \
+    "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
+    "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
+    if [ -d "$dir" ]; then
+      if [ -f "$dir/package.json" ]; then
+        PLUGIN_INSTALLED=1
+        break
+      else
+        BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
+"
+      fi
+    fi
+  done
+fi
+
+if [ -n "$BROKEN_PLUGIN_DIRS" ]; then
+  echo ""
+  echo "→ Cleaning broken plugin directories..."
+  printf "%s" "$BROKEN_PLUGIN_DIRS" | while IFS= read -r dir; do
+    [ -z "$dir" ] && continue
+    backup_root="$STATE_DIR/plugin-backups"
+    mkdir -p "$backup_root"
+    backup="$backup_root/$(basename "$dir").$(date +%Y%m%d%H%M%S)"
+    if mv "$dir" "$backup"; then
+      echo "  ✓ Moved $dir to $backup"
+    else
+      echo "  ✗ Could not move broken plugin directory: $dir"
+      exit 1
+    fi
+  done
+  PLUGIN_INSTALLED=0
+fi
+
+# Re-check after cleanup in case another valid install path remains.
+if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
+  for dir in \
+    "$STATE_DIR/extensions/$PLUGIN_ID" \
+    "$HOME/.openclaw/extensions/$PLUGIN_ID"; do
+    if [ -f "$dir/openclaw.plugin.json" ]; then PLUGIN_INSTALLED=1; break; fi
+  done
+fi
+if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
+  for dir in \
+    "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
+    "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
+    if [ -f "$dir/package.json" ]; then PLUGIN_INSTALLED=1; break; fi
+  done
+fi
+
 echo ""
 echo "→ Checking OpenClaw config..."
 if [ ! -f "$CONFIG" ]; then
@@ -145,7 +218,7 @@ else
     OC_HOOK_VER=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
     if [ "$OC_HOOK_VER" -ge 20260401 ]; then OC_HOOK_VERSION="1"; fi
   fi
-  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" OC_HOOK_VERSION="$OC_HOOK_VERSION" python3 - <<'PY'
+  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" OC_HOOK_VERSION="$OC_HOOK_VERSION" PLUGIN_INSTALLED="$PLUGIN_INSTALLED" python3 - <<'PY'
 import json
 import os
 import sys
@@ -153,6 +226,7 @@ import sys
 config_path = os.environ["CONFIG_PATH"]
 plugin_id = os.environ["PLUGIN_ID"]
 hook_support = os.environ.get("OC_HOOK_VERSION", "0") == "1"
+plugin_installed = os.environ.get("PLUGIN_INSTALLED", "0") == "1"
 
 try:
     with open(config_path) as f:
@@ -162,9 +236,15 @@ except Exception as exc:
     print("    Run: openclaw doctor --fix")
     sys.exit(1)
 
-entry = c.get("plugins", {}).get("entries", {}).get(plugin_id)
+entries = c.get("plugins", {}).get("entries", {})
+entry = entries.get(plugin_id) if isinstance(entries, dict) else None
 changed = False
-if isinstance(entry, dict) and not hook_support and "hooks" in entry:
+removed_stale = False
+if isinstance(entry, dict) and not plugin_installed:
+    entries.pop(plugin_id, None)
+    changed = True
+    removed_stale = True
+elif isinstance(entry, dict) and not hook_support and "hooks" in entry:
     entry.pop("hooks", None)
     changed = True
 
@@ -172,7 +252,10 @@ if changed:
     with open(config_path, "w") as f:
         json.dump(c, f, indent=2)
         f.write("\n")
-    print("  ✓ Removed config keys unsupported by this OpenClaw version")
+    if removed_stale:
+        print("  ✓ Removed stale plugin config entry")
+    else:
+        print("  ✓ Removed config keys unsupported by this OpenClaw version")
 else:
     print("  ✓ Config looks compatible")
 PY
@@ -191,27 +274,33 @@ else
   echo "   Update skipped or failed (exit $update_status). Will verify/install package."
 fi
 
-# Verify plugin is actually installed on disk; if not, install from npm
-PLUGIN_INSTALLED=0
-for dir in \
-  "$STATE_DIR/extensions/$PLUGIN_ID" \
-  "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
-  "$HOME/.openclaw/extensions/$PLUGIN_ID" \
-  "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
-  if [ -d "$dir" ]; then PLUGIN_INSTALLED=1; break; fi
-done
-
 if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
   echo "   Plugin not found on disk. Installing from npm..."
-  if install_output=$(openclaw plugins install "$PLUGIN_PACKAGE" --force 2>&1); then
+  if install_output=$(openclaw plugins install "$PLUGIN_PACKAGE" 2>&1); then
     [ -n "$install_output" ] && echo "$install_output"
   else
     install_status=$?
     [ -n "$install_output" ] && echo "$install_output"
     case "$install_output" in
-      *"unknown option"*"force"*|*"unknown option '--force'"*)
-        echo "   --force not supported by this OpenClaw version, retrying without..."
-        openclaw plugins install "$PLUGIN_PACKAGE"
+      *"already exists"*|*"plugin already exists"*)
+        echo "   Existing plugin files detected by OpenClaw, retrying with --force..."
+        if force_output=$(openclaw plugins install "$PLUGIN_PACKAGE" --force 2>&1); then
+          [ -n "$force_output" ] && echo "$force_output"
+        else
+          force_status=$?
+          [ -n "$force_output" ] && echo "$force_output"
+          case "$force_output" in
+            *"unknown option"*"force"*|*"unknown option '--force'"*)
+              echo "   --force is not supported by this OpenClaw version."
+              echo "   Try: openclaw plugins update $PLUGIN_ID"
+              exit "$force_status"
+              ;;
+            *)
+              echo "   Plugin install failed."
+              exit "$force_status"
+              ;;
+          esac
+        fi
         ;;
       *)
         echo "   Plugin install failed."
