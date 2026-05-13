@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.13 - 2026-05-13
+
+- feat: version check-update with device fingerprint
+
 ## v0.2.12 - 2026-05-13
 
 - feat: install.sh version auto-update
