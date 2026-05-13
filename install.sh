@@ -128,7 +128,12 @@ done
 
 if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
   echo "   Plugin not found on disk. Installing from npm..."
-  openclaw plugins install "$PLUGIN_PACKAGE" --force
+  if ! openclaw plugins install "$PLUGIN_PACKAGE" --force 2>&1 | tee /tmp/mapick-install.log; then
+    if grep -q "unknown option.*force" /tmp/mapick-install.log 2>/dev/null; then
+      echo "   --force not supported by this OpenClaw version, retrying without..."
+      openclaw plugins install "$PLUGIN_PACKAGE"
+    fi
+  fi
 else
   echo "   Plugin found on disk."
 fi
