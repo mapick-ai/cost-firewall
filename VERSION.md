@@ -4,7 +4,7 @@ All notable changes to @mapick/cost-firewall will be documented in this file.
 
 ## v0.2.20 - 2026-05-13
 
-- chore: release v0.2.20
+- fix: remove unsupported allowConversationAccess config writes and keep raw conversation hooks opt-in
 
 ## v0.2.19 - 2026-05-13
 

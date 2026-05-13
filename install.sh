@@ -213,19 +213,13 @@ echo "→ Checking OpenClaw config..."
 if [ ! -f "$CONFIG" ]; then
   echo "  ⚠ Could not find OpenClaw config. Will skip auto-config."
 else
-  OC_HOOK_VERSION="0"
-  if [ -n "$OC_VERSION" ]; then
-    OC_HOOK_VER=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
-    if [ "$OC_HOOK_VER" -ge 20260401 ]; then OC_HOOK_VERSION="1"; fi
-  fi
-  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" OC_HOOK_VERSION="$OC_HOOK_VERSION" PLUGIN_INSTALLED="$PLUGIN_INSTALLED" python3 - <<'PY'
+  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" PLUGIN_INSTALLED="$PLUGIN_INSTALLED" python3 - <<'PY'
 import json
 import os
 import sys
 
 config_path = os.environ["CONFIG_PATH"]
 plugin_id = os.environ["PLUGIN_ID"]
-hook_support = os.environ.get("OC_HOOK_VERSION", "0") == "1"
 plugin_installed = os.environ.get("PLUGIN_INSTALLED", "0") == "1"
 
 try:
@@ -240,13 +234,19 @@ entries = c.get("plugins", {}).get("entries", {})
 entry = entries.get(plugin_id) if isinstance(entries, dict) else None
 changed = False
 removed_stale = False
+removed_unsupported_hook = False
 if isinstance(entry, dict) and not plugin_installed:
     entries.pop(plugin_id, None)
     changed = True
     removed_stale = True
-elif isinstance(entry, dict) and not hook_support and "hooks" in entry:
-    entry.pop("hooks", None)
-    changed = True
+elif isinstance(entry, dict):
+    hooks = entry.get("hooks")
+    if isinstance(hooks, dict) and "allowConversationAccess" in hooks:
+        hooks.pop("allowConversationAccess", None)
+        if not hooks:
+            entry.pop("hooks", None)
+        changed = True
+        removed_unsupported_hook = True
 
 if changed:
     with open(config_path, "w") as f:
@@ -254,8 +254,10 @@ if changed:
         f.write("\n")
     if removed_stale:
         print("  ✓ Removed stale plugin config entry")
+    elif removed_unsupported_hook:
+        print("  ✓ Removed unsupported allowConversationAccess hook")
     else:
-        print("  ✓ Removed config keys unsupported by this OpenClaw version")
+        print("  ✓ Repaired plugin config")
 else:
     print("  ✓ Config looks compatible")
 PY
@@ -327,26 +329,16 @@ if [ ! -f "$CONFIG" ]; then
   echo '   "plugins": {"entries": {"mapick-firewall": {"enabled": true, "config": {}}}}'
 else
   echo "   Config found: $CONFIG"
-  # Pass OpenClaw version for feature detection
-  OC_HOOK_VERSION="0"
-  if [ -n "$OC_VERSION" ]; then
-    OC_HOOK_VER=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
-    # allowConversationAccess is only written for supported OpenClaw versions.
-    if [ "$OC_HOOK_VER" -ge 20260401 ]; then OC_HOOK_VERSION="1"; fi
-  fi
-  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" OC_HOOK_VERSION="$OC_HOOK_VERSION" python3 - <<'PY'
+  CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" python3 - <<'PY'
 import json
 import os
 
 config_path = os.environ["CONFIG_PATH"]
 plugin_id = os.environ["PLUGIN_ID"]
-hook_support = os.environ.get("OC_HOOK_VERSION", "0") == "1"
 
 with open(config_path) as f:
     c = json.load(f)
 entry = {'enabled': True}
-if hook_support:
-    entry['hooks'] = {'allowConversationAccess': True}
 entry['config'] = {
         'dailyTokenLimit': None,
         'breaker': {

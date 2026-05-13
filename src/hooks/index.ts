@@ -18,13 +18,9 @@ export function registerHooks(
   api.on("before_model_resolve", createBeforeModelResolveHandler(state, store));
   api.on("model_call_started", createModelCallStartedHandler(state, store));
   api.on("model_call_ended", createModelCallEndedHandler(state, store));
-  api.on("agent_end", createAgentEndHandler(state, store));
-
-  // llm_input — test block detection (triggers on "block test" phrase)
-  api.on("llm_input", createTestBlockDetector(store));
 
   if (state.config.privacy?.enableRawConversationHooks) {
-    // llm_output — opt-in only
-    // To be implemented in future versions
+    api.on("agent_end", createAgentEndHandler(state, store));
+    api.on("llm_input", createTestBlockDetector(store));
   }
 }

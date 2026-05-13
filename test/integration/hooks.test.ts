@@ -3,6 +3,7 @@ import { FirewallState } from "../../src/state.js";
 import { EventStore } from "../../src/store.js";
 import { createBeforeAgentReplyHandler } from "../../src/hooks/before-agent-reply.js";
 import { createModelCallEndedHandler } from "../../src/hooks/model-call.js";
+import { registerHooks } from "../../src/hooks/index.js";
 
 describe("Hook Layer 集成", () => {
   let state: FirewallState;
@@ -11,6 +12,33 @@ describe("Hook Layer 集成", () => {
   beforeEach(() => {
     state = new FirewallState();
     store = new EventStore();
+  });
+
+  describe("hook registration", () => {
+    it("does not register raw conversation hooks by default", () => {
+      const events: string[] = [];
+      registerHooks({ on: (event: string) => events.push(event) }, state, store);
+
+      expect(events).toContain("before_agent_reply");
+      expect(events).toContain("before_model_resolve");
+      expect(events).toContain("model_call_started");
+      expect(events).toContain("model_call_ended");
+      expect(events).not.toContain("agent_end");
+      expect(events).not.toContain("llm_input");
+    });
+
+    it("registers raw conversation hooks only after explicit opt-in", () => {
+      const events: string[] = [];
+      const optedInState = new FirewallState({
+        privacy: { enableRawConversationHooks: true },
+      });
+
+      registerHooks({ on: (event: string) => events.push(event) }, optedInState, store);
+      optedInState.stopCleanupTimer();
+
+      expect(events).toContain("agent_end");
+      expect(events).toContain("llm_input");
+    });
   });
 
   describe("observe 模式", () => {
