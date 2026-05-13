@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.14 - 2026-05-13
+
+- fix: handle OpenClaw without --force flag
+
 ## v0.2.13 - 2026-05-13
 
 - feat: version check-update with device fingerprint
