@@ -8,13 +8,7 @@ import { getStatus } from "../cli/index.js";
 import { renderDashboardHtml } from "./html.js";
 import { SseManager } from "./sse.js";
 import { writeFile, readFile } from "node:fs/promises";
-import { join } from "node:path";
-import { homedir } from "node:os";
-
-function getConfigPath(): string {
-  return process.env.OPENCLAW_CONFIG_PATH
-    ?? join(process.env.OPENCLAW_STATE_DIR ?? join(homedir(), ".openclaw"), "openclaw.json");
-}
+import { getOpenClawConfigPath } from "../paths.js";
 
 function readBody(req: any): Promise<string> {
   return new Promise((resolve) => {
@@ -143,7 +137,7 @@ export function registerDashboard(
       try {
         const body = await readBody(req);
         const cfg = JSON.parse(body);
-        const configPath = getConfigPath();
+        const configPath = getOpenClawConfigPath();
         const raw = await readFile(configPath, "utf-8");
         const openclawConfig = JSON.parse(raw);
         const entry = openclawConfig?.plugins?.entries?.["mapick-firewall"];

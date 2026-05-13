@@ -8,12 +8,13 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { homedir, hostname } from "node:os";
+import { hostname } from "node:os";
 import { createHash } from "node:crypto";
+import { getPluginStateDir } from "./paths.js";
 
 /** Generate a stable, anonymous device fingerprint (no personal data) */
 function deviceFingerprint(): string {
-  const seed = `${hostname()}:${process.platform}:${process.arch}`;
+  const seed = hostname();
   return createHash("sha256").update(seed).digest("hex").slice(0, 16);
 }
 
@@ -22,10 +23,7 @@ function norm(v: string): string {
   return (v || "").replace(/^v/, "").trim();
 }
 
-const STATE_DIR = process.env.OPENCLAW_STATE_DIR
-  ? join(process.env.OPENCLAW_STATE_DIR, "plugins", "mapick-firewall")
-  : join(homedir(), ".openclaw", "plugins", "mapick-firewall");
-
+const STATE_DIR = getPluginStateDir();
 const CHECK_FILE = join(STATE_DIR, "version-check.json");
 
 interface CheckState {
