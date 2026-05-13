@@ -1,6 +1,6 @@
 {
   "name": "@mapick/cost-firewall",
-  "version": "0.2.19",
+  "version": "0.2.20",
   "license": "MIT",
   "description": "AI Call Firewall — real-time monitoring, budget control, automatic circuit breaker for LLM agents (Claude Code, Aider, OpenClaw, Cursor)",
   "keywords": [
