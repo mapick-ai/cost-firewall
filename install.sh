@@ -3,17 +3,38 @@ set -e
 
 
 # Mapick Cost Firewall installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.22/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.23/install.sh | bash
 
 echo "🛡️  Mapick Cost Firewall Installer"
 echo "=================================="
 
 PLUGIN_ID="mapick-firewall"
 PLUGIN_PACKAGE="@mapick/cost-firewall"
-INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.22/install.sh | bash"
+INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.23/install.sh | bash"
 STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
 CONFIG="${OPENCLAW_CONFIG_PATH:-}"
 MIN_VERSION="2026.4.1"
+
+version_ge() {
+  [ "$1" = "$2" ] && return 0
+  [ "$(printf "%s\n%s\n" "$2" "$1" | sort -V | head -1)" = "$2" ]
+}
+
+read_installed_version() {
+  local version=""
+  local dir
+  for dir in \
+    "$STATE_DIR/extensions/$PLUGIN_ID" \
+    "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
+    "$HOME/.openclaw/extensions/$PLUGIN_ID" \
+    "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
+    if [ -f "$dir/package.json" ]; then
+      version=$(node -e "try{console.log(require('$dir/package.json').version)}catch(e){}" 2>/dev/null)
+      [ -n "$version" ] && break
+    fi
+  done
+  printf "%s" "$version"
+}
 
 # Check OpenClaw version.
 if ! command -v openclaw >/dev/null 2>&1; then
@@ -126,13 +147,22 @@ if [ "$OC_VER_NUM" -lt "$MIN_VER_NUM" ]; then
     exit 1
 fi
 
-# Find and repair OpenClaw config before plugin commands. OpenClaw validates
-# config on every CLI invocation, so stale plugin keys can block install/update.
+# Find and repair the active OpenClaw config before plugin commands. Prefer
+# `openclaw gateway status` because installs may use a non-default state dir
+# while a stale ~/.openclaw also exists.
+GATEWAY_STATUS=$(openclaw gateway status 2>&1 || true)
+STATUS_CONFIG=$(printf "%s\n" "$GATEWAY_STATUS" | sed -n 's/^Config (cli): //p' | head -1)
+if [ -z "$CONFIG" ] && [ -n "$STATUS_CONFIG" ] && [ -f "$STATUS_CONFIG" ]; then
+  CONFIG="$STATUS_CONFIG"
+fi
 if [ -z "$CONFIG" ] || [ ! -f "$CONFIG" ]; then
   CONFIG="$STATE_DIR/openclaw.json"
 fi
 if [ ! -f "$CONFIG" ]; then
   CONFIG=$(find "$HOME" /Volumes /opt -maxdepth 4 -name "openclaw.json" -path "*/state/*" 2>/dev/null | head -1)
+fi
+if [ -f "$CONFIG" ]; then
+  STATE_DIR=$(dirname "$CONFIG")
 fi
 
 PLUGIN_INSTALLED=0
@@ -141,8 +171,12 @@ for dir in \
   "$STATE_DIR/extensions/$PLUGIN_ID" \
   "$HOME/.openclaw/extensions/$PLUGIN_ID"; do
   if [ -d "$dir" ]; then
-    BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
+    if [ -f "$dir/openclaw.plugin.json" ] && [ -f "$dir/package.json" ]; then
+      PLUGIN_INSTALLED=1
+    else
+      BROKEN_PLUGIN_DIRS="${BROKEN_PLUGIN_DIRS}${dir}
 "
+    fi
   fi
 done
 for dir in \
@@ -167,9 +201,15 @@ if [ -n "$BROKEN_PLUGIN_DIRS" ]; then
   echo "→ Cleaning unmanaged plugin directories..."
   printf "%s" "$BROKEN_PLUGIN_DIRS" | while IFS= read -r dir; do
     [ -z "$dir" ] && continue
+    [ -d "$dir" ] || continue
     backup_root="$STATE_DIR/plugin-backups"
     mkdir -p "$backup_root"
     backup="$backup_root/$(basename "$dir").$(date +%Y%m%d%H%M%S)"
+    suffix=1
+    while [ -e "$backup" ]; do
+      backup="$backup_root/$(basename "$dir").$(date +%Y%m%d%H%M%S).$suffix"
+      suffix=$((suffix + 1))
+    done
     if mv "$dir" "$backup"; then
       echo "  ✓ Moved $dir to $backup"
     else
@@ -181,6 +221,8 @@ if [ -n "$BROKEN_PLUGIN_DIRS" ]; then
 fi
 
 for dir in \
+  "$STATE_DIR/extensions/$PLUGIN_ID" \
+  "$HOME/.openclaw/extensions/$PLUGIN_ID" \
   "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
   "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
   if [ -f "$dir/package.json" ]; then PLUGIN_INSTALLED=1; break; fi
@@ -265,51 +307,75 @@ fi
 echo ""
 echo "→ Installing or updating plugin..."
 
-# Try update first (fast path for existing installations)
-if update_output=$(openclaw plugins update "$PLUGIN_ID" 2>&1); then
-  [ -n "$update_output" ] && echo "$update_output"
-else
-  update_status=$?
-  [ -n "$update_output" ] && echo "$update_output"
-  echo "   Update skipped or failed (exit $update_status). Will verify/install package."
+EXPECTED_VERSION=$(curl -fsSL https://registry.npmjs.org/@mapick%2Fcost-firewall/latest 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["version"])' 2>/dev/null || echo "unknown")
+INSTALLED_VERSION=$(read_installed_version)
+SKIP_PLUGIN_INSTALL=0
+if [ -n "$INSTALLED_VERSION" ] && [ "$EXPECTED_VERSION" != "unknown" ] && version_ge "$INSTALLED_VERSION" "$EXPECTED_VERSION"; then
+  echo "   Local firewall version $INSTALLED_VERSION is already >= latest $EXPECTED_VERSION. Skipping install/update."
+  PLUGIN_INSTALLED=1
+  SKIP_PLUGIN_INSTALL=1
 fi
 
-if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
-  echo "   Plugin not found on disk. Installing from npm..."
-  if install_output=$(openclaw plugins install "$PLUGIN_PACKAGE" 2>&1); then
-    [ -n "$install_output" ] && echo "$install_output"
+if [ "$SKIP_PLUGIN_INSTALL" -eq 0 ]; then
+  # Try update first (fast path for existing installations)
+  if update_output=$(openclaw plugins update "$PLUGIN_ID" 2>&1); then
+    [ -n "$update_output" ] && echo "$update_output"
+    PLUGIN_INSTALLED=0
+    for dir in \
+      "$STATE_DIR/extensions/$PLUGIN_ID" \
+      "$HOME/.openclaw/extensions/$PLUGIN_ID"; do
+      if [ -f "$dir/openclaw.plugin.json" ]; then PLUGIN_INSTALLED=1; break; fi
+    done
+    if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
+      for dir in \
+        "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
+        "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall"; do
+        if [ -f "$dir/package.json" ]; then PLUGIN_INSTALLED=1; break; fi
+      done
+    fi
   else
-    install_status=$?
-    [ -n "$install_output" ] && echo "$install_output"
-    case "$install_output" in
-      *"already exists"*|*"plugin already exists"*)
-        echo "   Existing plugin files detected by OpenClaw, retrying with --force..."
-        if force_output=$(openclaw plugins install "$PLUGIN_PACKAGE" --force 2>&1); then
-          [ -n "$force_output" ] && echo "$force_output"
-        else
-          force_status=$?
-          [ -n "$force_output" ] && echo "$force_output"
-          case "$force_output" in
-            *"unknown option"*"force"*|*"unknown option '--force'"*)
-              echo "   --force is not supported by this OpenClaw version."
-              echo "   Try: openclaw plugins update $PLUGIN_ID"
-              exit "$force_status"
-              ;;
-            *)
-              echo "   Plugin install failed."
-              exit "$force_status"
-              ;;
-          esac
-        fi
-        ;;
-      *)
-        echo "   Plugin install failed."
-        exit "$install_status"
-        ;;
-    esac
+    update_status=$?
+    [ -n "$update_output" ] && echo "$update_output"
+    echo "   Update skipped or failed (exit $update_status). Will verify/install package."
   fi
-else
-  echo "   Plugin found on disk."
+
+  if [ "$PLUGIN_INSTALLED" -eq 0 ]; then
+    echo "   Plugin not found on disk. Installing from npm..."
+    if install_output=$(openclaw plugins install "$PLUGIN_PACKAGE" 2>&1); then
+      [ -n "$install_output" ] && echo "$install_output"
+    else
+      install_status=$?
+      [ -n "$install_output" ] && echo "$install_output"
+      case "$install_output" in
+        *"already exists"*|*"plugin already exists"*)
+          echo "   Existing plugin files detected by OpenClaw, retrying with --force..."
+          if force_output=$(openclaw plugins install "$PLUGIN_PACKAGE" --force 2>&1); then
+            [ -n "$force_output" ] && echo "$force_output"
+          else
+            force_status=$?
+            [ -n "$force_output" ] && echo "$force_output"
+            case "$force_output" in
+              *"unknown option"*"force"*|*"unknown option '--force'"*)
+                echo "   --force is not supported by this OpenClaw version."
+                echo "   Try: openclaw plugins update $PLUGIN_ID"
+                exit "$force_status"
+                ;;
+              *)
+                echo "   Plugin install failed."
+                exit "$force_status"
+                ;;
+            esac
+          fi
+          ;;
+        *)
+          echo "   Plugin install failed."
+          exit "$install_status"
+          ;;
+      esac
+    fi
+  else
+    echo "   Plugin found on disk."
+  fi
 fi
 
 # 2. Enable it
@@ -365,35 +431,38 @@ fi
 # 4. Verify installed version matches expected
 echo ""
 echo "→ Verifying installed version..."
-EXPECTED_VERSION=$(curl -fsSL https://registry.npmjs.org/@mapick%2Fcost-firewall/latest 2>/dev/null | python3 -c 'import json,sys;print(json.load(sys.stdin)["version"])' 2>/dev/null || echo "unknown")
-
-INSTALLED_VERSION=""
-for dir in \
-  "$STATE_DIR/npm/node_modules/@mapick/cost-firewall" \
-  "$HOME/.openclaw/npm/node_modules/@mapick/cost-firewall" ; do
-
-  if [ -f "$dir/package.json" ]; then
-    INSTALLED_VERSION=$(node -e "try{console.log(require('$dir/package.json').version)}catch(e){}" 2>/dev/null)
-    [ -n "$INSTALLED_VERSION" ] && break
-  fi
-done
+INSTALLED_VERSION=$(read_installed_version)
 
 if [ -z "$INSTALLED_VERSION" ]; then
   echo "  ⚠ Could not determine installed version"
-elif [ "$INSTALLED_VERSION" != "$EXPECTED_VERSION" ] && [ "$EXPECTED_VERSION" != "unknown" ]; then
-  echo "  ✗ Version mismatch: expected $EXPECTED_VERSION, installed $INSTALLED_VERSION"
+elif [ "$EXPECTED_VERSION" != "unknown" ] && ! version_ge "$INSTALLED_VERSION" "$EXPECTED_VERSION"; then
+  echo "  ✗ Version mismatch: expected at least $EXPECTED_VERSION, installed $INSTALLED_VERSION"
   echo "  Possible cause: OpenClaw security scan blocked the new package."
   echo "  Try: openclaw plugins update mapick-firewall"
   echo "  Or:  openclaw plugins install @mapick/cost-firewall"
   exit 1
 else
-  echo "  ✓ Version $INSTALLED_VERSION matches expected $EXPECTED_VERSION"
+  if [ "$EXPECTED_VERSION" = "unknown" ]; then
+    echo "  ✓ Installed version $INSTALLED_VERSION"
+  else
+    echo "  ✓ Version $INSTALLED_VERSION meets latest $EXPECTED_VERSION"
+  fi
 fi
 
 # 5. Restart gateway
 echo ""
 echo "→ Restarting gateway..."
-openclaw gateway restart
+restart_output=$(openclaw gateway restart 2>&1 || true)
+[ -n "$restart_output" ] && echo "$restart_output"
+
+gateway_status_after_restart=$(openclaw gateway status 2>&1 || true)
+case "$gateway_status_after_restart" in
+  *"Service not installed"*|*"Gateway service not loaded"*|*"LaunchAgent (not loaded)"*)
+    echo "   Gateway service is not running. Installing and starting service..."
+    openclaw gateway install --port 18789
+    openclaw gateway start
+    ;;
+esac
 
 # 5. Wait and verify
 echo ""

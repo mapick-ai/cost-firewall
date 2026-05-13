@@ -2,9 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
-## v0.2.22 - 2026-05-14
+## v0.2.23 - 2026-05-14
 
-- chore: release v0.2.22
+- fix: resolve active OpenClaw config from gateway status before cleaning and pinning plugin trust
+- fix: skip plugin install/update when the local firewall version is already newer than or equal to the latest npm version
 
 ## v0.2.22 - 2026-05-13
 
