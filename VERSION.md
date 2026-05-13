@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.16 - 2026-05-13
+
+- fix: conditional allowConversationAccess for OpenClaw version compat
+
 ## v0.2.15 - 2026-05-13
 
 - fix: remove allowConversationAccess for OpenClaw 2026.3.31 compat
