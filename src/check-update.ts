@@ -10,6 +10,11 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
+/** Normalize version string: strip "v" prefix, trim whitespace */
+function norm(v: string): string {
+  return (v || "").replace(/^v/, "").trim();
+}
+
 const STATE_DIR = process.env.OPENCLAW_STATE_DIR
   ? join(process.env.OPENCLAW_STATE_DIR, "plugins", "mapick-firewall")
   : join(homedir(), ".openclaw", "plugins", "mapick-firewall");
@@ -57,10 +62,10 @@ export async function checkForUpdate(currentVersion: string): Promise<UpdateResu
   // Throttle: only check twice per day
   if (existing && isSameHalfDay(existing.lastCheck, now)) {
     return {
-      updateAvailable: existing.latestVersion !== currentVersion,
+      updateAvailable: norm(existing.latestVersion) !== norm(currentVersion),
       current: currentVersion,
       latest: existing.latestVersion,
-      checked: false, // cached
+      checked: false,
     };
   }
 
@@ -77,7 +82,7 @@ export async function checkForUpdate(currentVersion: string): Promise<UpdateResu
     if (!resp.ok) return { updateAvailable: false, current: currentVersion, latest: currentVersion, checked: false };
 
     const data = await resp.json() as { version?: string };
-    const latest = data.version || currentVersion;
+    const latest = norm(data.version || currentVersion);
 
     const state: CheckState = { lastCheck: now, latestVersion: latest, currentVersion };
     writeState(state);
