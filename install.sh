@@ -13,15 +13,31 @@ PLUGIN_PACKAGE="npm:@mapick/cost-firewall"
 INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.18/install.sh | bash"
 STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
 CONFIG="${OPENCLAW_CONFIG_PATH:-}"
+MIN_VERSION="2026.4.1"
 
 # Check OpenClaw version.
-OC_VERSION=$(openclaw --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-MIN_VERSION="2026.3.24"
+if ! command -v openclaw >/dev/null 2>&1; then
+  echo ""
+  echo "✗ OpenClaw CLI not found."
+  echo "  Install OpenClaw $MIN_VERSION or newer first, then continue with:"
+  echo "    $INSTALL_COMMAND"
+  exit 1
+fi
 
-if [ -n "$OC_VERSION" ]; then
-  OC_VER_NUM=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
-  MIN_VER_NUM=$(echo "$MIN_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
-  if [ "$OC_VER_NUM" -lt "$MIN_VER_NUM" ]; then
+OC_VERSION=$(openclaw --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+if [ -z "$OC_VERSION" ]; then
+  echo ""
+  echo "✗ Could not determine OpenClaw version."
+  echo "  This installer requires OpenClaw $MIN_VERSION or newer."
+  echo "  Run: openclaw --version"
+  echo "  Then continue installation with:"
+  echo "    $INSTALL_COMMAND"
+  exit 1
+fi
+
+OC_VER_NUM=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
+MIN_VER_NUM=$(echo "$MIN_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
+if [ "$OC_VER_NUM" -lt "$MIN_VER_NUM" ]; then
     echo ""
     echo "⚠  OpenClaw $OC_VERSION is below the required minimum ($MIN_VERSION)."
     echo ""
@@ -108,7 +124,6 @@ if [ -n "$OC_VERSION" ]; then
     echo "   2. Exit"
     echo ""
     exit 1
-  fi
 fi
 
 # Find and repair OpenClaw config before plugin commands. OpenClaw validates
@@ -128,7 +143,7 @@ else
   OC_HOOK_VERSION="0"
   if [ -n "$OC_VERSION" ]; then
     OC_HOOK_VER=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
-    if [ "$OC_HOOK_VER" -ge 20260400 ]; then OC_HOOK_VERSION="1"; fi
+    if [ "$OC_HOOK_VER" -ge 20260401 ]; then OC_HOOK_VERSION="1"; fi
   fi
   CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" OC_HOOK_VERSION="$OC_HOOK_VERSION" python3 - <<'PY'
 import json
@@ -227,8 +242,8 @@ else
   OC_HOOK_VERSION="0"
   if [ -n "$OC_VERSION" ]; then
     OC_HOOK_VER=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')
-    # allowConversationAccess was added in 2026.4.x (version >= 20260400)
-    if [ "$OC_HOOK_VER" -ge 20260400 ]; then OC_HOOK_VERSION="1"; fi
+    # allowConversationAccess is only written for supported OpenClaw versions.
+    if [ "$OC_HOOK_VER" -ge 20260401 ]; then OC_HOOK_VERSION="1"; fi
   fi
   CONFIG_PATH="$CONFIG" PLUGIN_ID="$PLUGIN_ID" OC_HOOK_VERSION="$OC_HOOK_VERSION" python3 - <<'PY'
 import json

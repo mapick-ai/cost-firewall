@@ -4,7 +4,7 @@ All notable changes to @mapick/cost-firewall will be documented in this file.
 
 ## v0.2.18 - 2026-05-13
 
-- chore: release v0.2.18
+- fix: require OpenClaw 2026.4.1 or newer in installer and plugin metadata
 
 ## v0.2.17 - 2026-05-13
 
@@ -57,4 +57,3 @@ All notable changes to @mapick/cost-firewall will be documented in this file.
 ## v0.2.4 - 2026-05-12
 
 - fix: version sync, dynamic dashboard version, idempotent install
-
