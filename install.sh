@@ -14,7 +14,7 @@ INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-fir
 
 # Check OpenClaw version.
 OC_VERSION=$(openclaw --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-MIN_VERSION="2026.5.7"
+MIN_VERSION="2026.3.24"
 
 if [ -n "$OC_VERSION" ]; then
   OC_VER_NUM=$(echo "$OC_VERSION" | awk -F. '{ printf "%d%02d%02d", $1, $2, $3 }')

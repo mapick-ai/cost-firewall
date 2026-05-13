@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 import type { FirewallState } from "../state.js";
 import { EventStore } from "../store.js";
 import type { FirewallEvent } from "../types.js";
+import { checkForUpdate } from "../check-update.js";
 
 const PLUGIN_VERSION = (() => {
   try {
@@ -108,7 +109,12 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
         .action(async () => {
           const r = await apiGetJson("/mapick/api/stats");
           if (r.ok) {
-            console.log(JSON.stringify(r.data, null, 2));
+            const result = await checkForUpdate(PLUGIN_VERSION);
+            const status = r.data as any;
+            if (result.updateAvailable) {
+              status.update_available = result.latest;
+            }
+            console.log(JSON.stringify(status, null, 2));
             return;
           }
           if (r.error === "plugin_api_not_mounted") {
@@ -177,6 +183,20 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
           const r = await apiPostJson("/mapick/api/config", body);
           if (!r.ok) { failCli(`Failed: ${r.error}`); return; }
           console.log("Saved.");
+        });
+
+      firewall.command("check-update")
+        .description("Check for new firewall version")
+        .action(async () => {
+          const result = await checkForUpdate(PLUGIN_VERSION);
+          if (result.updateAvailable) {
+            console.log(`Update available: v${result.current} → v${result.latest}`);
+            console.log(`Install: openclaw plugins install @mapick/cost-firewall@${result.latest}`);
+          } else if (!result.checked) {
+            console.log(`No update available (v${result.current}) [cached]`);
+          } else {
+            console.log(`v${result.current} is the latest version.`);
+          }
         });
 
       firewall.command("log")
