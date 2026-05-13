@@ -8,7 +8,14 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { homedir } from "node:os";
+import { homedir, hostname } from "node:os";
+import { createHash } from "node:crypto";
+
+/** Generate a stable, anonymous device fingerprint (no personal data) */
+function deviceFingerprint(): string {
+  const seed = `${hostname()}:${process.platform}:${process.arch}`;
+  return createHash("sha256").update(seed).digest("hex").slice(0, 16);
+}
 
 /** Normalize version string: strip "v" prefix, trim whitespace */
 function norm(v: string): string {
@@ -73,7 +80,8 @@ export async function checkForUpdate(currentVersion: string): Promise<UpdateResu
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    const resp = await fetch("https://api.mapick.ai/api/v1/firewall/latest-version", {
+    const fp = deviceFingerprint();
+    const resp = await fetch(`https://api.mapick.ai/api/v1/firewall/latest-version?device=${fp}`, {
       signal: controller.signal,
       headers: { "Accept": "application/json" },
     });
