@@ -74,6 +74,11 @@
             "default": false
           }
         }
+      },
+      "blocklist": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": []
       }
     }
   }
