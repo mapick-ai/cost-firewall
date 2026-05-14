@@ -720,13 +720,13 @@ export function renderDashboardHtml(_stats: any): string {
         <div class="monitor-card">
           <div class="monitor-header">Cooling Sources</div>
           <div class="monitor-body" id="list-cooling">
-            <div class="empty">无Cooling Sources</div>
+            <div class="empty">No cooling sources</div>
           </div>
         </div>
         <div class="monitor-card">
           <div class="monitor-header">Active Runs</div>
           <div class="monitor-body" id="list-runs">
-            <div class="empty">无Active Runs</div>
+            <div class="empty">No active runs</div>
           </div>
         </div>
         <div class="monitor-card">
@@ -774,6 +774,14 @@ export function renderDashboardHtml(_stats: any): string {
     }
 
     var _useMock = location.search.includes('mock');
+
+    function shortName(src) {
+      if (!src) return '';
+      if (src.length <= 20) return src;
+      var ci = src.indexOf(':');
+      if (ci > 0 && ci < 20) return src.slice(0, ci + 1) + src.slice(ci + 1, ci + 9);
+      return src.slice(0, 16) + '...';
+    }
 
     async function fetchStats() {
       if (_saving) return;
@@ -968,10 +976,10 @@ export function renderDashboardHtml(_stats: any): string {
         coolingList.innerHTML = coolingSources.map(function(s) {
           var resetBtn = '<button class="btn-sm" onclick="resetSource(' + String.fromCharCode(39) + escapeHtml(s.source ?? '') + String.fromCharCode(39) + ')">Reset</button>';
           var remaining = (s.remainingSec > 0) ? '<span style="font-size:12px;color:var(--muted)">' + s.remainingSec + 's</span>' : '';
-          return '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s.source ?? '') + '</div><div class="item-detail">' + escapeHtml(s.reason ?? '') + '</div></div><div class="item-meta">' + remaining + resetBtn + '</div></div>';
+          return '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(shortName(s.source ?? '')) + '</div><div class="item-detail">' + escapeHtml(s.reason ?? '') + '</div></div><div class="item-meta">' + remaining + resetBtn + '</div></div>';
         }).join('');
       } else {
-        coolingList.innerHTML = '<div class="empty">无Cooling Sources</div>';
+        coolingList.innerHTML = '<div class="empty">No cooling sources</div>';
       }
 
       const activeRuns = data.active_runs ?? [];
@@ -987,13 +995,13 @@ export function renderDashboardHtml(_stats: any): string {
           </div>
         \`).join('');
       } else {
-        runsList.innerHTML = '<div class="empty">无Active Runs</div>';
+        runsList.innerHTML = '<div class="empty">No active runs</div>';
       }
 
       const blocklist = data.blocklist ?? [];
       const blockedEl = document.getElementById('list-blocked');
       if (blocklist.length > 0) {
-        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s) + '</div><div class="item-detail" style="color:var(--destructive)">permanently blocked</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(' + String.fromCharCode(39) + escapeHtml(s) + String.fromCharCode(39) + ')">Unblock</button></div></div>').join('');
+        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(shortName(s)) + '</div><div class="item-detail" style="color:var(--destructive)">permanently blocked</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(' + String.fromCharCode(39) + escapeHtml(s) + String.fromCharCode(39) + ')">Unblock</button></div></div>').join('');
       } else {
         blockedEl.innerHTML = '<div class="empty">No blocked sources</div>';
       }
@@ -1011,7 +1019,7 @@ export function renderDashboardHtml(_stats: any): string {
         const timeStr = date ? date.toTimeString().slice(0, 8) : '--:--:--';
         const type = e.type ?? 'unknown';
         const source = e.source ?? '';
-        const shortSource = source.length > 30 ? source.slice(0, 27) + '...' : source;
+        var shortSource = shortName(source);
         const model = e.model ?? '';
         const provider = e.provider ?? '';
         const cost = e.estimatedCost ?? 0;
