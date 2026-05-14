@@ -555,6 +555,12 @@ export function renderDashboardHtml(_stats: any): string {
     </div>
   </header>
   
+  <div id="alert-upgrade" style="display:none;background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:10px 16px;margin:0 auto 12px;max-width:1200px;font-size:13px">
+    <span style="color:#1d4ed8">💡</span> 当前 OpenClaw <span id="alert-upgrade-ver"></span> 仅支持基础功能。升级到 <b>v2026.5.7</b> 可解锁完整 cost 追踪、自动熔断、实时图表等全部功能。
+    <code style="background:#dbeafe;padding:2px 6px;border-radius:3px;margin-left:8px">openclaw update</code>
+    <button onclick="document.getElementById('alert-upgrade').style.display='none'" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px">✕</button>
+  </div>
+
   <div id="alert-unbind" style="display:none;background:#fef2f2;border:1px solid var(--destructive);border-radius:8px;padding:12px 18px;margin:12px auto;max-width:1200px">
     <strong>⚠️ 未绑定警告</strong>：紧急停止已激活，但仍检测到新的 API 请求。请运行 <code>openclaw gateway restart</code>。
     <span id="alert-unbind-detail" style="display:block;margin-top:4px;font-size:12px;color:var(--muted)"></span>
@@ -888,6 +894,15 @@ export function renderDashboardHtml(_stats: any): string {
       checkUnbindAlert(data);
       const verEl = document.getElementById('firewall-ver');
       if (verEl && data.version) verEl.textContent = 'v' + data.version;
+
+      var gwVer = data.openclaw_version || '';
+      if (!gwVer && data.version && data.version.startsWith('0.')) {
+        document.getElementById('alert-upgrade').style.display = 'block';
+        document.getElementById('alert-upgrade-ver').textContent = 'v2026.4.x';
+      } else if (gwVer && gwVer.startsWith('2026.4')) {
+        document.getElementById('alert-upgrade').style.display = 'block';
+        document.getElementById('alert-upgrade-ver').textContent = gwVer;
+      }
 
       const modeObserve = document.getElementById('mode-observe');
       const modeProtect = document.getElementById('mode-protect');
