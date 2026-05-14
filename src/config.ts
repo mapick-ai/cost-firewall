@@ -16,6 +16,7 @@ export const DEFAULT_CONFIG: Required<FirewallConfig> = {
   dailyTokenLimit: null,
   upstreamTimeoutMs: 30_000,
   skipRewrite: false,
+  blocklist: [],
   privacy: {
     storePromptText: false,
     enableRawConversationHooks: false,
@@ -35,5 +36,6 @@ export function resolveConfig(input: Partial<FirewallConfig>): FirewallConfig {
       ...DEFAULT_CONFIG.privacy,
       ...input.privacy,
     },
+    blocklist: input.blocklist ?? DEFAULT_CONFIG.blocklist,
   };
 }

@@ -65,6 +65,7 @@ export interface FirewallConfig {
   dailyTokenLimit?: number | null;
   upstreamTimeoutMs?: number;
   skipRewrite?: boolean; // opt-out: don't rewrite models to mapick/*
+  blocklist?: string[];  // permanently blocked source keys
   privacy?: {
     storePromptText?: boolean;
     enableRawConversationHooks?: boolean;

@@ -20,6 +20,7 @@ export class FirewallState {
   readonly globalStats: GlobalStats;
   private runs = new Map<string, RunState>();
   private sourceStats = new Map<SourceKey, { todayTokens: number }>();
+  private blocklist = new Set<string>();
   private today = new Date().toDateString();
   private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -47,7 +48,34 @@ export class FirewallState {
       todayBlocked: 0,
       todaySavedEstimate: 0,
     };
+    // Restore blocklist from config
+    if (this.config.blocklist) {
+      for (const s of this.config.blocklist) this.blocklist.add(s);
+    }
     this.startCleanupTimer();
+  }
+
+  kill(source: string): void {
+    this.blocklist.add(source);
+    this.breaker.reset(source);
+    if (!this.config.blocklist) this.config.blocklist = [];
+    if (!this.config.blocklist.includes(source)) this.config.blocklist.push(source);
+  }
+
+  unkill(source: string): boolean {
+    const removed = this.blocklist.delete(source);
+    if (this.config.blocklist) {
+      this.config.blocklist = this.config.blocklist.filter((s) => s !== source);
+    }
+    return removed;
+  }
+
+  isKilled(source: string): boolean {
+    return this.blocklist.has(source);
+  }
+
+  getBlocklist(): string[] {
+    return [...this.blocklist];
   }
 
   /** Restore todayTokens and todayBlocked from JSONL after restart */
@@ -197,7 +225,10 @@ export class FirewallState {
    * Returns { allow: true } if all checks pass, otherwise { allow: false, reason, layer }
    */
   precheck(source: SourceKey): PrecheckResult {
-    // Emergency stop is a global override - always blocks regardless of mode
+    if (this.isKilled(source)) {
+      return { allow: false, reason: "manual_kill", layer: "hook" };
+    }
+
     if (this.globalStats.emergencyStop) {
       return { allow: false, reason: "emergency_stop", layer: "hook" };
     }

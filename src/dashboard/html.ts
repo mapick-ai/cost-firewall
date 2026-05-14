@@ -297,8 +297,11 @@ export function renderDashboardHtml(_stats: any): string {
     /* Monitoring */
     .monitoring-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 16px;
+    }
+    @media (max-width: 1024px) {
+      .monitoring-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 768px) {
       .monitoring-grid { grid-template-columns: 1fr; }
@@ -628,6 +631,12 @@ export function renderDashboardHtml(_stats: any): string {
             <div class="empty">No active runs</div>
           </div>
         </div>
+        <div class="monitor-card">
+          <div class="monitor-header">Blocked Sources</div>
+          <div class="monitor-body" id="list-blocked">
+            <div class="empty">No blocked sources</div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -817,6 +826,14 @@ export function renderDashboardHtml(_stats: any): string {
       } else {
         runsList.innerHTML = '<div class="empty">No active runs</div>';
       }
+
+      const blocklist = data.blocklist ?? [];
+      const blockedEl = document.getElementById('list-blocked');
+      if (blocklist.length > 0) {
+        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s) + '</div><div class="item-detail" style="color:var(--destructive)">permanently blocked</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(\'' + escapeHtml(s) + '\')">Unblock</button></div></div>').join('');
+      } else {
+        blockedEl.innerHTML = '<div class="empty">No blocked sources</div>';
+      }
     }
 
     function renderEvents(events) {
@@ -878,6 +895,7 @@ export function renderDashboardHtml(_stats: any): string {
         return '<div class="event-item">' +
           '<span class="event-time">' + escapeHtml(timeStr) + '</span>' +
           '<span class="event-msg ' + cls + '">' + escapeHtml(text) + '</span>' +
+          (e.source ? '<button class="btn-sm" style="margin-left:auto;flex-shrink:0;color:var(--destructive);border-color:var(--destructive)" onclick="blockSource(\'' + escapeHtml(e.source) + '\')">Kill</button>' : '') +
         '</div>';
       }).join('');
     }
@@ -932,6 +950,15 @@ export function renderDashboardHtml(_stats: any): string {
       const window = parseInt(document.getElementById('input-frequency-window').value) || 60;
       saveConfig({ breaker: { callFrequencyThreshold: threshold, callFrequencyWindowSec: window } });
     });
+
+    async function blockSource(src) {
+      await fetch('/mapick/api/block-source', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({source:src}) });
+      fetchStats(); fetchEvents();
+    }
+    async function unblockSource(src) {
+      await fetch('/mapick/api/unblock-source', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({source:src}) });
+      fetchStats(); fetchEvents();
+    }
 
     fetchStats();
     fetchEvents();
