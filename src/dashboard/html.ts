@@ -811,12 +811,42 @@ export function renderDashboardHtml(_stats: any): string {
       document.getElementById('mode-protect').className = 'mode-btn protect-mode' + (m === 'protect' ? ' active' : '');
     }
 
+    var _demoState = 0;
+
     async function emergencyStop() {
+      if (_useMock) {
+        _demoState = 1;
+        updateUI({
+          mode: 'protect', emergency_stop: true,
+          today_tokens: 385000, today_blocked: 12, today_spent_usd: 15.4, today_saved_estimate: 4.85,
+          daily_token_limit: 500000,
+          breaker: { consecutive_failures: 3, cooldown_sec: 30, token_velocity_threshold: 100000, token_velocity_window_sec: 60, call_frequency_threshold: 30, call_frequency_window_sec: 60 },
+          cooling_sources: [{ source: 'session:abc12345', reason: 'consecutive_failures', remainingSec: 22 }],
+          active_runs: [{ runId: '8293f7a8-c8a2-42d5-9095-cd5af1055bc5', source: 'session:927dd50b', calls: 8, tokens: 272000, status: 'danger' }],
+          blocklist: ['session:927dd50b-33a1-48c2-a303-5fa72ec946b5'],
+          version: '0.2.25'
+        });
+        return;
+      }
       await fetch('/mapick/api/stop');
       fetchStats();
     }
 
     async function resume() {
+      if (_useMock) {
+        _demoState = 0;
+        updateUI({
+          mode: 'protect', emergency_stop: false,
+          today_tokens: 385000, today_blocked: 12, today_spent_usd: 15.4, today_saved_estimate: 4.85,
+          daily_token_limit: 500000,
+          breaker: { consecutive_failures: 3, cooldown_sec: 30, token_velocity_threshold: 100000, token_velocity_window_sec: 60, call_frequency_threshold: 30, call_frequency_window_sec: 60 },
+          cooling_sources: [{ source: 'session:abc12345', reason: 'consecutive_failures', remainingSec: 22 }],
+          active_runs: [{ runId: '8293f7a8-c8a2-42d5-9095-cd5af1055bc5', source: 'session:927dd50b', calls: 8, tokens: 272000, status: 'danger' }],
+          blocklist: ['session:927dd50b-33a1-48c2-a303-5fa72ec946b5'],
+          version: '0.2.25'
+        });
+        return;
+      }
       await fetch('/mapick/api/resume');
       fetchStats();
     }
@@ -868,9 +898,11 @@ export function renderDashboardHtml(_stats: any): string {
       const btnResume = document.getElementById('btn-resume');
       if (data.emergency_stop) {
         btnStop.style.display = 'none';
+        btnStop.classList.add('stopped');
         btnResume.style.display = 'block';
       } else {
         btnStop.style.display = 'block';
+        btnStop.classList.remove('stopped');
         btnResume.style.display = 'none';
       }
 
