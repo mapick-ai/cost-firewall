@@ -689,7 +689,7 @@ export function renderDashboardHtml(_stats: any): string {
         </div>
       </div>
     
-    <div class="section">
+    <div class="section" id="cost-trend-section" style="display:none">
       <div class="section-title">Cost Trend</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px">
         <canvas id="cost-chart" width="800" height="250" style="width:100%;max-height:250px"></canvas>
@@ -1154,7 +1154,13 @@ export function renderDashboardHtml(_stats: any): string {
       if (!canvas) return;
       var ctx = canvas.getContext('2d');
       var calls = events.filter(function(e) { return e.type === 'model_call_ended' && e.estimatedCost > 0; });
-      if (calls.length < 2) { if (costChart) { try { costChart.destroy(); } catch(e) {} costChart = null; } return; }
+      var section = document.getElementById('cost-trend-section');
+      if (calls.length < 2) {
+        if (section) section.style.display = 'none';
+        if (costChart) { try { costChart.destroy(); } catch(e) {} costChart = null; }
+        return;
+      }
+      if (section) section.style.display = 'block';
       var labels = [], values = [], cum = 0;
       calls.sort(function(a,b) { return a.timestamp - b.timestamp; });
       for (var i = 0; i < calls.length; i++) {
