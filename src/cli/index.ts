@@ -306,6 +306,7 @@ export async function getStatus(state: FirewallState, store?: EventStore): Promi
     emergency_stop: state.globalStats.emergencyStop,
     today_tokens: spent,
     today_blocked: blocked,
+    today_spent_usd: Math.round(spent / 1000 * 0.004 * 100) / 100,
     today_saved_estimate: state.globalStats.todaySavedEstimate,
     daily_token_limit: state.config.dailyTokenLimit,
     breaker: {

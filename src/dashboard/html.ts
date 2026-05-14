@@ -129,7 +129,64 @@ export function renderDashboardHtml(_stats: any): string {
       background: var(--accent-hover);
       border-color: var(--accent-hover);
     }
-    
+    .btn-emergency {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--destructive);
+      color: #fff;
+      letter-spacing: 0.02em;
+      transition: all 0.15s ease;
+      animation: pulse-stop 2s infinite;
+    }
+    .btn-emergency:hover {
+      background: #991b1b;
+      transform: scale(1.05);
+    }
+    @keyframes pulse-stop {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(220,38,38,0); }
+    }
+    .btn-emergency.stopped {
+      background: #525252;
+      animation: none;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      padding: 24px;
+      max-width: 800px;
+      margin: 0 auto 8px;
+    }
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+    .hero-value {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .hero-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    @media (max-width: 600px) {
+      .hero-stats { grid-template-columns: 1fr; padding: 16px; }
+      .hero-value { font-size: 32px; }
+    }
+
     /* Main Content */
     .main {
       max-width: 1200px;
@@ -459,6 +516,16 @@ export function renderDashboardHtml(_stats: any): string {
     .event-msg.err { color: var(--destructive); }
     .event-msg.warn { color: var(--warning); }
     .event-msg.dim { color: var(--dim); }
+    .event-icon { font-size: 16px; width: 28px; flex-shrink: 0; text-align: center; }
+    .event-body { flex: 1; min-width: 0; }
+    .event-main { font-size: 13px; font-weight: 500; }
+    .event-main.ok { color: var(--success); }
+    .event-main.err { color: var(--destructive); }
+    .event-main.warn { color: var(--warning); }
+    .event-main.dim { color: var(--dim); }
+    .event-sub { font-size: 11px; color: var(--dim); margin-top: 2px; word-break: break-all; }
+    .btn-kill { padding: 2px 8px; font-size: 10px; border: 1px solid var(--destructive); border-radius: 3px; color: var(--destructive); background: transparent; cursor: pointer; flex-shrink: 0; margin-left: 8px; }
+    .btn-kill:hover { background: var(--destructive); color: #fff; }
   </style>
 </head>
 <body>
@@ -476,11 +543,26 @@ export function renderDashboardHtml(_stats: any): string {
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-destructive" id="btn-stop">Stop</button>
-      <button class="btn btn-primary" id="btn-resume" style="display:none">Resume</button>
+      <button class="btn-emergency" id="btn-stop">⏹ STOP</button>
+      <button class="btn btn-primary" id="btn-resume" style="display:none">▶ Resume</button>
     </div>
   </header>
-  
+
+  <div class="hero-stats">
+    <div class="hero-card">
+      <div class="hero-value" id="hero-spent">$0</div>
+      <div class="hero-label">Today Spent</div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-value" id="hero-blocked">0</div>
+      <div class="hero-label">Blocked</div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-value" id="hero-saved">$0</div>
+      <div class="hero-label">Saved</div>
+    </div>
+  </div>
+
   <main class="main">
     <div class="stats-row">
       <div class="stat-card">
@@ -734,6 +816,10 @@ export function renderDashboardHtml(_stats: any): string {
 
     function updateUI(data) {
       document.getElementById('stat-tokens').textContent = (data.today_tokens ?? 0).toLocaleString();
+      const spentUsd = (data.today_tokens ?? 0) / 1000 * 0.004;
+      document.getElementById('hero-spent').textContent = '$' + spentUsd.toFixed(2);
+      document.getElementById('hero-blocked').textContent = data.today_blocked ?? 0;
+      document.getElementById('hero-saved').textContent = '$' + (data.today_saved_estimate ?? 0).toFixed(2);
       const verEl = document.getElementById('firewall-ver');
       if (verEl && data.version) verEl.textContent = 'v' + data.version;
       document.getElementById('stat-blocked').textContent = data.today_blocked ?? 0;
@@ -838,64 +924,138 @@ export function renderDashboardHtml(_stats: any): string {
 
     function renderEvents(events) {
       const log = document.getElementById('events-log');
-      if (!events ?? events.length === 0) {
-        log.innerHTML = '<div class="empty">No events</div>';
+      if (!events || events.length === 0) {
+        log.innerHTML = '<div class="empty">No events recorded yet</div>';
         return;
       }
-      log.innerHTML = events.slice(0, 100).reverse().map(e => {
+      log.innerHTML = events.slice(0, 50).reverse().map(e => {
         const ts = e.timestamp ?? e.time;
         const date = ts ? new Date(ts) : null;
         const timeStr = date ? date.toTimeString().slice(0, 8) : '--:--:--';
         const type = e.type ?? 'unknown';
-        let cls = '';
-        let text = '';
-        
+        const source = e.source ?? '';
+        const shortSource = source.length > 30 ? source.slice(0, 27) + '...' : source;
+        const model = e.model ?? '';
+        const provider = e.provider ?? '';
+        const cost = e.estimatedCost ?? 0;
+        const costK = Math.round(cost / 100) / 10;
+        const costUsd = (cost / 1000 * 0.004).toFixed(2);
+        let icon = '', text = '', sub = '', cls = '';
+
         if (type === 'model_call_ended') {
-          const provider = e.provider ?? 'unknown';
-          const model = e.model ?? 'unknown';
           const outcome = e.outcome ?? 'completed';
-          const cost = e.estimatedCost ?? 0;
-          const costK = (cost / 1000).toFixed(1);
           if (outcome === 'completed') {
-            cls = 'ok';
-            text = provider + '/' + model + ' completed — ' + costK + 'K tokens';
+            icon = '✅'; cls = 'ok';
+            text = provider + '/' + model + ' — ' + costK + 'K tokens ($' + costUsd + ')';
+            sub = source ? '来源 ' + shortSource : '';
           } else {
-            cls = 'err';
-            text = provider + '/' + model + ' error (' + outcome + ')';
+            icon = '❌'; cls = 'err';
+            text = provider + '/' + model + ' — ' + outcome + ' (' + (e.failureKind ?? 'error') + ')';
+            sub = source ? '来源 ' + shortSource : '';
           }
         } else if (type === 'blocked') {
-          cls = 'err';
-          const source = e.source ?? 'unknown';
-          const reason = e.reason ?? 'unknown';
-          text = 'BLOCKED ' + source + ' — ' + reason;
+          icon = '🚫'; cls = 'err';
+          text = '拦截 — ' + (e.reason ?? 'unknown');
+          if (source) sub = '来源 ' + shortSource;
         } else if (type === 'run_status_change') {
-          cls = 'warn';
-          const runId = e.runId ?? 'unknown';
-          const status = e.status ?? 'unknown';
+          icon = '⚠️'; cls = 'warn';
           const tokens = e.cumulativeTokens ?? 0;
-          const calls = e.runCalls ?? 0;
-          text = 'Run ' + runId + ' → ' + status + ' (' + tokens.toLocaleString() + ' tokens, ' + calls + ' calls)';
+          text = 'Token 警告 — ' + (tokens/1000).toFixed(0) + 'K tokens ($' + (tokens/1000*0.004).toFixed(2) + ')';
+          if (source) sub = '来源 ' + shortSource + (model ? ' | ' + model : '');
         } else if (type === 'agent_end') {
-          cls = 'dim';
-          const runId = e.runId ?? 'unknown';
-          text = 'Run ' + runId + ' ended';
+          icon = '🏁'; cls = 'dim';
+          text = '会话结束 — ' + (e.runId ?? '').slice(0, 8);
         } else if (type === 'config_warning') {
-          cls = 'dim';
-          text = 'Config warning: ' + (e.message ?? e.msg ?? 'unknown');
+          icon = '⚙️'; cls = 'dim';
+          text = '配置 — ' + (e.reason ?? e.message ?? '');
+        } else if (type === 'emergency_stop') {
+          icon = '🛑'; cls = 'err';
+          text = '紧急停止已激活';
         } else if (type === 'zero_output_warning') {
-          cls = 'warn';
-          const provider = e.provider ?? 'unknown';
-          const model = e.model ?? 'unknown';
-          text = 'Zero output: ' + provider + '/' + model + ' — 0 bytes';
+          icon = '⚠️'; cls = 'warn';
+          text = 'Zero output: ' + provider + '/' + model;
         } else {
-          cls = 'dim';
-          text = e.message ?? e.msg ?? JSON.stringify(e);
+          icon = '📋'; cls = 'dim';
+          text = type + (e.reason ? ' — ' + e.reason : '');
         }
-        
+
+        var killBtn = (source && (type === 'model_call_ended' || type === 'blocked'))
+          ? '<button class="btn-kill" onclick="blockSource(\'' + escapeHtml(source) + '\')">Kill</button>'
+          : '';
+
         return '<div class="event-item">' +
+          '<span class="event-icon">' + icon + '</span>' +
+          '<div class="event-body">' +
+            '<div class="event-main ' + cls + '">' + escapeHtml(text) + '</div>' +
+            (sub ? '<div class="event-sub">' + escapeHtml(sub) + '</div>' : '') +
+          '</div>' +
           '<span class="event-time">' + escapeHtml(timeStr) + '</span>' +
-          '<span class="event-msg ' + cls + '">' + escapeHtml(text) + '</span>' +
-          (e.source ? '<button class="btn-sm" style="margin-left:auto;flex-shrink:0;color:var(--destructive);border-color:var(--destructive)" onclick="blockSource(\'' + escapeHtml(e.source) + '\')">Kill</button>' : '') +
+          killBtn +
+        '</div>';
+      }).join('');
+    }
+      log.innerHTML = events.slice(0, 50).reverse().map(e => {
+        const ts = e.timestamp ?? e.time;
+        const date = ts ? new Date(ts) : null;
+        const timeStr = date ? date.toTimeString().slice(0, 8) : '--:--:--';
+        const type = e.type ?? 'unknown';
+        const source = e.source ?? '';
+        const shortSource = source.length > 30 ? source.slice(0, 27) + '...' : source;
+        const model = e.model ?? '';
+        const provider = e.provider ?? '';
+        const cost = e.estimatedCost ?? 0;
+        const costK = Math.round(cost / 100) / 10;
+        const costUsd = (cost / 1000 * 0.004).toFixed(2);
+        let icon = '', text = '', sub = '', cls = '';
+
+        if (type === 'model_call_ended') {
+          const outcome = e.outcome ?? 'completed';
+          if (outcome === 'completed') {
+            icon = '✅'; cls = 'ok';
+            text = provider + '/' + model + ' — ' + costK + 'K tokens ($' + costUsd + ')';
+            sub = '来源 ' + shortSource;
+          } else {
+            icon = '❌'; cls = 'err';
+            text = provider + '/' + model + ' — ' + outcome + ' (' + (e.failureKind ?? 'error') + ')';
+            sub = '来源 ' + shortSource;
+          }
+        } else if (type === 'blocked') {
+          icon = '🚫'; cls = 'err';
+          const reason = e.reason ?? 'unknown';
+          text = '请求已拦截 — ' + reason;
+          if (source) sub = '来源 ' + shortSource;
+        } else if (type === 'manual_kill') {
+          icon = '💀'; cls = 'err';
+          text = '来源已永久封杀 — ' + shortSource;
+        } else if (type === 'run_status_change') {
+          icon = '⚠️'; cls = 'warn';
+          const tokens = e.cumulativeTokens ?? 0;
+          text = 'Token 警告 — 累计 ' + (tokens/1000).toFixed(0) + 'K tokens ($' + (tokens/1000*0.004).toFixed(2) + ')';
+          if (source) sub = '来源 ' + shortSource + (model ? ' | 模型 ' + model : '');
+        } else if (type === 'agent_end') {
+          icon = '🏁'; cls = 'dim';
+          text = '会话结束 — ' + (e.runId ?? '').slice(0, 8);
+        } else if (type === 'config_warning') {
+          icon = '⚙️'; cls = 'dim';
+          text = '配置警告 — ' + (e.reason ?? e.message ?? '');
+        } else if (type === 'emergency_stop') {
+          icon = '🛑'; cls = 'err';
+          text = '紧急停止已激活';
+        } else {
+          icon = '📋'; cls = 'dim';
+          text = type + (e.reason ? ' — ' + e.reason : '');
+        }
+
+        return '<div class="event-item">' +
+          '<span class="event-icon">' + icon + '</span>' +
+          '<div class="event-body">' +
+            '<div class="event-main ' + cls + '">' + escapeHtml(text) + '</div>' +
+            (sub ? '<div class="event-sub">' + escapeHtml(sub) + '</div>' : '') +
+          '</div>' +
+          '<span class="event-time">' + escapeHtml(timeStr) + '</span>' +
+          (source && (type === 'model_call_ended' || type === 'blocked')
+            ? '<button class="btn-kill" onclick="blockSource(\'' + escapeHtml(source) + '\')">Kill</button>'
+            : '') +
         '</div>';
       }).join('');
     }

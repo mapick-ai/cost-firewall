@@ -211,6 +211,12 @@ export class FirewallState {
     this.globalStats.emergencyStop = enabled;
   }
 
+  /** Record a blocked request and estimate saved cost */
+  recordBlock(): void {
+    this.globalStats.todayBlocked++;
+    this.globalStats.todaySavedEstimate += 0.015; // rough avg saved per block
+  }
+
   setMode(mode: "observe" | "protect"): void {
     this.globalStats.mode = mode;
   }
