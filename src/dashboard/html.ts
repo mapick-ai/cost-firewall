@@ -574,9 +574,9 @@ export function renderDashboardHtml(_stats: any): string {
       <div class="hero-label">已省费用</div>
     </div>
     <div class="hero-card" style="border-color:var(--destructive);background:rgba(239,68,68,0.03)">
-      <div class="hero-value" style="color:var(--destructive);cursor:pointer;font-size:32px;line-height:1" id="btn-stop" title="紧急停止">⏹</div>
-      <button class="btn btn-primary" id="btn-resume" style="display:none;margin-top:4px;font-size:12px;padding:4px 12px">▶ 恢复</button>
-      <div class="hero-label" style="color:var(--destructive)">阻断</div>
+      <button class="btn-emergency" id="btn-stop" title="紧急停止">⏹</button>
+      <button class="btn btn-primary" id="btn-resume" style="display:none;margin-top:8px;font-size:12px;padding:4px 12px">▶ 恢复</button>
+      <div class="hero-label" style="color:var(--destructive);margin-top:6px">阻断</div>
     </div>
   </div>
 
