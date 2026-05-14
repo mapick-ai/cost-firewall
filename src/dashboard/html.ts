@@ -585,7 +585,7 @@ export function renderDashboardHtml(_stats: any): string {
     </div>
     <div class="hero-card" style="border-color:var(--destructive);background:rgba(239,68,68,0.03)">
       <button class="btn-emergency" id="btn-stop" title="Emergency Stop">⏹</button>
-      <button class="btn btn-primary" id="btn-resume" style="display:none;margin-top:8px;font-size:12px;padding:4px 12px">▶ 恢复</button>
+      <button class="btn btn-primary" id="btn-resume" style="display:none;margin-top:8px;font-size:12px;padding:4px 12px">▶ Resume</button>
       <div class="hero-label" style="color:var(--destructive);margin-top:6px">STOP</div>
     </div>
   </div>

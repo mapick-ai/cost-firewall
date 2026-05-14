@@ -275,7 +275,7 @@ export async function getStatus(state: FirewallState, store?: EventStore): Promi
 
     // Aggregate cooling sources from events (source+reason of recent blocked events)
     const recentBlocks = agg.events
-      .filter((e: any) => e.type === "blocked")
+      .filter((e: any) => e.type === "blocked" && e.reason !== "manual_kill")
       .slice(-10);
     if (recentBlocks.length > 0 && coolingSources.length === 0) {
       coolingSources = recentBlocks.map((e: any) => ({
