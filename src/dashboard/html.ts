@@ -1,10 +1,10 @@
 export function renderDashboardHtml(_stats: any): string {
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapick Firewall</title>
+  <title>Mapick 防火墙</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -155,21 +155,33 @@ export function renderDashboardHtml(_stats: any): string {
     }
     .hero-stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      padding: 24px;
-      max-width: 800px;
-      margin: 0 auto 8px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 16px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
     }
     .hero-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 24px;
+      padding: 18px;
       text-align: center;
     }
     .hero-value {
-      font-size: 42px;
+      font-size: 38px;
       font-weight: 600;
       letter-spacing: -0.03em;
       line-height: 1.1;
@@ -178,9 +190,8 @@ export function renderDashboardHtml(_stats: any): string {
     .hero-label {
       font-size: 13px;
       color: var(--muted);
-      margin-top: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      margin-top: 6px;
+      letter-spacing: 0.02em;
     }
     @media (max-width: 600px) {
       .hero-stats { grid-template-columns: 1fr; padding: 16px; }
@@ -191,23 +202,35 @@ export function renderDashboardHtml(_stats: any): string {
     .main {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 16px 24px;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
     }
     
     /* Section */
     .section {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     .section-title {
       font-size: 13px;
       font-weight: 600;
       color: var(--muted);
       margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      text-transform: none;
+      letter-spacing: 0.01em;
     }
     
-    /* Rules Grid */
+    /* 规则 Grid */
     .rules-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -223,10 +246,16 @@ export function renderDashboardHtml(_stats: any): string {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
-      min-height: 120px;
+      min-height: 100px;
+    }
+    .rule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
     }
     .rule-header {
       display: flex;
@@ -305,7 +334,7 @@ export function renderDashboardHtml(_stats: any): string {
     .rule-footer {
       display: flex;
       justify-content: flex-end;
-      margin-top: 12px;
+      margin-top: 8px;
     }
     .btn-save {
       padding: 5px 12px;
@@ -322,10 +351,10 @@ export function renderDashboardHtml(_stats: any): string {
       color: var(--fg);
     }
     
-    /* Monitoring */
+    /* 监控 */
     .monitoring-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
     }
     @media (max-width: 1024px) {
@@ -341,13 +370,26 @@ export function renderDashboardHtml(_stats: any): string {
       overflow: hidden;
     }
     .monitor-header {
-      padding: 12px 16px;
+      padding: 8px 12px;
       font-size: 12px;
       font-weight: 600;
       color: var(--muted);
       border-bottom: 1px solid var(--border);
-      text-transform: uppercase;
       letter-spacing: 0.02em;
+    }
+    .monitor-body {
+      padding: 4px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .monitor-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 2px;
     }
     .monitor-body {
       padding: 6px;
@@ -385,14 +427,13 @@ export function renderDashboardHtml(_stats: any): string {
       padding: 2px 8px;
       border-radius: 4px;
       font-weight: 500;
-      text-transform: uppercase;
       letter-spacing: 0.02em;
     }
     .tag-success { background: rgba(22,163,74,0.1); color: var(--success); }
     .tag-warning { background: rgba(202,138,4,0.1); color: var(--warning); }
     .tag-destructive { background: rgba(220,38,38,0.1); color: var(--destructive); }
     .empty {
-      padding: 24px;
+      padding: 18px;
       text-align: center;
       color: var(--dim);
       font-size: 13px;
@@ -452,7 +493,7 @@ export function renderDashboardHtml(_stats: any): string {
       font-weight: 500;
     }
     
-    /* Events */
+    /* 事件 */
     .events-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -460,13 +501,13 @@ export function renderDashboardHtml(_stats: any): string {
       overflow: hidden;
     }
     .events-body {
-      max-height: 320px;
+      max-height: 280px;
       overflow-y: auto;
     }
     .event-item {
       display: flex;
-      gap: 12px;
-      padding: 8px 12px;
+      gap: 10px;
+      padding: 6px 10px;
       font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
       font-size: 12px;
       border-bottom: 1px solid var(--border);
@@ -503,50 +544,50 @@ export function renderDashboardHtml(_stats: any): string {
   <header class="header">
     <div class="header-title" style="display:flex;align-items:center;gap:6px">
       <span style="background:#eff6ff;color:#2563eb;font-weight:600;font-size:11px;padding:3px 10px;border-radius:10px;letter-spacing:0.3px">Mapick</span>
-      <span>Firewall</span>
+      <span>防火墙</span>
       <span id="firewall-ver" style="font-size:11px;color:var(--muted);margin-left:4px"></span>
     </div>
     <div class="header-right" style="display:flex;align-items:center;gap:12px">
       <div class="mode-toggle">
-        <button class="mode-btn active" id="mode-observe">Observe</button>
-        <button class="mode-btn" id="mode-protect">Protect</button>
+        <button class="mode-btn active" id="mode-observe">观察</button>
+        <button class="mode-btn" id="mode-protect">保护</button>
       </div>
     </div>
   </header>
   
   <div id="alert-unbind" style="display:none;background:#fef2f2;border:1px solid var(--destructive);border-radius:8px;padding:12px 18px;margin:12px auto;max-width:1200px">
-    <strong>⚠️ Unbind Alert</strong>: Emergency stop is active but new API requests detected. Run <code>openclaw gateway restart</code>.
+    <strong>⚠️ 未绑定警告</strong>：紧急停止已激活，但仍检测到新的 API 请求。请运行 <code>openclaw gateway restart</code>。
     <span id="alert-unbind-detail" style="display:block;margin-top:4px;font-size:12px;color:var(--muted)"></span>
   </div>
 
   <div class="hero-stats">
     <div class="hero-card">
       <div class="hero-value" id="hero-spent">$0</div>
-      <div class="hero-label">Today Spent</div>
+      <div class="hero-label">今日花费</div>
     </div>
     <div class="hero-card">
       <div class="hero-value" id="hero-blocked">0</div>
-      <div class="hero-label">Blocked</div>
+      <div class="hero-label">已拦截</div>
     </div>
     <div class="hero-card">
       <div class="hero-value" id="hero-saved">$0</div>
-      <div class="hero-label">Saved</div>
+      <div class="hero-label">已省费用</div>
     </div>
     <div class="hero-card" style="border-color:var(--destructive);background:rgba(239,68,68,0.03)">
-      <button class="btn-emergency" id="btn-stop" title="Emergency Stop" style="position:static;width:56px;height:56px;font-size:24px">⏹</button>
-      <button class="btn btn-primary" id="btn-resume" style="display:none;margin-top:6px;font-size:12px;padding:4px 12px">▶ Resume</button>
-      <div class="hero-label" style="color:var(--destructive)">STOP</div>
+      <div class="hero-value" style="color:var(--destructive);cursor:pointer;font-size:32px;line-height:1" id="btn-stop" title="紧急停止">⏹</div>
+      <button class="btn btn-primary" id="btn-resume" style="display:none;margin-top:4px;font-size:12px;padding:4px 12px">▶ 恢复</button>
+      <div class="hero-label" style="color:var(--destructive)">阻断</div>
     </div>
   </div>
 
   <main class="main">
     
     <div class="section">
-      <div class="section-title">Rules</div>
+      <div class="section-title">规则</div>
       <div class="rules-grid">
         <div class="rule-card">
           <div class="rule-header">
-            <span class="rule-title">Daily Token Limit</span>
+            <span class="rule-title">每日 Token 限额</span>
             <label class="switch">
               <input type="checkbox" id="switch-daily-limit">
               <span class="slider"></span>
@@ -557,16 +598,16 @@ export function renderDashboardHtml(_stats: any): string {
               <input type="number" class="field-input" id="input-daily-limit" placeholder="50000">
               <span class="field-unit">tokens</span>
             </div>
-            <div class="field-hint">Maximum tokens per day</div>
+            <div class="field-hint">每日最大 Token 数</div>
           </div>
           <div class="rule-footer">
-            <button class="btn-save" id="btn-save-daily-limit">Save</button>
+            <button class="btn-save" id="btn-save-daily-limit">保存</button>
           </div>
         </div>
-        
+
         <div class="rule-card">
           <div class="rule-header">
-            <span class="rule-title">Consecutive Failures</span>
+            <span class="rule-title">连续失败</span>
             <label class="switch">
               <input type="checkbox" id="switch-failures">
               <span class="slider"></span>
@@ -575,22 +616,22 @@ export function renderDashboardHtml(_stats: any): string {
           <div class="rule-content">
             <div class="field-row">
               <input type="number" class="field-input" id="input-failures" placeholder="3">
-              <span class="field-unit">failures</span>
+              <span class="field-unit">次</span>
             </div>
             <div class="field-row">
               <input type="number" class="field-input" id="input-cooldown" placeholder="30">
-              <span class="field-unit">sec</span>
+              <span class="field-unit">秒</span>
             </div>
-            <div class="field-hint">Cooldown after consecutive failures</div>
+            <div class="field-hint">连续失败后冷却时长</div>
           </div>
           <div class="rule-footer">
-            <button class="btn-save" id="btn-save-failures">Save</button>
+            <button class="btn-save" id="btn-save-failures">保存</button>
           </div>
         </div>
-        
+
         <div class="rule-card">
           <div class="rule-header">
-            <span class="rule-title">Token Velocity</span>
+            <span class="rule-title">Token 速率</span>
             <label class="switch">
               <input type="checkbox" id="switch-velocity">
               <span class="slider"></span>
@@ -603,18 +644,18 @@ export function renderDashboardHtml(_stats: any): string {
             </div>
             <div class="field-row">
               <input type="number" class="field-input" id="input-velocity-window" placeholder="60">
-              <span class="field-unit">sec</span>
+              <span class="field-unit">秒</span>
             </div>
-            <div class="field-hint">Max tokens within time window</div>
+            <div class="field-hint">时间窗口内最大 Token 数</div>
           </div>
           <div class="rule-footer">
-            <button class="btn-save" id="btn-save-velocity">Save</button>
+            <button class="btn-save" id="btn-save-velocity">保存</button>
           </div>
         </div>
-        
+
         <div class="rule-card">
           <div class="rule-header">
-            <span class="rule-title">Call Frequency</span>
+            <span class="rule-title">调用频率</span>
             <label class="switch">
               <input type="checkbox" id="switch-frequency">
               <span class="slider"></span>
@@ -623,75 +664,75 @@ export function renderDashboardHtml(_stats: any): string {
           <div class="rule-content">
             <div class="field-row">
               <input type="number" class="field-input" id="input-frequency" placeholder="100">
-              <span class="field-unit">calls</span>
+              <span class="field-unit">次</span>
             </div>
             <div class="field-row">
               <input type="number" class="field-input" id="input-frequency-window" placeholder="60">
-              <span class="field-unit">sec</span>
+              <span class="field-unit">秒</span>
             </div>
-            <div class="field-hint">Max calls within time window</div>
+            <div class="field-hint">时间窗口内最大调用次数</div>
           </div>
           <div class="rule-footer">
-            <button class="btn-save" id="btn-save-frequency">Save</button>
+            <button class="btn-save" id="btn-save-frequency">保存</button>
           </div>
         </div>
+        </div>
       </div>
-    </div>
     
     <div class="section">
-      <div class="section-title">Cost Trend</div>
+      <div class="section-title">费用趋势</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px">
         <canvas id="cost-chart" width="800" height="250" style="width:100%;max-height:250px"></canvas>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">Monitoring</div>
+      <div class="section-title">监控</div>
       <div class="status-grid">
         <div class="status-item">
-          <span class="status-item-label">Emergency Stop</span>
-          <span class="status-item-value" id="status-estop">Inactive</span>
+          <span class="status-item-label">紧急停止</span>
+          <span class="status-item-value" id="status-estop">未激活</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">Consecutive Failures</span>
+          <span class="status-item-label">连续失败</span>
           <span class="status-item-value" id="status-fail">3</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">Token Velocity</span>
+          <span class="status-item-label">Token 速率</span>
           <span class="status-item-value" id="status-velocity">100K / 60s</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">Call Frequency</span>
+          <span class="status-item-label">调用频率</span>
           <span class="status-item-value" id="status-frequency">30 / 60s</span>
         </div>
       </div>
       <div class="monitoring-grid">
         <div class="monitor-card">
-          <div class="monitor-header">Cooling Sources</div>
+          <div class="monitor-header">冷却来源</div>
           <div class="monitor-body" id="list-cooling">
-            <div class="empty">No cooling sources</div>
+            <div class="empty">无冷却来源</div>
           </div>
         </div>
         <div class="monitor-card">
-          <div class="monitor-header">Active Runs</div>
+          <div class="monitor-header">活跃会话</div>
           <div class="monitor-body" id="list-runs">
-            <div class="empty">No active runs</div>
+            <div class="empty">无活跃会话</div>
           </div>
         </div>
         <div class="monitor-card">
-          <div class="monitor-header">Blocked Sources</div>
+          <div class="monitor-header">永久封禁</div>
           <div class="monitor-body" id="list-blocked">
-            <div class="empty">No blocked sources</div>
+            <div class="empty">无封禁来源</div>
           </div>
         </div>
       </div>
     </div>
     
     <div class="section">
-      <div class="section-title">Events</div>
+      <div class="section-title">事件</div>
       <div class="events-card">
         <div class="events-body" id="events-log">
-          <div class="empty">No events</div>
+          <div class="empty">无事件</div>
         </div>
       </div>
     </div>
@@ -791,8 +832,9 @@ export function renderDashboardHtml(_stats: any): string {
         const res = await fetch('/mapick/api/events');
         const events = await res.json();
         renderEvents(events);
+        renderCostChart(events);
       } catch(e) {
-        renderEvents([
+        const mockEvents = [
           { type: 'emergency_stop', timestamp: Date.now() - 60000 },
           { type: 'run_status_change', runId: '8293f7a8', source: 'session:927dd50b', cumulativeTokens: 317253, status: 'danger', timestamp: Date.now() - 120000, model: 'gpt-5.5' },
           { type: 'blocked', source: 'session:abc12345', reason: 'consecutive_failures', timestamp: Date.now() - 180000 },
@@ -802,7 +844,9 @@ export function renderDashboardHtml(_stats: any): string {
           { type: 'agent_end', runId: '1234abcd', timestamp: Date.now() - 420000 },
           { type: 'model_call_ended', provider: 'anthropic', model: 'claude-sonnet-4-5', outcome: 'completed', estimatedCost: 42000, source: 'session:def45678', timestamp: Date.now() - 480000 },
           { type: 'blocked', source: 'session:927dd50b', reason: 'manual_kill', timestamp: Date.now() - 540000 }
-        ]);
+        ];
+        renderEvents(mockEvents);
+        renderCostChart(mockEvents);
       }
     }
 
@@ -857,26 +901,26 @@ export function renderDashboardHtml(_stats: any): string {
 
       const modeLabel = data.mode ?? 'observe';
       const estop = data.emergency_stop;
-      document.getElementById('status-estop').textContent = estop ? '⛔ Active' : 'Inactive';
+      document.getElementById('status-estop').textContent = estop ? '⛔ 已激活' : '未激活';
       document.getElementById('status-estop').style.color = estop ? 'var(--destructive)' : '';
-      document.getElementById('status-fail').textContent = (breaker.consecutive_failures ?? 3) + ' failures → ' + (breaker.cooldown_sec ?? 30) + 's';
+      document.getElementById('status-fail').textContent = (breaker.consecutive_failures ?? 3) + ' 次失败 → ' + (breaker.cooldown_sec ?? 30) + ' 秒';
       document.getElementById('status-velocity').textContent = (breaker.token_velocity_threshold ?? 0) > 0
-        ? (breaker.token_velocity_threshold ?? 0).toLocaleString() + ' / ' + (breaker.token_velocity_window_sec ?? 60) + 's'
-        : 'Off';
+        ? (breaker.token_velocity_threshold ?? 0).toLocaleString() + ' / ' + (breaker.token_velocity_window_sec ?? 60) + ' 秒'
+        : '关闭';
       document.getElementById('status-frequency').textContent = (breaker.call_frequency_threshold ?? 0) > 0
-        ? (breaker.call_frequency_threshold ?? 0) + ' / ' + (breaker.call_frequency_window_sec ?? 60) + 's'
-        : 'Off';
+        ? (breaker.call_frequency_threshold ?? 0) + ' / ' + (breaker.call_frequency_window_sec ?? 60) + ' 秒'
+        : '关闭';
 
       const coolingSources = data.cooling_sources ?? [];
       const coolingList = document.getElementById('list-cooling');
       if (coolingSources.length > 0) {
         coolingList.innerHTML = coolingSources.map(function(s) {
-          var resetBtn = '<button class="btn-sm" onclick="resetSource(' + String.fromCharCode(39) + escapeHtml(s.source ?? '') + String.fromCharCode(39) + ')">Reset</button>';
+          var resetBtn = '<button class="btn-sm" onclick="resetSource(' + String.fromCharCode(39) + escapeHtml(s.source ?? '') + String.fromCharCode(39) + ')">重置</button>';
           var remaining = (s.remainingSec > 0) ? '<span style="font-size:12px;color:var(--muted)">' + s.remainingSec + 's</span>' : '';
           return '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s.source ?? '') + '</div><div class="item-detail">' + escapeHtml(s.reason ?? '') + '</div></div><div class="item-meta">' + remaining + resetBtn + '</div></div>';
         }).join('');
       } else {
-        coolingList.innerHTML = '<div class="empty">No cooling sources</div>';
+        coolingList.innerHTML = '<div class="empty">无冷却来源</div>';
       }
 
       const activeRuns = data.active_runs ?? [];
@@ -886,28 +930,28 @@ export function renderDashboardHtml(_stats: any): string {
           <div class="monitor-item">
             <div>
               <div class="item-label">\${escapeHtml((r.runId ?? '').slice(0, 8))}</div>
-              <div class="item-detail">\${escapeHtml(r.source ?? '')} · \${r.calls ?? 0} calls · \${(r.tokens ?? 0).toLocaleString()} tokens</div>
+              <div class="item-detail">\${escapeHtml(r.source ?? '')} · \${r.calls ?? 0} 次调用 · \${(r.tokens ?? 0).toLocaleString()} tokens</div>
             </div>
-            <span class="tag \${r.status === 'danger' ? 'tag-destructive' : r.status === 'warning' ? 'tag-warning' : 'tag-success'}">\${escapeHtml(r.status ?? 'healthy')}</span>
+            <span class="tag \${r.status === '高风险' ? 'tag-destructive' : r.status === 'warning' ? 'tag-warning' : 'tag-success'}">\${escapeHtml(r.status ?? 'healthy')}</span>
           </div>
         \`).join('');
       } else {
-        runsList.innerHTML = '<div class="empty">No active runs</div>';
+        runsList.innerHTML = '<div class="empty">无活跃会话</div>';
       }
 
       const blocklist = data.blocklist ?? [];
       const blockedEl = document.getElementById('list-blocked');
       if (blocklist.length > 0) {
-        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s) + '</div><div class="item-detail" style="color:var(--destructive)">permanently blocked</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(' + String.fromCharCode(39) + escapeHtml(s) + String.fromCharCode(39) + ')">Unblock</button></div></div>').join('');
+        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s) + '</div><div class="item-detail" style="color:var(--destructive)">已永久封禁</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(' + String.fromCharCode(39) + escapeHtml(s) + String.fromCharCode(39) + ')">解封</button></div></div>').join('');
       } else {
-        blockedEl.innerHTML = '<div class="empty">No blocked sources</div>';
+        blockedEl.innerHTML = '<div class="empty">无封禁来源</div>';
       }
     }
 
     function renderEvents(events) {
       const log = document.getElementById('events-log');
       if (!events || events.length === 0) {
-        log.innerHTML = '<div class="empty">No events recorded yet</div>';
+        log.innerHTML = '<div class="empty">暂无事件记录</div>';
         return;
       }
       log.innerHTML = events.slice(0, 50).reverse().map(e => {
@@ -962,7 +1006,7 @@ export function renderDashboardHtml(_stats: any): string {
         }
 
         var killBtn = (source && (type === 'model_call_ended' || type === 'blocked'))
-          ? '<button class="btn-kill" onclick="blockSource(' + String.fromCharCode(39) + escapeHtml(source) + String.fromCharCode(39) + ')">Kill</button>'
+          ? '<button class="btn-kill" onclick="blockSource(' + String.fromCharCode(39) + escapeHtml(source) + String.fromCharCode(39) + ')">终止</button>'
           : '';
 
         return '<div class="event-item">' +
@@ -1045,15 +1089,29 @@ export function renderDashboardHtml(_stats: any): string {
       if (!canvas) return;
       var ctx = canvas.getContext('2d');
       var calls = events.filter(function(e) { return e.type === 'model_call_ended' && e.estimatedCost > 0; });
-      if (calls.length < 2) { if (costChart) { costChart.destroy(); costChart = null; } return; }
-      var points = [], cum = 0;
+      if (calls.length < 2) { if (costChart) { try { costChart.destroy(); } catch(e) {} costChart = null; } return; }
+      var labels = [], values = [], cum = 0;
       calls.sort(function(a,b) { return a.timestamp - b.timestamp; });
-      for (var i = 0; i < calls.length; i++) { cum += calls[i].estimatedCost; points.push({x:new Date(calls[i].timestamp),y:Math.round(cum/100)/10}); }
-      if (costChart) costChart.destroy();
+      for (var i = 0; i < calls.length; i++) {
+        cum += calls[i].estimatedCost;
+        labels.push(new Date(calls[i].timestamp).toTimeString().slice(0,5));
+        values.push(Math.round(cum / 100) / 10);
+      }
+      if (costChart) { try { costChart.destroy(); } catch(e) {} costChart = null; }
       costChart = new Chart(ctx, {
         type: 'line',
-        data: { datasets: [{ label: '累计 (K tokens)', data: points, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.05)', fill: true, tension: 0.3, pointRadius: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { type: 'time', time: { unit: 'minute', displayFormats: { minute: 'HH:mm' } }, grid: { display: false } }, y: { grid: { color: '#e5e5e7' }, beginAtZero: true } } }
+        data: { labels: labels, datasets: [{ label: 'K tokens', data: values, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)', fill: true, tension: 0.3, pointRadius: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e7eb' }, beginAtZero: true } } }
+      });
+    }
+      if (costChart) {
+        try { costChart.destroy(); } catch (e) {}
+        costChart = null;
+      }
+      costChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: labels, datasets: [{ label: '累计 (K tokens)', data: values, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)', fill: true, tension: 0.3, pointRadius: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e5e7' }, beginAtZero: true } } }
       });
     }
 
@@ -1069,16 +1127,6 @@ export function renderDashboardHtml(_stats: any): string {
         unbindAlertShown = false;
       }
     }
-
-    var _origFetchEvents = fetchEvents;
-    fetchEvents = async function() {
-      await _origFetchEvents();
-      try {
-        var res = await fetch('/mapick/api/events');
-        var events = await res.json();
-        renderCostChart(events);
-      } catch(e) {}
-    };
 
     fetchStats();
     fetchEvents();
