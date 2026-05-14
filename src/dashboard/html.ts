@@ -4,22 +4,25 @@ export function renderDashboardHtml(_stats: any): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firewall</title>
+  <title>Mapick Firewall</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #fafafa;
-      --fg: #111;
-      --muted: #525252;
-      --dim: #a1a1a1;
-      --border: #e5e5e7;
-      --card: #fff;
+      --bg: #f8f9fa;
+      --fg: #1a1a2e;
+      --muted: #6b7280;
+      --dim: #9ca3af;
+      --border: #e5e7eb;
+      --card: #ffffff;
       --accent: #2563eb;
       --accent-hover: #1d4ed8;
       --destructive: #dc2626;
       --destructive-hover: #b91c1c;
+      --destructive-glow: rgba(220,38,38,0.3);
       --success: #16a34a;
       --warning: #ca8a04;
+      --mono: 'JetBrains Mono', monospace;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
@@ -46,14 +49,6 @@ export function renderDashboardHtml(_stats: any): string {
       font-weight: 600;
       letter-spacing: -0.01em;
     }
-    .header-center {
-      display: flex;
-      gap: 0;
-      background: var(--bg);
-      border-radius: 6px;
-      padding: 2px;
-      border: 1px solid var(--border);
-    }
     .mode-toggle {
       display: inline-flex;
       background: #f1f5f9;
@@ -71,15 +66,12 @@ export function renderDashboardHtml(_stats: any): string {
       cursor: pointer;
       border-radius: 6px;
       transition: all 0.2s ease;
-      position: relative;
     }
-    .mode-btn:hover {
-      color: #334155;
-    }
+    .mode-btn:hover { color: #334155; }
     .mode-btn.active {
       background: #fff;
       color: #1e293b;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       font-weight: 600;
     }
     .mode-btn.protect-mode.active {
@@ -130,29 +122,36 @@ export function renderDashboardHtml(_stats: any): string {
       border-color: var(--accent-hover);
     }
     .btn-emergency {
-      padding: 12px 28px;
+      width: 64px;
+      height: 64px;
       border: none;
-      border-radius: 8px;
-      font-size: 15px;
+      border-radius: 50%;
+      font-size: 28px;
       font-weight: 700;
       cursor: pointer;
       background: var(--destructive);
       color: #fff;
-      letter-spacing: 0.02em;
-      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
       animation: pulse-stop 2s infinite;
+      box-shadow: 0 4px 24px var(--destructive-glow);
     }
     .btn-emergency:hover {
-      background: #991b1b;
-      transform: scale(1.05);
-    }
-    @keyframes pulse-stop {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
-      50% { box-shadow: 0 0 0 12px rgba(220,38,38,0); }
+      background: var(--destructive-hover);
+      transform: scale(1.08);
+      box-shadow: 0 0 48px rgba(220,38,38,0.5), 0 4px 20px rgba(220,38,38,0.4);
     }
     .btn-emergency.stopped {
-      background: #525252;
+      background: #52525b;
       animation: none;
+      color: #a1a1aa;
+      box-shadow: none;
+    }
+    @keyframes pulse-stop {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.35), 0 0 32px rgba(220,38,38,0.25); }
+      50% { box-shadow: 0 0 0 18px rgba(220,38,38,0), 0 0 48px rgba(220,38,38,0.4); }
     }
     .hero-stats {
       display: grid;
@@ -170,10 +169,11 @@ export function renderDashboardHtml(_stats: any): string {
       text-align: center;
     }
     .hero-value {
-      font-size: 40px;
-      font-weight: 700;
+      font-size: 42px;
+      font-weight: 600;
       letter-spacing: -0.03em;
       line-height: 1.1;
+      font-family: var(--mono);
     }
     .hero-label {
       font-size: 13px;
@@ -194,38 +194,9 @@ export function renderDashboardHtml(_stats: any): string {
       padding: 24px;
     }
     
-    /* Stats Row */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    @media (max-width: 768px) {
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-    }
-    .stat-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px 20px;
-    }
-    .stat-label {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }
-    .stat-value {
-      font-size: 28px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-    
     /* Section */
     .section {
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
     .section-title {
       font-size: 13px;
@@ -252,10 +223,10 @@ export function renderDashboardHtml(_stats: any): string {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 16px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      min-height: 140px;
+      min-height: 120px;
     }
     .rule-header {
       display: flex;
@@ -379,8 +350,8 @@ export function renderDashboardHtml(_stats: any): string {
       letter-spacing: 0.02em;
     }
     .monitor-body {
-      padding: 8px;
-      max-height: 240px;
+      padding: 6px;
+      max-height: 200px;
       overflow-y: auto;
     }
     .monitor-item {
@@ -472,7 +443,6 @@ export function renderDashboardHtml(_stats: any): string {
     @media (max-width: 500px) {
       .status-item { border-right: none; }
     }
-    }
     .status-item-label {
       font-size: 13px;
       color: var(--muted);
@@ -490,13 +460,13 @@ export function renderDashboardHtml(_stats: any): string {
       overflow: hidden;
     }
     .events-body {
-      max-height: 400px;
+      max-height: 320px;
       overflow-y: auto;
     }
     .event-item {
       display: flex;
-      gap: 16px;
-      padding: 10px 16px;
+      gap: 12px;
+      padding: 8px 12px;
       font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
       font-size: 12px;
       border-bottom: 1px solid var(--border);
@@ -534,23 +504,18 @@ export function renderDashboardHtml(_stats: any): string {
     <div class="header-title" style="display:flex;align-items:center;gap:6px">
       <span style="background:#eff6ff;color:#2563eb;font-weight:600;font-size:11px;padding:3px 10px;border-radius:10px;letter-spacing:0.3px">Mapick</span>
       <span>Firewall</span>
-      <span id="firewall-ver" style="font-size:10px;color:#94a3b8;margin-left:2px"></span>
+      <span id="firewall-ver" style="font-size:11px;color:var(--muted);margin-left:4px"></span>
     </div>
-    <div class="header-right" style="font-size:10px;color:#94a3b8" id="openclaw-ver"></div>
-    <div class="header-center">
+    <div class="header-right" style="display:flex;align-items:center;gap:12px">
       <div class="mode-toggle">
         <button class="mode-btn active" id="mode-observe">Observe</button>
         <button class="mode-btn" id="mode-protect">Protect</button>
       </div>
     </div>
-    <div class="header-actions">
-      <button class="btn-emergency" id="btn-stop">⏹ STOP</button>
-      <button class="btn btn-primary" id="btn-resume" style="display:none">▶ Resume</button>
-    </div>
   </header>
   
-  <div id="alert-unbind" style="display:none;background:#fef2f2;border:2px solid var(--destructive);border-radius:8px;padding:12px 18px;margin:12px 24px;max-width:1200px;margin-left:auto;margin-right:auto">
-    <strong>⚠️ 异常告警</strong>：紧急停止已激活，但仍检测到新的 API 请求。建议执行 <code>openclaw gateway restart</code> 彻底清除缓存。
+  <div id="alert-unbind" style="display:none;background:#fef2f2;border:1px solid var(--destructive);border-radius:8px;padding:12px 18px;margin:12px auto;max-width:1200px">
+    <strong>⚠️ Unbind Alert</strong>: Emergency stop is active but new API requests detected. Run <code>openclaw gateway restart</code>.
     <span id="alert-unbind-detail" style="display:block;margin-top:4px;font-size:12px;color:var(--muted)"></span>
   </div>
 
@@ -567,27 +532,14 @@ export function renderDashboardHtml(_stats: any): string {
       <div class="hero-value" id="hero-saved">$0</div>
       <div class="hero-label">Saved</div>
     </div>
+    <div class="hero-card" style="border-color:var(--destructive);background:rgba(239,68,68,0.03)">
+      <button class="btn-emergency" id="btn-stop" title="Emergency Stop" style="position:static;width:56px;height:56px;font-size:24px">⏹</button>
+      <button class="btn btn-primary" id="btn-resume" style="display:none;margin-top:6px;font-size:12px;padding:4px 12px">▶ Resume</button>
+      <div class="hero-label" style="color:var(--destructive)">STOP</div>
+    </div>
   </div>
 
   <main class="main">
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Today Tokens</div>
-        <div class="stat-value" id="stat-tokens">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Blocked</div>
-        <div class="stat-value" id="stat-blocked">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Limit</div>
-        <div class="stat-value" id="stat-limit">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Calls</div>
-        <div class="stat-value" id="stat-calls">-</div>
-      </div>
-    </div>
     
     <div class="section">
       <div class="section-title">Rules</div>
@@ -770,14 +722,30 @@ export function renderDashboardHtml(_stats: any): string {
         .replace(/\'/g, '&#039;');
     }
 
+    var _useMock = location.search.includes('mock');
+
     async function fetchStats() {
       if (_saving) return;
       try {
+        if (_useMock) throw new Error('mock');
         const res = await fetch('/mapick/api/stats');
         const data = await res.json();
         updateUI(data);
       } catch (e) {
-        console.error('Failed to fetch stats:', e);
+        updateUI({
+          mode: 'protect',
+          emergency_stop: false,
+          today_tokens: 385000,
+          today_blocked: 12,
+          today_spent_usd: 15.4,
+          today_saved_estimate: 4.85,
+          daily_token_limit: 500000,
+          breaker: { consecutive_failures: 3, cooldown_sec: 30, token_velocity_threshold: 100000, token_velocity_window_sec: 60, call_frequency_threshold: 30, call_frequency_window_sec: 60 },
+          cooling_sources: [{ source: 'session:abc12345', reason: 'consecutive_failures', remainingSec: 22 }],
+          active_runs: [{ runId: '8293f7a8-c8a2-42d5-9095-cd5af1055bc5', source: 'session:927dd50b', calls: 8, tokens: 272000, status: 'danger' }],
+          blocklist: ['session:927dd50b-33a1-48c2-a303-5fa72ec946b5'],
+          version: '0.2.25'
+        });
       }
     }
 
@@ -819,26 +787,33 @@ export function renderDashboardHtml(_stats: any): string {
 
     async function fetchEvents() {
       try {
+        if (_useMock) throw new Error('mock');
         const res = await fetch('/mapick/api/events');
         const events = await res.json();
         renderEvents(events);
-      } catch (e) {
-        console.error('Failed to fetch events:', e);
+      } catch(e) {
+        renderEvents([
+          { type: 'emergency_stop', timestamp: Date.now() - 60000 },
+          { type: 'run_status_change', runId: '8293f7a8', source: 'session:927dd50b', cumulativeTokens: 317253, status: 'danger', timestamp: Date.now() - 120000, model: 'gpt-5.5' },
+          { type: 'blocked', source: 'session:abc12345', reason: 'consecutive_failures', timestamp: Date.now() - 180000 },
+          { type: 'model_call_ended', provider: 'openai', model: 'gpt-5.5', outcome: 'completed', estimatedCost: 63500, source: 'session:927dd50b', timestamp: Date.now() - 240000 },
+          { type: 'model_call_ended', provider: 'deepseek', model: 'deepseek-chat', outcome: 'completed', estimatedCost: 2100, source: 'session:xyz', timestamp: Date.now() - 300000 },
+          { type: 'model_call_ended', provider: 'openai', model: 'gpt-4o', outcome: 'error', failureKind: 'timeout', estimatedCost: 0, source: 'session:abc12345', timestamp: Date.now() - 360000 },
+          { type: 'agent_end', runId: '1234abcd', timestamp: Date.now() - 420000 },
+          { type: 'model_call_ended', provider: 'anthropic', model: 'claude-sonnet-4-5', outcome: 'completed', estimatedCost: 42000, source: 'session:def45678', timestamp: Date.now() - 480000 },
+          { type: 'blocked', source: 'session:927dd50b', reason: 'manual_kill', timestamp: Date.now() - 540000 }
+        ]);
       }
     }
 
     function updateUI(data) {
-      document.getElementById('stat-tokens').textContent = (data.today_tokens ?? 0).toLocaleString();
-      const spentUsd = (data.today_tokens ?? 0) / 1000 * 0.004;
+      const spentUsd = data.today_spent_usd ?? ((data.today_tokens ?? 0) / 1000 * 0.004);
       document.getElementById('hero-spent').textContent = '$' + spentUsd.toFixed(2);
       document.getElementById('hero-blocked').textContent = data.today_blocked ?? 0;
       document.getElementById('hero-saved').textContent = '$' + (data.today_saved_estimate ?? 0).toFixed(2);
       checkUnbindAlert(data);
       const verEl = document.getElementById('firewall-ver');
       if (verEl && data.version) verEl.textContent = 'v' + data.version;
-      document.getElementById('stat-blocked').textContent = data.today_blocked ?? 0;
-      document.getElementById('stat-limit').textContent = data.daily_token_limit ? data.daily_token_limit.toLocaleString() : '∞';
-      document.getElementById('stat-calls').textContent = (data.active_runs ?? []).length;
 
       const modeObserve = document.getElementById('mode-observe');
       const modeProtect = document.getElementById('mode-protect');
@@ -895,18 +870,11 @@ export function renderDashboardHtml(_stats: any): string {
       const coolingSources = data.cooling_sources ?? [];
       const coolingList = document.getElementById('list-cooling');
       if (coolingSources.length > 0) {
-        coolingList.innerHTML = coolingSources.map(s => \`
-          <div class="monitor-item">
-            <div>
-              <div class="item-label">\${escapeHtml(s.source ?? '')}</div>
-              <div class="item-detail">\${escapeHtml(s.reason ?? '')}</div>
-            </div>
-            <div class="item-meta">
-              \${s.remainingSec > 0 ? '<span style="font-size:12px;color:var(--muted)">\${s.remainingSec}s</span>' : ''}
-              <button class="btn-sm" onclick="resetSource('\${escapeHtml(s.source ?? '')}')">Reset</button>
-            </div>
-          </div>
-        \`).join('');
+        coolingList.innerHTML = coolingSources.map(function(s) {
+          var resetBtn = '<button class="btn-sm" onclick="resetSource(' + String.fromCharCode(39) + escapeHtml(s.source ?? '') + String.fromCharCode(39) + ')">Reset</button>';
+          var remaining = (s.remainingSec > 0) ? '<span style="font-size:12px;color:var(--muted)">' + s.remainingSec + 's</span>' : '';
+          return '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s.source ?? '') + '</div><div class="item-detail">' + escapeHtml(s.reason ?? '') + '</div></div><div class="item-meta">' + remaining + resetBtn + '</div></div>';
+        }).join('');
       } else {
         coolingList.innerHTML = '<div class="empty">No cooling sources</div>';
       }
@@ -930,7 +898,7 @@ export function renderDashboardHtml(_stats: any): string {
       const blocklist = data.blocklist ?? [];
       const blockedEl = document.getElementById('list-blocked');
       if (blocklist.length > 0) {
-        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s) + '</div><div class="item-detail" style="color:var(--destructive)">permanently blocked</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(\'' + escapeHtml(s) + '\')">Unblock</button></div></div>').join('');
+        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s) + '</div><div class="item-detail" style="color:var(--destructive)">permanently blocked</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(' + String.fromCharCode(39) + escapeHtml(s) + String.fromCharCode(39) + ')">Unblock</button></div></div>').join('');
       } else {
         blockedEl.innerHTML = '<div class="empty">No blocked sources</div>';
       }
@@ -994,7 +962,7 @@ export function renderDashboardHtml(_stats: any): string {
         }
 
         var killBtn = (source && (type === 'model_call_ended' || type === 'blocked'))
-          ? '<button class="btn-kill" onclick="blockSource(\'' + escapeHtml(source) + '\')">Kill</button>'
+          ? '<button class="btn-kill" onclick="blockSource(' + String.fromCharCode(39) + escapeHtml(source) + String.fromCharCode(39) + ')">Kill</button>'
           : '';
 
         return '<div class="event-item">' +
@@ -1005,71 +973,6 @@ export function renderDashboardHtml(_stats: any): string {
           '</div>' +
           '<span class="event-time">' + escapeHtml(timeStr) + '</span>' +
           killBtn +
-        '</div>';
-      }).join('');
-    }
-      log.innerHTML = events.slice(0, 50).reverse().map(e => {
-        const ts = e.timestamp ?? e.time;
-        const date = ts ? new Date(ts) : null;
-        const timeStr = date ? date.toTimeString().slice(0, 8) : '--:--:--';
-        const type = e.type ?? 'unknown';
-        const source = e.source ?? '';
-        const shortSource = source.length > 30 ? source.slice(0, 27) + '...' : source;
-        const model = e.model ?? '';
-        const provider = e.provider ?? '';
-        const cost = e.estimatedCost ?? 0;
-        const costK = Math.round(cost / 100) / 10;
-        const costUsd = (cost / 1000 * 0.004).toFixed(2);
-        let icon = '', text = '', sub = '', cls = '';
-
-        if (type === 'model_call_ended') {
-          const outcome = e.outcome ?? 'completed';
-          if (outcome === 'completed') {
-            icon = '✅'; cls = 'ok';
-            text = provider + '/' + model + ' — ' + costK + 'K tokens ($' + costUsd + ')';
-            sub = '来源 ' + shortSource;
-          } else {
-            icon = '❌'; cls = 'err';
-            text = provider + '/' + model + ' — ' + outcome + ' (' + (e.failureKind ?? 'error') + ')';
-            sub = '来源 ' + shortSource;
-          }
-        } else if (type === 'blocked') {
-          icon = '🚫'; cls = 'err';
-          const reason = e.reason ?? 'unknown';
-          text = '请求已拦截 — ' + reason;
-          if (source) sub = '来源 ' + shortSource;
-        } else if (type === 'manual_kill') {
-          icon = '💀'; cls = 'err';
-          text = '来源已永久封杀 — ' + shortSource;
-        } else if (type === 'run_status_change') {
-          icon = '⚠️'; cls = 'warn';
-          const tokens = e.cumulativeTokens ?? 0;
-          text = 'Token 警告 — 累计 ' + (tokens/1000).toFixed(0) + 'K tokens ($' + (tokens/1000*0.004).toFixed(2) + ')';
-          if (source) sub = '来源 ' + shortSource + (model ? ' | 模型 ' + model : '');
-        } else if (type === 'agent_end') {
-          icon = '🏁'; cls = 'dim';
-          text = '会话结束 — ' + (e.runId ?? '').slice(0, 8);
-        } else if (type === 'config_warning') {
-          icon = '⚙️'; cls = 'dim';
-          text = '配置警告 — ' + (e.reason ?? e.message ?? '');
-        } else if (type === 'emergency_stop') {
-          icon = '🛑'; cls = 'err';
-          text = '紧急停止已激活';
-        } else {
-          icon = '📋'; cls = 'dim';
-          text = type + (e.reason ? ' — ' + e.reason : '');
-        }
-
-        return '<div class="event-item">' +
-          '<span class="event-icon">' + icon + '</span>' +
-          '<div class="event-body">' +
-            '<div class="event-main ' + cls + '">' + escapeHtml(text) + '</div>' +
-            (sub ? '<div class="event-sub">' + escapeHtml(sub) + '</div>' : '') +
-          '</div>' +
-          '<span class="event-time">' + escapeHtml(timeStr) + '</span>' +
-          (source && (type === 'model_call_ended' || type === 'blocked')
-            ? '<button class="btn-kill" onclick="blockSource(\'' + escapeHtml(source) + '\')">Kill</button>'
-            : '') +
         '</div>';
       }).join('');
     }
