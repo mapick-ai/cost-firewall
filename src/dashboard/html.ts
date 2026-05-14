@@ -1136,16 +1136,6 @@ export function renderDashboardHtml(_stats: any): string {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e7eb' }, beginAtZero: true } } }
       });
     }
-      if (costChart) {
-        try { costChart.destroy(); } catch (e) {}
-        costChart = null;
-      }
-      costChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: labels, datasets: [{ label: '累计 (K tokens)', data: values, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)', fill: true, tension: 0.3, pointRadius: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e5e7' }, beginAtZero: true } } }
-      });
-    }
 
     function checkUnbindAlert(data) {
       if (data.emergency_stop && data.today_tokens > 0) {
