@@ -909,11 +909,17 @@ export function renderDashboardHtml(_stats: any): string {
 
       var gwVer = data.openclaw_version || '';
       if (!gwVer && data.version && data.version.startsWith('0.')) {
-        document.getElementById('alert-upgrade').style.display = 'block';
-        document.getElementById('alert-upgrade-ver').textContent = 'v2026.4.x';
+        if ((data.today_tokens || 0) > 0) {
+          document.getElementById('alert-upgrade').style.display = 'none';
+        } else {
+          document.getElementById('alert-upgrade').style.display = 'block';
+          document.getElementById('alert-upgrade-ver').textContent = 'v2026.4.x';
+        }
       } else if (gwVer && gwVer.startsWith('2026.4')) {
         document.getElementById('alert-upgrade').style.display = 'block';
         document.getElementById('alert-upgrade-ver').textContent = gwVer;
+      } else if (!gwVer) {
+        document.getElementById('alert-upgrade').style.display = 'none';
       }
 
       const modeObserve = document.getElementById('mode-observe');
