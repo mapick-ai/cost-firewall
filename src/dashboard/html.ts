@@ -527,6 +527,7 @@ export function renderDashboardHtml(_stats: any): string {
     .btn-kill { padding: 2px 8px; font-size: 10px; border: 1px solid var(--destructive); border-radius: 3px; color: var(--destructive); background: transparent; cursor: pointer; flex-shrink: 0; margin-left: 8px; }
     .btn-kill:hover { background: var(--destructive); color: #fff; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <header class="header">
@@ -547,6 +548,11 @@ export function renderDashboardHtml(_stats: any): string {
       <button class="btn btn-primary" id="btn-resume" style="display:none">▶ Resume</button>
     </div>
   </header>
+  
+  <div id="alert-unbind" style="display:none;background:#fef2f2;border:2px solid var(--destructive);border-radius:8px;padding:12px 18px;margin:12px 24px;max-width:1200px;margin-left:auto;margin-right:auto">
+    <strong>⚠️ 异常告警</strong>：紧急停止已激活，但仍检测到新的 API 请求。建议执行 <code>openclaw gateway restart</code> 彻底清除缓存。
+    <span id="alert-unbind-detail" style="display:block;margin-top:4px;font-size:12px;color:var(--muted)"></span>
+  </div>
 
   <div class="hero-stats">
     <div class="hero-card">
@@ -680,6 +686,13 @@ export function renderDashboardHtml(_stats: any): string {
       </div>
     </div>
     
+    <div class="section">
+      <div class="section-title">Cost Trend</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <canvas id="cost-chart" width="800" height="250" style="width:100%;max-height:250px"></canvas>
+      </div>
+    </div>
+
     <div class="section">
       <div class="section-title">Monitoring</div>
       <div class="status-grid">
@@ -820,6 +833,7 @@ export function renderDashboardHtml(_stats: any): string {
       document.getElementById('hero-spent').textContent = '$' + spentUsd.toFixed(2);
       document.getElementById('hero-blocked').textContent = data.today_blocked ?? 0;
       document.getElementById('hero-saved').textContent = '$' + (data.today_saved_estimate ?? 0).toFixed(2);
+      checkUnbindAlert(data);
       const verEl = document.getElementById('firewall-ver');
       if (verEl && data.version) verEl.textContent = 'v' + data.version;
       document.getElementById('stat-blocked').textContent = data.today_blocked ?? 0;
@@ -1119,6 +1133,49 @@ export function renderDashboardHtml(_stats: any): string {
       await fetch('/mapick/api/unblock-source', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({source:src}) });
       fetchStats(); fetchEvents();
     }
+
+    var costChart = null;
+    var unbindAlertShown = false;
+
+    function renderCostChart(events) {
+      var canvas = document.getElementById('cost-chart');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var calls = events.filter(function(e) { return e.type === 'model_call_ended' && e.estimatedCost > 0; });
+      if (calls.length < 2) { if (costChart) { costChart.destroy(); costChart = null; } return; }
+      var points = [], cum = 0;
+      calls.sort(function(a,b) { return a.timestamp - b.timestamp; });
+      for (var i = 0; i < calls.length; i++) { cum += calls[i].estimatedCost; points.push({x:new Date(calls[i].timestamp),y:Math.round(cum/100)/10}); }
+      if (costChart) costChart.destroy();
+      costChart = new Chart(ctx, {
+        type: 'line',
+        data: { datasets: [{ label: '累计 (K tokens)', data: points, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.05)', fill: true, tension: 0.3, pointRadius: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { type: 'time', time: { unit: 'minute', displayFormats: { minute: 'HH:mm' } }, grid: { display: false } }, y: { grid: { color: '#e5e5e7' }, beginAtZero: true } } }
+      });
+    }
+
+    function checkUnbindAlert(data) {
+      if (data.emergency_stop && data.today_tokens > 0) {
+        if (!unbindAlertShown) {
+          document.getElementById('alert-unbind').style.display = 'block';
+          document.getElementById('alert-unbind-detail').textContent = '已停止但今日仍有 ' + (data.today_tokens ?? 0).toLocaleString() + ' tokens 消耗';
+          unbindAlertShown = true;
+        }
+      } else if (!data.emergency_stop) {
+        document.getElementById('alert-unbind').style.display = 'none';
+        unbindAlertShown = false;
+      }
+    }
+
+    var _origFetchEvents = fetchEvents;
+    fetchEvents = async function() {
+      await _origFetchEvents();
+      try {
+        var res = await fetch('/mapick/api/events');
+        var events = await res.json();
+        renderCostChart(events);
+      } catch(e) {}
+    };
 
     fetchStats();
     fetchEvents();
