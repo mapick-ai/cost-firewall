@@ -219,6 +219,40 @@ export function registerCli(api: any, state: FirewallState, store: EventStore): 
             console.log("No events recorded yet.");
           }
         });
+
+      firewall.command("block")
+        .description("Permanently block a source")
+        .argument("<source>", "Source key to block")
+        .action(async (source: string) => {
+          const r = await apiPostJson("/mapick/api/block-source", { source });
+          if (!r.ok) { failCli(`Failed: ${r.error}`); return; }
+          state.kill(source);
+          store.append({ type: "blocked", source, reason: "manual_kill", layer: "hook" });
+          console.log(`Source "${source}" permanently blocked.`);
+          console.log(`Unblock: openclaw firewall unblock "${source}"`);
+        });
+
+      firewall.command("unblock")
+        .description("Remove a source from blocklist")
+        .argument("<source>", "Source key to unblock")
+        .action(async (source: string) => {
+          const r = await apiPostJson("/mapick/api/unblock-source", { source });
+          if (!r.ok) { failCli(`Failed: ${r.error}`); return; }
+          state.unkill(source);
+          console.log(`Source "${source}" unblocked.`);
+        });
+
+      firewall.command("blocked")
+        .description("List permanently blocked sources")
+        .action(() => {
+          const list = state.getBlocklist();
+          if (list.length === 0) {
+            console.log("No permanently blocked sources.");
+            return;
+          }
+          console.log(`Permanently blocked sources (${list.length}):`);
+          for (const s of list) console.log(`  ${s}`);
+        });
     },
     {
       descriptors: [
@@ -272,6 +306,7 @@ export async function getStatus(state: FirewallState, store?: EventStore): Promi
     emergency_stop: state.globalStats.emergencyStop,
     today_tokens: spent,
     today_blocked: blocked,
+    today_spent_usd: Math.round(spent / 1000 * 0.004 * 100) / 100,
     today_saved_estimate: state.globalStats.todaySavedEstimate,
     daily_token_limit: state.config.dailyTokenLimit,
     breaker: {
@@ -284,6 +319,7 @@ export async function getStatus(state: FirewallState, store?: EventStore): Promi
     },
     cooling_sources: coolingSources,
     active_runs: activeRuns,
+    blocklist: state.getBlocklist(),
     version: PLUGIN_VERSION,
   };
 }

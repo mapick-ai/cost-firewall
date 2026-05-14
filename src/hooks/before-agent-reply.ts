@@ -68,6 +68,7 @@ export function createBeforeAgentReplyHandler(
         consecutive_failures: `⚠️ Source "${source}" blocked: ${state.config.breaker?.consecutiveFailures ?? 3} consecutive failures triggered breaker. Use \`openclaw firewall reset "${source}"\` to clear.`,
         token_velocity: `⚡ Source "${source}" blocked: token rate exceeded ${state.config.breaker?.tokenVelocityThreshold?.toLocaleString() ?? "limit"} tokens/${state.config.breaker?.tokenVelocityWindowSec ?? 60}s. Use \`openclaw firewall reset "${source}"\` to clear.`,
         call_frequency: `📞 Source "${source}" blocked: call frequency exceeded ${state.config.breaker?.callFrequencyThreshold ?? 30} calls/${state.config.breaker?.callFrequencyWindowSec ?? 60}s. Use \`openclaw firewall reset "${source}"\` to clear.`,
+        manual_kill: `🚫 Source "${source}" has been permanently blocked. All requests from this source are rejected. Use \`openclaw firewall unblock "${source}"\` to restore.`,
       };
 
       return {

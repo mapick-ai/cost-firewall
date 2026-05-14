@@ -26,7 +26,7 @@ export function registerTools(api: any, state: FirewallState, store: EventStore)
         properties: {
           action: {
             type: "string",
-            enum: ["status", "stop", "resume", "mode", "log", "budget"],
+            enum: ["status", "stop", "resume", "mode", "log", "budget", "block", "unblock", "blocked"],
             description: "Action to perform"
           }
         },
@@ -40,6 +40,17 @@ export function registerTools(api: any, state: FirewallState, store: EventStore)
           case "resume": state.setEmergencyStop(false); return { content: [{ type: "text", text: "Resumed." }] };
           case "log": return { content: [{ type: "text", text: JSON.stringify(await getLog(store, 10), null, 2) }] };
           case "budget": return { content: [{ type: "text", text: `Daily token limit: ${(state.config as any).dailyTokenLimit?.toLocaleString() ?? "unlimited"} tokens` }] };
+          case "block":
+            state.kill(params.source);
+            store.append({ type: "blocked", source: params.source, reason: "manual_kill", layer: "hook" });
+            return { content: [{ type: "text", text: `Source "${params.source}" permanently blocked.` }] };
+          case "unblock":
+            state.unkill(params.source);
+            return { content: [{ type: "text", text: `Source "${params.source}" unblocked.` }] };
+          case "blocked": {
+            const list = state.getBlocklist();
+            return { content: [{ type: "text", text: list.length ? list.join("\n") : "No blocked sources." }] };
+          }
           case "mode": return params.sub === "observe" || params.sub === "protect"
             ? (state.setMode(params.sub), { content: [{ type: "text", text: `Mode set to ${params.sub}.` }] })
             : { content: [{ type: "text", text: `Mode: ${state.globalStats.mode}. Use "mode observe" or "mode protect" to change.` }] };

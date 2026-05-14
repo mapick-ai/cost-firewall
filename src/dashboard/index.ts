@@ -31,6 +31,17 @@ export function registerDashboard(
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
 
+  async function saveConfigKey(key: string, value: any): Promise<void> {
+    const configPath = getOpenClawConfigPath();
+    const raw = await readFile(configPath, "utf-8");
+    const cfg = JSON.parse(raw);
+    const entry = cfg?.plugins?.entries?.["mapick-firewall"];
+    if (!entry) return;
+    entry.config = entry.config || {};
+    entry.config[key] = value;
+    await writeFile(configPath, JSON.stringify(cfg, null, 2));
+  }
+
   // Dashboard HTML
   api.registerHttpRoute({
     path: "/mapick/dashboard",
@@ -106,6 +117,58 @@ export function registerDashboard(
       } else {
         res.writeHead(400, { ...corsHeaders, "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "missing source param" }));
+      }
+    },
+  });
+
+  // Block source (permanent kill)
+  api.registerHttpRoute({
+    path: "/mapick/api/block-source",
+    auth: "plugin",
+    handler: async (req: any, res: any) => {
+      try {
+        const body = await readBody(req);
+        const { source } = JSON.parse(body);
+        if (!source) {
+          res.writeHead(400, { ...corsHeaders, "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "missing source" }));
+          return;
+        }
+        const blocklist = [...state.getBlocklist(), source];
+        await saveConfigKey("blocklist", blocklist);
+        state.kill(source);
+        store.append({ type: "blocked", source, reason: "manual_kill", layer: "hook" });
+        state.globalStats.todayBlocked++;
+        res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: true, source, blocklist }));
+      } catch (e: any) {
+        res.writeHead(400, { ...corsHeaders, "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    },
+  });
+
+  // Unblock source
+  api.registerHttpRoute({
+    path: "/mapick/api/unblock-source",
+    auth: "plugin",
+    handler: async (req: any, res: any) => {
+      try {
+        const body = await readBody(req);
+        const { source } = JSON.parse(body);
+        if (!source) {
+          res.writeHead(400, { ...corsHeaders, "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "missing source" }));
+          return;
+        }
+        const blocklist = state.getBlocklist().filter((s: string) => s !== source);
+        await saveConfigKey("blocklist", blocklist);
+        state.unkill(source);
+        res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: true, source, blocklist }));
+      } catch (e: any) {
+        res.writeHead(400, { ...corsHeaders, "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: e.message }));
       }
     },
   });
