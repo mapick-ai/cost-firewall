@@ -4,7 +4,7 @@ export function renderDashboardHtml(_stats: any): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapick 防火墙</title>
+  <title>Mapick Firewall</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -74,9 +74,13 @@ export function renderDashboardHtml(_stats: any): string {
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       font-weight: 600;
     }
+    .mode-btn.observe-mode.active {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
     .mode-btn.protect-mode.active {
-      background: #fef3c7;
-      color: #92400e;
+      background: #dcfce7;
+      color: #16a34a;
     }
     .mode-label {
       font-size: 11px;
@@ -230,7 +234,7 @@ export function renderDashboardHtml(_stats: any): string {
       letter-spacing: 0.01em;
     }
     
-    /* 规则 Grid */
+    /* Rules Grid */
     .rules-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -351,7 +355,7 @@ export function renderDashboardHtml(_stats: any): string {
       color: var(--fg);
     }
     
-    /* 监控 */
+    /* Monitoring */
     .monitoring-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -493,7 +497,7 @@ export function renderDashboardHtml(_stats: any): string {
       font-weight: 500;
     }
     
-    /* 事件 */
+    /* Events */
     .events-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -544,56 +548,56 @@ export function renderDashboardHtml(_stats: any): string {
   <header class="header">
     <div class="header-title" style="display:flex;align-items:center;gap:6px">
       <span style="background:#eff6ff;color:#2563eb;font-weight:600;font-size:11px;padding:3px 10px;border-radius:10px;letter-spacing:0.3px">Mapick</span>
-      <span>防火墙</span>
+      <span>Firewall</span>
       <span id="firewall-ver" style="font-size:11px;color:var(--muted);margin-left:4px"></span>
     </div>
     <div class="header-right" style="display:flex;align-items:center;gap:12px">
       <div class="mode-toggle">
-        <button class="mode-btn active" id="mode-observe">观察</button>
-        <button class="mode-btn" id="mode-protect">保护</button>
+        <button class="mode-btn active" id="mode-observe" class="observe-mode">Observe</button>
+        <button class="mode-btn" id="mode-protect" class="protect-mode">Protect</button>
       </div>
     </div>
   </header>
   
   <div id="alert-upgrade" style="display:none;background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:10px 16px;margin:0 auto 12px;max-width:1200px;font-size:13px">
-    <span style="color:#1d4ed8">💡</span> 当前 OpenClaw <span id="alert-upgrade-ver"></span> 仅支持基础功能。升级到 <b>v2026.5.7</b> 可解锁完整 cost 追踪、自动熔断、实时图表等全部功能。
+    <span style="color:#1d4ed8">💡</span> Your OpenClaw <span id="alert-upgrade-ver"></span> only supports basic features. Upgrade to <b>v2026.5.7</b> to unlock full cost tracking, auto-breaker, real-time charts and more。
     <code style="background:#dbeafe;padding:2px 6px;border-radius:3px;margin-left:8px">openclaw update</code>
     <button onclick="document.getElementById('alert-upgrade').style.display='none'" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px">✕</button>
   </div>
 
   <div id="alert-unbind" style="display:none;background:#fef2f2;border:1px solid var(--destructive);border-radius:8px;padding:12px 18px;margin:12px auto;max-width:1200px">
-    <strong>⚠️ 未绑定警告</strong>：紧急停止已激活，但仍检测到新的 API 请求。请运行 <code>openclaw gateway restart</code>。
+    <strong>⚠️ Unbind Alert</strong>：Emergency Stop activated，但仍检测到新的 API 请求。请运行 <code>openclaw gateway restart</code>。
     <span id="alert-unbind-detail" style="display:block;margin-top:4px;font-size:12px;color:var(--muted)"></span>
   </div>
 
   <div class="hero-stats">
     <div class="hero-card">
       <div class="hero-value" id="hero-spent">$0</div>
-      <div class="hero-label">今日花费</div>
+      <div class="hero-label">Today Spent</div>
     </div>
     <div class="hero-card">
       <div class="hero-value" id="hero-blocked">0</div>
-      <div class="hero-label">已拦截</div>
+      <div class="hero-label">Blocked</div>
     </div>
     <div class="hero-card">
       <div class="hero-value" id="hero-saved">$0</div>
-      <div class="hero-label">已省费用</div>
+      <div class="hero-label">Saved</div>
     </div>
     <div class="hero-card" style="border-color:var(--destructive);background:rgba(239,68,68,0.03)">
-      <button class="btn-emergency" id="btn-stop" title="紧急停止">⏹</button>
+      <button class="btn-emergency" id="btn-stop" title="Emergency Stop">⏹</button>
       <button class="btn btn-primary" id="btn-resume" style="display:none;margin-top:8px;font-size:12px;padding:4px 12px">▶ 恢复</button>
-      <div class="hero-label" style="color:var(--destructive);margin-top:6px">阻断</div>
+      <div class="hero-label" style="color:var(--destructive);margin-top:6px">STOP</div>
     </div>
   </div>
 
   <main class="main">
     
     <div class="section">
-      <div class="section-title">规则</div>
+      <div class="section-title">Rules</div>
       <div class="rules-grid">
         <div class="rule-card">
           <div class="rule-header">
-            <span class="rule-title">每日 Token 限额</span>
+            <span class="rule-title">Daily Token Limit</span>
             <label class="switch">
               <input type="checkbox" id="switch-daily-limit">
               <span class="slider"></span>
@@ -604,16 +608,16 @@ export function renderDashboardHtml(_stats: any): string {
               <input type="number" class="field-input" id="input-daily-limit" placeholder="50000">
               <span class="field-unit">tokens</span>
             </div>
-            <div class="field-hint">每日最大 Token 数</div>
+            <div class="field-hint">Maximum tokens per day</div>
           </div>
           <div class="rule-footer">
-            <button class="btn-save" id="btn-save-daily-limit">保存</button>
+            <button class="btn-save" id="btn-save-daily-limit">Save</button>
           </div>
         </div>
 
         <div class="rule-card">
           <div class="rule-header">
-            <span class="rule-title">连续失败</span>
+            <span class="rule-title">Consecutive Failures</span>
             <label class="switch">
               <input type="checkbox" id="switch-failures">
               <span class="slider"></span>
@@ -622,22 +626,22 @@ export function renderDashboardHtml(_stats: any): string {
           <div class="rule-content">
             <div class="field-row">
               <input type="number" class="field-input" id="input-failures" placeholder="3">
-              <span class="field-unit">次</span>
+              <span class="field-unit"></span>
             </div>
             <div class="field-row">
               <input type="number" class="field-input" id="input-cooldown" placeholder="30">
-              <span class="field-unit">秒</span>
+              <span class="field-unit">s</span>
             </div>
-            <div class="field-hint">连续失败后冷却时长</div>
+            <div class="field-hint">Consecutive Failures</div>
           </div>
           <div class="rule-footer">
-            <button class="btn-save" id="btn-save-failures">保存</button>
+            <button class="btn-save" id="btn-save-failures">Save</button>
           </div>
         </div>
 
         <div class="rule-card">
           <div class="rule-header">
-            <span class="rule-title">Token 速率</span>
+            <span class="rule-title">Token Velocity</span>
             <label class="switch">
               <input type="checkbox" id="switch-velocity">
               <span class="slider"></span>
@@ -650,18 +654,18 @@ export function renderDashboardHtml(_stats: any): string {
             </div>
             <div class="field-row">
               <input type="number" class="field-input" id="input-velocity-window" placeholder="60">
-              <span class="field-unit">秒</span>
+              <span class="field-unit">s</span>
             </div>
-            <div class="field-hint">时间窗口内最大 Token 数</div>
+            <div class="field-hint">Max tokens within time window</div>
           </div>
           <div class="rule-footer">
-            <button class="btn-save" id="btn-save-velocity">保存</button>
+            <button class="btn-save" id="btn-save-velocity">Save</button>
           </div>
         </div>
 
         <div class="rule-card">
           <div class="rule-header">
-            <span class="rule-title">调用频率</span>
+            <span class="rule-title">Call Frequency</span>
             <label class="switch">
               <input type="checkbox" id="switch-frequency">
               <span class="slider"></span>
@@ -670,75 +674,75 @@ export function renderDashboardHtml(_stats: any): string {
           <div class="rule-content">
             <div class="field-row">
               <input type="number" class="field-input" id="input-frequency" placeholder="100">
-              <span class="field-unit">次</span>
+              <span class="field-unit"></span>
             </div>
             <div class="field-row">
               <input type="number" class="field-input" id="input-frequency-window" placeholder="60">
-              <span class="field-unit">秒</span>
+              <span class="field-unit">s</span>
             </div>
-            <div class="field-hint">时间窗口内最大调用次数</div>
+            <div class="field-hint">Max calls within time window</div>
           </div>
           <div class="rule-footer">
-            <button class="btn-save" id="btn-save-frequency">保存</button>
+            <button class="btn-save" id="btn-save-frequency">Save</button>
           </div>
         </div>
         </div>
       </div>
     
     <div class="section">
-      <div class="section-title">费用趋势</div>
+      <div class="section-title">Cost Trend</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px">
         <canvas id="cost-chart" width="800" height="250" style="width:100%;max-height:250px"></canvas>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">监控</div>
+      <div class="section-title">Monitoring</div>
       <div class="status-grid">
         <div class="status-item">
-          <span class="status-item-label">紧急停止</span>
-          <span class="status-item-value" id="status-estop">未激活</span>
+          <span class="status-item-label">Emergency Stop</span>
+          <span class="status-item-value" id="status-estop">Inactive</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">连续失败</span>
+          <span class="status-item-label">Consecutive Failures</span>
           <span class="status-item-value" id="status-fail">3</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">Token 速率</span>
+          <span class="status-item-label">Token Velocity</span>
           <span class="status-item-value" id="status-velocity">100K / 60s</span>
         </div>
         <div class="status-item">
-          <span class="status-item-label">调用频率</span>
+          <span class="status-item-label">Call Frequency</span>
           <span class="status-item-value" id="status-frequency">30 / 60s</span>
         </div>
       </div>
       <div class="monitoring-grid">
         <div class="monitor-card">
-          <div class="monitor-header">冷却来源</div>
+          <div class="monitor-header">Cooling Sources</div>
           <div class="monitor-body" id="list-cooling">
-            <div class="empty">无冷却来源</div>
+            <div class="empty">无Cooling Sources</div>
           </div>
         </div>
         <div class="monitor-card">
-          <div class="monitor-header">活跃会话</div>
+          <div class="monitor-header">Active Runs</div>
           <div class="monitor-body" id="list-runs">
-            <div class="empty">无活跃会话</div>
+            <div class="empty">无Active Runs</div>
           </div>
         </div>
         <div class="monitor-card">
-          <div class="monitor-header">永久封禁</div>
+          <div class="monitor-header">Blocked Sources</div>
           <div class="monitor-body" id="list-blocked">
-            <div class="empty">无封禁来源</div>
+            <div class="empty">No blocked sources</div>
           </div>
         </div>
       </div>
     </div>
     
     <div class="section">
-      <div class="section-title">事件</div>
+      <div class="section-title">Events</div>
       <div class="events-card">
         <div class="events-body" id="events-log">
-          <div class="empty">无事件</div>
+          <div class="empty">无Events</div>
         </div>
       </div>
     </div>
@@ -906,7 +910,7 @@ export function renderDashboardHtml(_stats: any): string {
 
       const modeObserve = document.getElementById('mode-observe');
       const modeProtect = document.getElementById('mode-protect');
-      modeObserve.className = 'mode-btn' + (data.mode === 'observe' ? ' active' : '');
+      modeObserve.className = 'mode-btn observe-mode' + (data.mode === 'observe' ? ' active' : '');
       modeProtect.className = 'mode-btn protect-mode' + (data.mode === 'protect' ? ' active' : '');
 
       const btnStop = document.getElementById('btn-stop');
@@ -948,26 +952,26 @@ export function renderDashboardHtml(_stats: any): string {
 
       const modeLabel = data.mode ?? 'observe';
       const estop = data.emergency_stop;
-      document.getElementById('status-estop').textContent = estop ? '⛔ 已激活' : '未激活';
+      document.getElementById('status-estop').textContent = estop ? '⛔ activated' : 'Inactive';
       document.getElementById('status-estop').style.color = estop ? 'var(--destructive)' : '';
-      document.getElementById('status-fail').textContent = (breaker.consecutive_failures ?? 3) + ' 次失败 → ' + (breaker.cooldown_sec ?? 30) + ' 秒';
+      document.getElementById('status-fail').textContent = (breaker.consecutive_failures ?? 3) + ' failures → ' + (breaker.cooldown_sec ?? 30) + ' s';
       document.getElementById('status-velocity').textContent = (breaker.token_velocity_threshold ?? 0) > 0
-        ? (breaker.token_velocity_threshold ?? 0).toLocaleString() + ' / ' + (breaker.token_velocity_window_sec ?? 60) + ' 秒'
+        ? (breaker.token_velocity_threshold ?? 0).toLocaleString() + ' / ' + (breaker.token_velocity_window_sec ?? 60) + ' s'
         : '关闭';
       document.getElementById('status-frequency').textContent = (breaker.call_frequency_threshold ?? 0) > 0
-        ? (breaker.call_frequency_threshold ?? 0) + ' / ' + (breaker.call_frequency_window_sec ?? 60) + ' 秒'
+        ? (breaker.call_frequency_threshold ?? 0) + ' / ' + (breaker.call_frequency_window_sec ?? 60) + ' s'
         : '关闭';
 
       const coolingSources = data.cooling_sources ?? [];
       const coolingList = document.getElementById('list-cooling');
       if (coolingSources.length > 0) {
         coolingList.innerHTML = coolingSources.map(function(s) {
-          var resetBtn = '<button class="btn-sm" onclick="resetSource(' + String.fromCharCode(39) + escapeHtml(s.source ?? '') + String.fromCharCode(39) + ')">重置</button>';
+          var resetBtn = '<button class="btn-sm" onclick="resetSource(' + String.fromCharCode(39) + escapeHtml(s.source ?? '') + String.fromCharCode(39) + ')">Reset</button>';
           var remaining = (s.remainingSec > 0) ? '<span style="font-size:12px;color:var(--muted)">' + s.remainingSec + 's</span>' : '';
           return '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s.source ?? '') + '</div><div class="item-detail">' + escapeHtml(s.reason ?? '') + '</div></div><div class="item-meta">' + remaining + resetBtn + '</div></div>';
         }).join('');
       } else {
-        coolingList.innerHTML = '<div class="empty">无冷却来源</div>';
+        coolingList.innerHTML = '<div class="empty">无Cooling Sources</div>';
       }
 
       const activeRuns = data.active_runs ?? [];
@@ -977,28 +981,28 @@ export function renderDashboardHtml(_stats: any): string {
           <div class="monitor-item">
             <div>
               <div class="item-label">\${escapeHtml((r.runId ?? '').slice(0, 8))}</div>
-              <div class="item-detail">\${escapeHtml(r.source ?? '')} · \${r.calls ?? 0} 次调用 · \${(r.tokens ?? 0).toLocaleString()} tokens</div>
+              <div class="item-detail">\${escapeHtml(r.source ?? '')} · \${r.calls ?? 0} calls · \${(r.tokens ?? 0).toLocaleString()} tokens</div>
             </div>
-            <span class="tag \${r.status === '高风险' ? 'tag-destructive' : r.status === 'warning' ? 'tag-warning' : 'tag-success'}">\${escapeHtml(r.status ?? 'healthy')}</span>
+            <span class="tag \${r.status === 'danger' ? 'tag-destructive' : r.status === 'warning' ? 'tag-warning' : 'tag-success'}">\${escapeHtml(r.status ?? 'healthy')}</span>
           </div>
         \`).join('');
       } else {
-        runsList.innerHTML = '<div class="empty">无活跃会话</div>';
+        runsList.innerHTML = '<div class="empty">无Active Runs</div>';
       }
 
       const blocklist = data.blocklist ?? [];
       const blockedEl = document.getElementById('list-blocked');
       if (blocklist.length > 0) {
-        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s) + '</div><div class="item-detail" style="color:var(--destructive)">已永久封禁</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(' + String.fromCharCode(39) + escapeHtml(s) + String.fromCharCode(39) + ')">解封</button></div></div>').join('');
+        blockedEl.innerHTML = blocklist.map(s => '<div class="monitor-item"><div><div class="item-label">' + escapeHtml(s) + '</div><div class="item-detail" style="color:var(--destructive)">permanently blocked</div></div><div class="item-meta"><button class="btn-sm" style="border-color:var(--destructive);color:var(--destructive)" onclick="unblockSource(' + String.fromCharCode(39) + escapeHtml(s) + String.fromCharCode(39) + ')">Unblock</button></div></div>').join('');
       } else {
-        blockedEl.innerHTML = '<div class="empty">无封禁来源</div>';
+        blockedEl.innerHTML = '<div class="empty">No blocked sources</div>';
       }
     }
 
     function renderEvents(events) {
       const log = document.getElementById('events-log');
       if (!events || events.length === 0) {
-        log.innerHTML = '<div class="empty">暂无事件记录</div>';
+        log.innerHTML = '<div class="empty">暂无Events记录</div>';
         return;
       }
       log.innerHTML = events.slice(0, 50).reverse().map(e => {
@@ -1020,30 +1024,30 @@ export function renderDashboardHtml(_stats: any): string {
           if (outcome === 'completed') {
             icon = '✅'; cls = 'ok';
             text = provider + '/' + model + ' — ' + costK + 'K tokens ($' + costUsd + ')';
-            sub = source ? '来源 ' + shortSource : '';
+            sub = source ? 'Source: ' + shortSource : '';
           } else {
             icon = '❌'; cls = 'err';
             text = provider + '/' + model + ' — ' + outcome + ' (' + (e.failureKind ?? 'error') + ')';
-            sub = source ? '来源 ' + shortSource : '';
+            sub = source ? 'Source: ' + shortSource : '';
           }
         } else if (type === 'blocked') {
           icon = '🚫'; cls = 'err';
-          text = '拦截 — ' + (e.reason ?? 'unknown');
-          if (source) sub = '来源 ' + shortSource;
+          text = 'BLOCKED — ' + (e.reason ?? 'unknown');
+          if (source) sub = 'Source: ' + shortSource;
         } else if (type === 'run_status_change') {
           icon = '⚠️'; cls = 'warn';
           const tokens = e.cumulativeTokens ?? 0;
-          text = 'Token 警告 — ' + (tokens/1000).toFixed(0) + 'K tokens ($' + (tokens/1000*0.004).toFixed(2) + ')';
-          if (source) sub = '来源 ' + shortSource + (model ? ' | ' + model : '');
+          text = 'Token warning — ' + (tokens/1000).toFixed(0) + 'K tokens ($' + (tokens/1000*0.004).toFixed(2) + ')';
+          if (source) sub = 'Source: ' + shortSource + (model ? ' | ' + model : '');
         } else if (type === 'agent_end') {
           icon = '🏁'; cls = 'dim';
-          text = '会话结束 — ' + (e.runId ?? '').slice(0, 8);
+          text = 'Run ended — ' + (e.runId ?? '').slice(0, 8);
         } else if (type === 'config_warning') {
           icon = '⚙️'; cls = 'dim';
           text = '配置 — ' + (e.reason ?? e.message ?? '');
         } else if (type === 'emergency_stop') {
           icon = '🛑'; cls = 'err';
-          text = '紧急停止已激活';
+          text = 'Emergency Stop activated';
         } else if (type === 'zero_output_warning') {
           icon = '⚠️'; cls = 'warn';
           text = 'Zero output: ' + provider + '/' + model;
@@ -1053,7 +1057,7 @@ export function renderDashboardHtml(_stats: any): string {
         }
 
         var killBtn = (source && (type === 'model_call_ended' || type === 'blocked'))
-          ? '<button class="btn-kill" onclick="blockSource(' + String.fromCharCode(39) + escapeHtml(source) + String.fromCharCode(39) + ')">终止</button>'
+          ? '<button class="btn-kill" onclick="blockSource(' + String.fromCharCode(39) + escapeHtml(source) + String.fromCharCode(39) + ')">Kill</button>'
           : '';
 
         return '<div class="event-item">' +
@@ -1156,7 +1160,7 @@ export function renderDashboardHtml(_stats: any): string {
       if (data.emergency_stop && data.today_tokens > 0) {
         if (!unbindAlertShown) {
           document.getElementById('alert-unbind').style.display = 'block';
-          document.getElementById('alert-unbind-detail').textContent = '已停止但今日仍有 ' + (data.today_tokens ?? 0).toLocaleString() + ' tokens 消耗';
+          document.getElementById('alert-unbind-detail').textContent = 'Stopped but today still has ' + (data.today_tokens ?? 0).toLocaleString() + ' tokens consumed';
           unbindAlertShown = true;
         }
       } else if (!data.emergency_stop) {
