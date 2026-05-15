@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.27 - 2026-05-15
+
+- fix bugs: remove remaining Chinese text, change 关闭 to Off, fix empty state labels
+
 ## v0.2.26 - 2026-05-15
 
 - kill-source permanent blocklist, dashboard v2 (hero stats, human events, emergency stop, cost trend, English UI), OpenClaw 5.x hook support, cooling source dedup, upgrade banner, short source names, bug fixes
