@@ -2,6 +2,10 @@
 
 All notable changes to @mapick/cost-firewall will be documented in this file.
 
+## v0.2.28 - 2026-05-15
+
+- fix bugs
+
 ## v0.2.27 - 2026-05-15
 
 - fix bugs

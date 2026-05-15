@@ -21,7 +21,7 @@ Catch retry loops, token storms, and surprise AI bills before they become screen
 [![License](https://img.shields.io/github/license/mapick-ai/cost-firewall?color=16a34a)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)](#development)
 [![OpenClaw](https://img.shields.io/badge/OpenClaw-plugin-8B5CF6)](#try-it)
-[![Verified](https://img.shields.io/badge/real%20OpenClaw-v0.2.27%20verified-brightgreen)](#verified-on-real-openclaw)
+[![Verified](https://img.shields.io/badge/real%20OpenClaw-v0.2.28%20verified-brightgreen)](#verified-on-real-openclaw)
 
 <br />
 
@@ -51,10 +51,10 @@ One command. Every AI call paused. Breathe first, debug second.
 
 ## Try It
 
-Requires OpenClaw `2026.4.1` or newer. Verified on a real OpenClaw instance with `v0.2.27`.
+Requires OpenClaw `2026.4.1` or newer. Verified on a real OpenClaw instance with `v0.2.28`.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.27/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/mapick-ai/cost-firewall/v0.2.28/install.sh | bash
 openclaw firewall status
 ```
 
@@ -219,7 +219,7 @@ The default privacy setting is `storePromptText: false`.
 
 ## Verified On Real OpenClaw
 
-`v0.2.9` was tested on a real OpenClaw gateway:
+`v0.2.28` was tested on a real OpenClaw gateway:
 
 | Check             | Result                                                  |
 | ----------------- | ------------------------------------------------------- |
