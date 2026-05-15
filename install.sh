@@ -499,11 +499,10 @@ fi
 
 echo ""
 echo "→ Verifying plugin loaded..."
-sleep 10  # Give gateway time to fully load plugins after restart
 PLUGIN_LOADED=0
-for i in 1 2 3 4 5 6 7 8 9 10; do
+for i in 1 2 3 4 5 6; do
   perl -e 'alarm 10; exec @ARGV' -- openclaw plugins list 2>&1 | grep -q "$PLUGIN_ID" && { PLUGIN_LOADED=1; break; }
-  sleep 3
+  [ "$i" -lt 6 ] && sleep 10
 done
 if [ "$PLUGIN_LOADED" -eq 1 ]; then
   pass_check "Plugin loaded"
