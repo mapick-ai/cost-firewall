@@ -4,7 +4,7 @@ All notable changes to @mapick/cost-firewall will be documented in this file.
 
 ## v0.2.27 - 2026-05-15
 
-- fix bugs: remove remaining Chinese text, change 关闭 to Off, fix empty state labels
+- fix bugs
 
 ## v0.2.26 - 2026-05-15
 
