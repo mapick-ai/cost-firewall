@@ -566,7 +566,7 @@ export function renderDashboardHtml(_stats: any): string {
   </div>
 
   <div id="alert-unbind" style="display:none;background:#fef2f2;border:1px solid var(--destructive);border-radius:8px;padding:12px 18px;margin:12px auto;max-width:1200px">
-    <strong>⚠️ Unbind Alert</strong>：Emergency Stop activated，但仍检测到新的 API 请求。请运行 <code>openclaw gateway restart</code>。
+    <strong>⚠️ Unbind Alert</strong>：Emergency Stop activated，but new API requests detected. Run <code>openclaw gateway restart</code>。
     <span id="alert-unbind-detail" style="display:block;margin-top:4px;font-size:12px;color:var(--muted)"></span>
   </div>
 
@@ -971,10 +971,10 @@ export function renderDashboardHtml(_stats: any): string {
       document.getElementById('status-fail').textContent = (breaker.consecutive_failures ?? 3) + ' failures → ' + (breaker.cooldown_sec ?? 30) + ' s';
       document.getElementById('status-velocity').textContent = (breaker.token_velocity_threshold ?? 0) > 0
         ? (breaker.token_velocity_threshold ?? 0).toLocaleString() + ' / ' + (breaker.token_velocity_window_sec ?? 60) + ' s'
-        : '关闭';
+        : 'Off';
       document.getElementById('status-frequency').textContent = (breaker.call_frequency_threshold ?? 0) > 0
         ? (breaker.call_frequency_threshold ?? 0) + ' / ' + (breaker.call_frequency_window_sec ?? 60) + ' s'
-        : '关闭';
+        : 'Off';
 
       const coolingSources = data.cooling_sources ?? [];
       const coolingList = document.getElementById('list-cooling');
@@ -1016,7 +1016,7 @@ export function renderDashboardHtml(_stats: any): string {
     function renderEvents(events) {
       const log = document.getElementById('events-log');
       if (!events || events.length === 0) {
-        log.innerHTML = '<div class="empty">暂无Events记录</div>';
+        log.innerHTML = '<div class="empty">No events recorded</div>';
         return;
       }
       log.innerHTML = events.slice(0, 50).reverse().map(e => {
@@ -1058,7 +1058,7 @@ export function renderDashboardHtml(_stats: any): string {
           text = 'Run ended — ' + (e.runId ?? '').slice(0, 8);
         } else if (type === 'config_warning') {
           icon = '⚙️'; cls = 'dim';
-          text = '配置 — ' + (e.reason ?? e.message ?? '');
+          text = 'Config — ' + (e.reason ?? e.message ?? '');
         } else if (type === 'emergency_stop') {
           icon = '🛑'; cls = 'err';
           text = 'Emergency Stop activated';
